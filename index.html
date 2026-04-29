@@ -2,69 +2,51 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>TFT Set 17 究極自動ロードテスト</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFT Set 17 画像テスト - CommunityDragon</title>
   <style>
-    body { font-family: sans-serif; background: #0f0f1a; color: #eee; padding: 20px; text-align: center; }
-    .units { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-    .unit { width: 100px; position: relative; cursor: help; }
-    .unit img { width: 100%; border: 2px solid #444; border-radius: 8px; }
-    .unit:hover img { border-color: #ffd700; }
-    
-    /* ツールチップの設定 */
-    .tooltip {
-      visibility: hidden; opacity: 0;
-      position: absolute; bottom: 120%; left: 50%; transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.95); border: 1px solid #ffd700;
-      padding: 12px; width: 250px; border-radius: 8px; text-align: left;
-      z-index: 100; transition: 0.2s; font-size: 13px; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    }
-    .unit:hover .tooltip { visibility: visible; opacity: 1; }
-    .tooltip strong { color: #ffd700; display: block; margin-bottom: 5px; }
-    .skill-desc { color: #aaa; font-size: 12px; line-height: 1.4; }
+    body { background: #0a0a14; color: #eee; padding: 40px; text-align: center; font-family: Arial, sans-serif; }
+    h1 { color: #ffd700; }
+    .units { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; margin-top: 40px; }
+    .unit { width: 140px; }
+    .unit img { width: 100%; border: 3px solid #666; border-radius: 12px; }
+    .unit:hover img { border-color: #ffd700; transform: scale(1.08); }
+    .name { margin-top: 10px; font-weight: bold; }
   </style>
 </head>
 <body>
-  <h1>TFT Set 17 自動同期テスト (CommunityDragon版)</h1>
-  <div class="units" id="units">読み込み中...</div>
+  <h1>TFT Set 17 画像テスト（CommunityDragon）</h1>
+  <div class="units" id="units"></div>
 
   <script>
-    async function init() {
-      const container = document.getElementById('units');
-      try {
-        // 1. 最新のセットデータを取得 (CommunityDragon)
-        const response = await fetch('https://raw.communitydragon.org/latest/plugins/rcp-be-lol-game-data/global/ja_jp/v1/tftitems.json');
-        const allData = await response.json();
-        
-        // 2. 表示したいチャンピオンIDリスト
-        const targetIds = ["TFT17_Mordekaiser", "TFT17_Blitzcrank", "TFT17_Shen", "TFT17_Illaoi", "TFT17_Jinx", "TFT17_Aurora", "TFT17_Nunu", "TFT17_Xayah", "TFT17_Leona", "TFT17_Aatrox"];
-        
-        container.innerHTML = '';
+    const champs = [
+      {name: "Mordekaiser", file: "TFT17_Mordekaiser"},
+      {name: "Blitzcrank", file: "TFT17_Blitzcrank"},
+      {name: "Shen", file: "TFT17_Shen"},
+      {name: "Illaoi", file: "TFT17_Illaoi"},
+      {name: "Jinx", file: "TFT17_Jinx"},
+      {name: "Aurora", file: "TFT17_Aurora"},
+      {name: "Nunu", file: "TFT17_Nunu"},
+      {name: "Xayah", file: "TFT17_Xayah"},
+      {name: "Leona", file: "TFT17_Leona"},
+      {name: "Aatrox", file: "TFT17_Aatrox"}
+    ];
 
-        targetIds.forEach(id => {
-          // セットデータから該当チャンピオンを探す
-          // ※CommunityDragonでは形式が違う場合があるため、簡易的にIDでフィルタ
-          const imgUrl = `https://raw.communitydragon.org/latest/game/assets/ux/tft/championslot/${id.toLowerCase()}_mobile.png`;
-          
-          const div = document.createElement('div');
-          div.className = 'unit';
-          div.innerHTML = `
-            <img src="${imgUrl}" onerror="this.src='https://via.placeholder.com/100x100?text=No+Image'">
-            <div style="margin-top:5px; font-size:12px;">${id.replace('TFT17_', '')}</div>
-            <div class="tooltip">
-              <strong>${id.replace('TFT17_', '')}</strong>
-              <div class="skill-desc">
-                ※CommunityDragonから画像を直読みしています。
-                マウスオーバーで効果が出る仕組みの基礎が完成しました！
-              </div>
-            </div>
-          `;
-          container.appendChild(div);
-        });
-      } catch (e) {
-        container.innerHTML = "ロード失敗。ネット接続やURLを確認してください。";
-      }
-    }
-    init();
+    const container = document.getElementById('units');
+
+    champs.forEach(champ => {
+      // CommunityDragonのスプラッシュ画像パス
+      const imgUrl = `https://raw.communitydragon.org/latest/game/assets/ux/tft/championsplashes/${champ.file}.png`;
+
+      const div = document.createElement('div');
+      div.className = 'unit';
+      div.innerHTML = `
+        <img src="${imgUrl}" alt="${champ.name}" 
+             onerror="this.src='https://via.placeholder.com/140x140/333/fff?text=${champ.name}'">
+        <div class="name">${champ.name}</div>
+      `;
+      container.appendChild(div);
+    });
   </script>
 </body>
 </html>
