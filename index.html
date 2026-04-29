@@ -11,7 +11,6 @@
       color: #eee;
       margin: 0;
       padding: 40px 20px;
-      line-height: 1.5;
     }
     h1 {
       text-align: center;
@@ -48,7 +47,6 @@
       font-size: 16px;
     }
 
-    /* ツールチップ */
     .tooltip {
       visibility: hidden;
       position: absolute;
@@ -68,12 +66,7 @@
     .unit:hover .tooltip {
       visibility: visible;
     }
-    .tooltip strong {
-      color: #ffd700;
-      font-size: 18px;
-      display: block;
-      margin-bottom: 10px;
-    }
+    .tooltip strong { color: #ffd700; font-size: 18px; display: block; margin-bottom: 10px; }
     .trait { color: #99ff99; }
   </style>
 </head>
@@ -82,7 +75,6 @@
   <div class="units-container" id="units"></div>
 
   <script>
-    // JSONファイルを読み込んで表示
     async function loadChampions() {
       try {
         const response = await fetch('tft17-champions.json');
@@ -95,13 +87,26 @@
           const div = document.createElement('div');
           div.className = 'unit';
 
-          // Data Dragonを優先、なければプレースホルダー
-          const imgUrl = champ.image?.ddragon || 
-                        `https://via.placeholder.com/150x150/333/fff?text=${champ.name}`;
+          // あなたのフォルダ構造に合わせたパス（小文字）
+          const champLower = champ.name.toLowerCase().replace(/[^a-z]/g, '');
 
           div.innerHTML = `
-            <img src="${imgUrl}" alt="${champ.name}" 
-                 onerror="this.src='https://via.placeholder.com/150?text=${champ.name}'">
+            <picture>
+              <!-- 1. AVIF優先 -->
+              <source srcset="img/champ/17/${champLower}.avif" type="image/avif">
+              
+              <!-- 2. WebPフォールバック（まだ無い場合はスキップ） -->
+              <source srcset="img/champ/17/${champLower}.webp" type="image/webp">
+              
+              <!-- 3. 最終フォールバック -->
+              <img src="img/champ/17/${champLower}.avif" 
+                   alt="${champ.name}"
+                   width="320" 
+                   height="320"
+                   loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/150?text=${champ.name}'">
+            </picture>
+            
             <div class="unit-name">${champ.name} <span style="color:#aaa">(${champ.tier}コス)</span></div>
             
             <div class="tooltip">
@@ -121,13 +126,11 @@
         console.error('JSON読み込みエラー:', error);
         document.getElementById('units').innerHTML = `
           <p style="color:red; text-align:center; grid-column: 1 / -1;">
-            tft17-champions.json の読み込みに失敗しました。<br>
-            同じフォルダにファイルがあるか確認してください。
+            tft17-champions.json の読み込みに失敗しました。
           </p>`;
       }
     }
 
-    // ページ読み込み時に実行
     window.onload = loadChampions;
   </script>
 </body>
