@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFT Set 17 シンプルテスト</title>
+  <title>TFT Set 17 画像テスト</title>
   <style>
     body { 
       font-family: Arial, sans-serif; 
@@ -16,28 +16,35 @@
     .units { 
       display: flex; 
       flex-wrap: wrap; 
-      gap: 20px; 
+      gap: 25px; 
       justify-content: center; 
-      margin-top: 30px;
+      margin-top: 40px;
     }
     .unit {
-      width: 120px;
+      width: 130px;
       position: relative;
+      text-align: center;
     }
     .unit img {
       width: 100%;
       border: 3px solid #666;
       border-radius: 12px;
+      transition: 0.3s;
     }
     .unit:hover img {
       border-color: #ffd700;
-      transform: scale(1.1);
+      transform: scale(1.12);
     }
-    .name { margin-top: 8px; font-weight: bold; }
+    .name { 
+      margin-top: 10px; 
+      font-weight: bold; 
+      font-size: 15px;
+    }
+    .error { color: #ff6666; font-size: 12px; }
   </style>
 </head>
 <body>
-  <h1>TFT Set 17 シンプルテスト（画像だけ）</h1>
+  <h1>TFT Set 17 画像表示テスト</h1>
   <div class="units" id="units"></div>
 
   <script>
@@ -55,19 +62,28 @@
     ];
 
     const container = document.getElementById('units');
-    
-    // バージョンは手動で最新っぽいものを試す（17.2対応）
-    const version = "17.2.1";   // 必要に応じて変えてください
+    const version = "17.2.1";   // 現在の最新パッチに近いバージョン
 
     champs.forEach(champ => {
-      const imgUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/tft-champion/${champ.id}.png`;
-      
+      // 2パターン試す（Set 17でよくある形式）
+      const urls = [
+        `https://ddragon.leagueoflegends.com/cdn/${version}/img/tft-champion/${champ.id}.png`,
+        `https://ddragon.leagueoflegends.com/cdn/${version}/img/tft-champion/${champ.id}.TFT_Set17.png`
+      ];
+
       const div = document.createElement('div');
       div.className = 'unit';
-      div.innerHTML = `
-        <img src="${imgUrl}" alt="${champ.name}" onerror="this.src='https://via.placeholder.com/120?text=${champ.name}'">
-        <div class="name">${champ.name}</div>
-      `;
+
+      // 最初のURLを試し、失敗したら2つ目に切り替え
+      const img = document.createElement('img');
+      img.alt = champ.name;
+      img.src = urls[0];
+      img.onerror = () => { img.src = urls[1]; };
+
+      div.innerHTML = '';
+      div.appendChild(img);
+      div.innerHTML += `<div class="name">${champ.name}</div>`;
+      
       container.appendChild(div);
     });
   </script>
