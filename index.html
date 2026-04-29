@@ -87,36 +87,13 @@
           const div = document.createElement('div');
           div.className = 'unit';
 
-          // あなたのフォルダ構造に合わせたパス（小文字）
-          const champLower = champ.name.toLowerCase().replace(/[^a-z]/g, '');
-
           div.innerHTML = `
-            <picture>
-              <!-- 1. AVIF優先 -->
-              <source srcset="img/champ/17/${champLower}.avif" type="image/avif">
-              
-              <!-- 2. WebPフォールバック（まだ無い場合はスキップ） -->
-              <source srcset="img/champ/17/${champLower}.webp" type="image/webp">
-              
-              <!-- 3. 最終フォールバック -->
-              <img src="img/champ/17/${champLower}.avif" 
-                   alt="${champ.name}"
-                   width="320" 
-                   height="320"
-                   loading="lazy"
-                   onerror="this.src='https://via.placeholder.com/150?text=${champ.name}'">
-            </picture>
-            
-            <div class="unit-name">${champ.name} <span style="color:#aaa">(${champ.tier}コス)</span></div>
-            
+            <img src="${champ.file}" alt="${champ.name}" loading="lazy"
+                 onerror="this.src='https://via.placeholder.com/150?text=${encodeURIComponent(champ.name)}'">
+            <div class="unit-name">${champ.name}</div>
             <div class="tooltip">
-              <strong>${champ.name}</strong><br>
-              コスト: ${champ.tier}<br>
-              トレイト: <span class="trait">${champ.traits ? champ.traits.join(' / ') : 'なし'}</span><br><br>
-              <strong>スキル:</strong><br>
-              ${champ.skillDesc || 'スキル説明未登録'}<br><br>
-              <strong>メモ:</strong><br>
-              ${champ.notes || 'メモ未登録'}
+              <strong>${champ.name}</strong>
+              <p>${champ.description}</p>
             </div>
           `;
           container.appendChild(div);

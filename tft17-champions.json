@@ -1,201 +1,336 @@
 {
   "set": "17",
-  "patch": "17.2",
+  "summary": "img/champ/17 の画像説明",
   "champions": [
     {
-      "id": "TFT17_Aatrox",
+      "file": "img/champ/17/Dummy.avif",
+      "name": "Dummy",
+      "description": "プレースホルダー用のダミー画像。"
+    },
+    {
+      "file": "img/champ/17/Golem.avif",
+      "name": "Golem",
+      "description": "機械的な巨像を思わせるゴーレム風のイメージ。"
+    },
+    {
+      "file": "img/champ/17/aatrox.avif",
       "name": "Aatrox",
-      "tier": 1,
-      "traits": ["N.O.V.A.", "Bastion"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Aatrox.png",
-        "community": "https://raw.communitydragon.org/latest/game/assets/characters/tft17_aatrox/skins/base/images/tft17_aatrox_splash_tile_30.tft_set17.png"
-      },
-      "skillDesc": "斬撃で物理ダメージを与え、自身にシールドを付与。",
-      "notes": "序盤の強いタンク/ダメージディーラー。N.O.V.A.シナジーで強い。",
-      "seci": "表出化"
+      "description": "赤いオーラと巨剣を携えた戦士の姿。"
     },
     {
-      "id": "TFT17_Mordekaiser",
-      "name": "Mordekaiser",
-      "tier": 4,
-      "traits": ["Dark Star"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Mordekaiser.png",
-        "community": ""
-      },
-      "skillDesc": "範囲ダメージ + 強力なシールド。",
-      "notes": "現在非常に強いキャリー候補。",
-      "seci": "連結化"
+      "file": "img/champ/17/akali.avif",
+      "name": "Akali",
+      "description": "忍者のような軽やかで素早い雰囲気。"
     },
     {
-      "id": "TFT17_Blitzcrank",
-      "name": "Blitzcrank",
-      "tier": 5,
-      "traits": ["Space Groove", "Vanguard"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Blitzcrank.png",
-        "community": ""
-      },
-      "skillDesc": "敵を引き寄せてスタン。",
-      "notes": "終盤の強力なCCタンク。",
-      "seci": "表出化"
+      "file": "img/champ/17/asol.avif",
+      "name": "Aurelion Sol",
+      "description": "星を操る竜のような存在。"
     },
     {
-      "id": "TFT17_Shen",
-      "name": "Shen",
-      "tier": 5,
-      "traits": ["Bulwark", "Bastion"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Shen.png",
-        "community": ""
-      },
-      "skillDesc": "味方全体に強力なシールド付与。",
-      "notes": "高耐久の守護神。",
-      "seci": "内面化"
-    },
-    {
-      "id": "TFT17_Xayah",
-      "name": "Xayah",
-      "tier": 4,
-      "traits": ["Stargazer"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Xayah.png",
-        "community": ""
-      },
-      "skillDesc": "羽を飛ばして複数ターゲットにダメージ。",
-      "notes": "Stargazerキャリーとして人気。",
-      "seci": "表出化"
-    },
-    {
-      "id": "TFT17_Jinx",
-      "name": "Jinx",
-      "tier": 2,
-      "traits": ["Anima", "Challenger"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Jinx.png",
-        "community": ""
-      },
-      "skillDesc": "ロケットで大ダメージ。",
-      "notes": "中盤以降の火力源。",
-      "seci": "共同化"
-    },
-    {
-      "id": "TFT17_Aurora",
+      "file": "img/champ/17/aurora.avif",
       "name": "Aurora",
-      "tier": 3,
-      "traits": ["Anima", "Voyager"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Aurora.png",
-        "community": ""
-      },
-      "skillDesc": "範囲凍結 + ダメージ。",
-      "notes": "CCとダメージを両立。",
-      "seci": "表出化"
+      "description": "光や氷をまとった幻想的な女性。"
     },
     {
-      "id": "TFT17_Illaoi",
-      "name": "Illaoi",
-      "tier": 3,
-      "traits": ["Anima", "Vanguard"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Illaoi.png",
-        "community": ""
-      },
-      "skillDesc": "触手で範囲攻撃。",
-      "notes": "タンクとして優秀。",
-      "seci": "連結化"
+      "file": "img/champ/17/bard.avif",
+      "name": "Bard",
+      "description": "音楽と星を伴う、旅する守護者。"
     },
     {
-      "id": "TFT17_Nunu",
-      "name": "Nunu & Willump",
-      "tier": 4,
-      "traits": ["Meeple", "Shepherd"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Nunu.png",
-        "community": ""
-      },
-      "skillDesc": "雪玉で範囲CC。",
-      "notes": "Meepleシナジーのキー。",
-      "seci": "内面化"
+      "file": "img/champ/17/bel.avif",
+      "name": "Bel'Veth",
+      "description": "深海や虚空を連想させる異形の存在。"
     },
     {
-      "id": "TFT17_Leona",
-      "name": "Leona",
-      "tier": 1,
-      "traits": ["Arbiter", "Vanguard"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Leona.png",
-        "community": ""
-      },
-      "skillDesc": "太陽の光でタンク性能アップ。",
-      "notes": "序盤の安定タンク。",
-      "seci": "共同化"
+      "file": "img/champ/17/bia.avif",
+      "name": "Bia",
+      "description": "未来的な装甲をまとった女性キャラクター。"
     },
     {
-      "id": "TFT17_KaiSa",
-      "name": "Kai'Sa",
-      "tier": 3,
-      "traits": ["Anima"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_KaiSa.png",
-        "community": ""
-      },
-      "skillDesc": "ミサイル連射。",
-      "notes": "Rerollコンパで活躍。",
-      "seci": "表出化"
+      "file": "img/champ/17/blitz.avif",
+      "name": "Blitzcrank",
+      "description": "鉄の巨人で、強力なアームを持つ。"
     },
     {
-      "id": "TFT17_Riven",
-      "name": "Riven",
-      "tier": 4,
-      "traits": ["Timebreaker"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Riven.png",
-        "community": ""
-      },
-      "skillDesc": "強力な範囲ダメージ。",
-      "notes": "Space GrooveやTimebreakerで強い。",
-      "seci": "連結化"
+      "file": "img/champ/17/briar.avif",
+      "name": "Briar",
+      "description": "暗闇と鎖を使う、呪われた戦士。"
     },
     {
-      "id": "TFT17_Fiora",
+      "file": "img/champ/17/cait.avif",
+      "name": "Caitlyn",
+      "description": "狙撃の名手でハットとライフルを所持。"
+    },
+    {
+      "file": "img/champ/17/cho.avif",
+      "name": "Chogath",
+      "description": "巨大で恐ろしい怪物の姿。"
+    },
+    {
+      "file": "img/champ/17/corki.avif",
+      "name": "Corki",
+      "description": "飛行機に乗った陽気なパイロット。"
+    },
+    {
+      "file": "img/champ/17/diana.avif",
+      "name": "Diana",
+      "description": "月光をまとった女戦士。"
+    },
+    {
+      "file": "img/champ/17/ez.avif",
+      "name": "Ezreal",
+      "description": "冒険者風の若者が魔法を使う。"
+    },
+    {
+      "file": "img/champ/17/fiora.avif",
       "name": "Fiora",
-      "tier": 5,
-      "traits": ["N.O.V.A."],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Fiora.png",
-        "community": ""
-      },
-      "skillDesc": "高速連撃。",
-      "notes": "高コストキャリー。",
-      "seci": "表出化"
+      "description": "華麗な剣士で、冷静な表情。"
     },
     {
-      "id": "TFT17_Viktor",
-      "name": "Viktor",
-      "tier": 4,
-      "traits": ["Anima"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Viktor.png",
-        "community": ""
-      },
-      "skillDesc": "強力なAPダメージ。",
-      "notes": "Viktor Rerollの主力。",
-      "seci": "内面化"
+      "file": "img/champ/17/fizz.avif",
+      "name": "Fizz",
+      "description": "小柄な海の素早いキャラクター。"
     },
     {
-      "id": "TFT17_TwistedFate",
+      "file": "img/champ/17/gnar.avif",
+      "name": "Gnar",
+      "description": "かわいらしいが狂暴な原始人ライクな生物。"
+    },
+    {
+      "file": "img/champ/17/grag.avif",
+      "name": "Gragas",
+      "description": "太った酒豪の戦士。"
+    },
+    {
+      "file": "img/champ/17/gv.avif",
+      "name": "GV",
+      "description": "未来的・機械的な戦士の雰囲気。"
+    },
+    {
+      "file": "img/champ/17/gwen.avif",
+      "name": "Gwen",
+      "description": "人形のような見た目の女性。"
+    },
+    {
+      "file": "img/champ/17/illaoi.avif",
+      "name": "Illaoi",
+      "description": "大きな触手と力強さを備えた女司祭。"
+    },
+    {
+      "file": "img/champ/17/jax.avif",
+      "name": "Jax",
+      "description": "仮面を付けた武器使い。"
+    },
+    {
+      "file": "img/champ/17/jhin.avif",
+      "name": "Jhin",
+      "description": "芸術的だが冷酷な狙撃手。"
+    },
+    {
+      "file": "img/champ/17/jinx.avif",
+      "name": "Jinx",
+      "description": "破壊を楽しむ無邪気な爆弾使い。"
+    },
+    {
+      "file": "img/champ/17/kaisa.avif",
+      "name": "Kai'Sa",
+      "description": "エネルギー装甲に包まれた戦士。"
+    },
+    {
+      "file": "img/champ/17/karma.avif",
+      "name": "Karma",
+      "description": "落ち着いた指導者のような姿。"
+    },
+    {
+      "file": "img/champ/17/kind.avif",
+      "name": "Kindred",
+      "description": "羊と狼をモチーフにした二面性の存在。"
+    },
+    {
+      "file": "img/champ/17/lb.avif",
+      "name": "LeBlanc",
+      "description": "幻術を操る妖艶な魔術師。"
+    },
+    {
+      "file": "img/champ/17/leona.avif",
+      "name": "Leona",
+      "description": "太陽の力を宿した騎士。"
+    },
+    {
+      "file": "img/champ/17/liss.avif",
+      "name": "Lissandra",
+      "description": "氷の魔女のような冷たい存在。"
+    },
+    {
+      "file": "img/champ/17/lulu.avif",
+      "name": "Lulu",
+      "description": "妖精の魔法使いで楽しげな表情。"
+    },
+    {
+      "file": "img/champ/17/maokai.avif",
+      "name": "Maokai",
+      "description": "樹木の精霊で、自然の力を帯びる。"
+    },
+    {
+      "file": "img/champ/17/mech.avif",
+      "name": "Mech",
+      "description": "機械の戦闘兵器を連想させる。"
+    },
+    {
+      "file": "img/champ/17/meep.avif",
+      "name": "Meep",
+      "description": "小さなマスコットや生き物のようなキャラクター。"
+    },
+    {
+      "file": "img/champ/17/mf.avif",
+      "name": "Miss Fortune",
+      "description": "ガンナー風の女性。"
+    },
+    {
+      "file": "img/champ/17/milio.avif",
+      "name": "Milio",
+      "description": "優しそうな若き支援者。"
+    },
+    {
+      "file": "img/champ/17/morde.avif",
+      "name": "Mordekaiser",
+      "description": "重装甲の死霊騎士。"
+    },
+    {
+      "file": "img/champ/17/morg.avif",
+      "name": "Morgana",
+      "description": "闇の翼を持つ堕天使。"
+    },
+    {
+      "file": "img/champ/17/nami.avif",
+      "name": "Nami",
+      "description": "水の力を持つ人魚風の女性。"
+    },
+    {
+      "file": "img/champ/17/nasus.avif",
+      "name": "Nasus",
+      "description": "ジャッカルの神のような戦士。"
+    },
+    {
+      "file": "img/champ/17/nunu.avif",
+      "name": "Nunu & Willump",
+      "description": "少年と雪男のコンビ。"
+    },
+    {
+      "file": "img/champ/17/ornn.avif",
+      "name": "Ornn",
+      "description": "鍛冶の巨人で炎のオーラ。"
+    },
+    {
+      "file": "img/champ/17/pant.avif",
+      "name": "Pantheon",
+      "description": "槍と盾を持つ戦士。"
+    },
+    {
+      "file": "img/champ/17/poppy.avif",
+      "name": "Poppy",
+      "description": "大きなハンマーを振るう騎士。"
+    },
+    {
+      "file": "img/champ/17/pyke.avif",
+      "name": "Pyke",
+      "description": "暗い海の暗殺者。"
+    },
+    {
+      "file": "img/champ/17/rammus.avif",
+      "name": "Rammus",
+      "description": "鋼の鎧をまとった丸い戦士。"
+    },
+    {
+      "file": "img/champ/17/reksai.avif",
+      "name": "RekSai",
+      "description": "地中から現れる獰猛な獣。"
+    },
+    {
+      "file": "img/champ/17/rhaast.avif",
+      "name": "Rhaast",
+      "description": "黒い魔剣の化身。"
+    },
+    {
+      "file": "img/champ/17/riven.avif",
+      "name": "Riven",
+      "description": "折れた剣を振るう戦士。"
+    },
+    {
+      "file": "img/champ/17/samira.avif",
+      "name": "Samira",
+      "description": "ガンブレードを使う自由奔放な戦士。"
+    },
+    {
+      "file": "img/champ/17/shen.avif",
+      "name": "Shen",
+      "description": "目隠しをした忍者の守護者。"
+    },
+    {
+      "file": "img/champ/17/sona.avif",
+      "name": "Sona",
+      "description": "音楽で戦う静かな演奏家。"
+    },
+    {
+      "file": "img/champ/17/talon.avif",
+      "name": "Talon",
+      "description": "暗殺者らしい暗い衣装。"
+    },
+    {
+      "file": "img/champ/17/teemo.avif",
+      "name": "Teemo",
+      "description": "小柄な斥候とキノコのイメージ。"
+    },
+    {
+      "file": "img/champ/17/tf.avif",
       "name": "Twisted Fate",
-      "tier": 2,
-      "traits": ["Fateweaver"],
-      "image": {
-        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_TwistedFate.png",
-        "community": ""
-      },
-      "skillDesc": "カードで複数効果。",
-      "notes": "Fateweaverのキー。",
-      "seci": "共同化"
+      "description": "カードを操るトリックスター。"
+    },
+    {
+      "file": "img/champ/17/tk.avif",
+      "name": "Thresh",
+      "description": "鎖とランタンを持つ亡霊。"
+    },
+    {
+      "file": "img/champ/17/urgot.avif",
+      "name": "Urgot",
+      "description": "機械パーツを備えた恐ろしい怪物。"
+    },
+    {
+      "file": "img/champ/17/veig.avif",
+      "name": "Veigar",
+      "description": "小さな悪魔のような魔法使い。"
+    },
+    {
+      "file": "img/champ/17/vex.avif",
+      "name": "Vex",
+      "description": "憂鬱な影の魔法使い。"
+    },
+    {
+      "file": "img/champ/17/viktor.avif",
+      "name": "Viktor",
+      "description": "サイバーな科学者戦士。"
+    },
+    {
+      "file": "img/champ/17/xayah.avif",
+      "name": "Xayah",
+      "description": "羽を持つ反抗的な射手。"
+    },
+    {
+      "file": "img/champ/17/yi.avif",
+      "name": "Master Yi",
+      "description": "剣術の達人で冷静な表情。"
+    },
+    {
+      "file": "img/champ/17/zed.avif",
+      "name": "Zed",
+      "description": "影を操る暗殺者。"
+    },
+    {
+      "file": "img/champ/17/zoe.avif",
+      "name": "Zoe",
+      "description": "星の力を感じさせる若い魔法少女。"
     }
   ]
 }
