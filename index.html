@@ -32,6 +32,15 @@
       {name: "Aatrox", file: "TFT17_Aatrox"}
     ];
 
+    const getImageUrl = (name) => {
+  const lower = name.toLowerCase();
+  return [
+    `https://raw.communitydragon.org/latest/game/assets/characters/tft17_${lower}/skins/base/images/tft17_${lower}_splash_tile_30.tft_set17.png`,
+    `https://raw.communitydragon.org/latest/game/assets/ux/tft/championsplashes/TFT17_${name}.png`,
+    `https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_${name}.png`
+  ];
+};
+
     const container = document.getElementById('units');
 
     champs.forEach(champ => {
