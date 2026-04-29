@@ -1,0 +1,201 @@
+{
+  "set": "17",
+  "patch": "17.2",
+  "champions": [
+    {
+      "id": "TFT17_Aatrox",
+      "name": "Aatrox",
+      "tier": 1,
+      "traits": ["N.O.V.A.", "Bastion"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Aatrox.png",
+        "community": "https://raw.communitydragon.org/latest/game/assets/characters/tft17_aatrox/skins/base/images/tft17_aatrox_splash_tile_30.tft_set17.png"
+      },
+      "skillDesc": "斬撃で物理ダメージを与え、自身にシールドを付与。",
+      "notes": "序盤の強いタンク/ダメージディーラー。N.O.V.A.シナジーで強い。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Mordekaiser",
+      "name": "Mordekaiser",
+      "tier": 4,
+      "traits": ["Dark Star"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Mordekaiser.png",
+        "community": ""
+      },
+      "skillDesc": "範囲ダメージ + 強力なシールド。",
+      "notes": "現在非常に強いキャリー候補。",
+      "seci": "連結化"
+    },
+    {
+      "id": "TFT17_Blitzcrank",
+      "name": "Blitzcrank",
+      "tier": 5,
+      "traits": ["Space Groove", "Vanguard"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Blitzcrank.png",
+        "community": ""
+      },
+      "skillDesc": "敵を引き寄せてスタン。",
+      "notes": "終盤の強力なCCタンク。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Shen",
+      "name": "Shen",
+      "tier": 5,
+      "traits": ["Bulwark", "Bastion"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Shen.png",
+        "community": ""
+      },
+      "skillDesc": "味方全体に強力なシールド付与。",
+      "notes": "高耐久の守護神。",
+      "seci": "内面化"
+    },
+    {
+      "id": "TFT17_Xayah",
+      "name": "Xayah",
+      "tier": 4,
+      "traits": ["Stargazer"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Xayah.png",
+        "community": ""
+      },
+      "skillDesc": "羽を飛ばして複数ターゲットにダメージ。",
+      "notes": "Stargazerキャリーとして人気。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Jinx",
+      "name": "Jinx",
+      "tier": 2,
+      "traits": ["Anima", "Challenger"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Jinx.png",
+        "community": ""
+      },
+      "skillDesc": "ロケットで大ダメージ。",
+      "notes": "中盤以降の火力源。",
+      "seci": "共同化"
+    },
+    {
+      "id": "TFT17_Aurora",
+      "name": "Aurora",
+      "tier": 3,
+      "traits": ["Anima", "Voyager"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Aurora.png",
+        "community": ""
+      },
+      "skillDesc": "範囲凍結 + ダメージ。",
+      "notes": "CCとダメージを両立。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Illaoi",
+      "name": "Illaoi",
+      "tier": 3,
+      "traits": ["Anima", "Vanguard"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Illaoi.png",
+        "community": ""
+      },
+      "skillDesc": "触手で範囲攻撃。",
+      "notes": "タンクとして優秀。",
+      "seci": "連結化"
+    },
+    {
+      "id": "TFT17_Nunu",
+      "name": "Nunu & Willump",
+      "tier": 4,
+      "traits": ["Meeple", "Shepherd"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Nunu.png",
+        "community": ""
+      },
+      "skillDesc": "雪玉で範囲CC。",
+      "notes": "Meepleシナジーのキー。",
+      "seci": "内面化"
+    },
+    {
+      "id": "TFT17_Leona",
+      "name": "Leona",
+      "tier": 1,
+      "traits": ["Arbiter", "Vanguard"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Leona.png",
+        "community": ""
+      },
+      "skillDesc": "太陽の光でタンク性能アップ。",
+      "notes": "序盤の安定タンク。",
+      "seci": "共同化"
+    },
+    {
+      "id": "TFT17_KaiSa",
+      "name": "Kai'Sa",
+      "tier": 3,
+      "traits": ["Anima"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_KaiSa.png",
+        "community": ""
+      },
+      "skillDesc": "ミサイル連射。",
+      "notes": "Rerollコンパで活躍。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Riven",
+      "name": "Riven",
+      "tier": 4,
+      "traits": ["Timebreaker"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Riven.png",
+        "community": ""
+      },
+      "skillDesc": "強力な範囲ダメージ。",
+      "notes": "Space GrooveやTimebreakerで強い。",
+      "seci": "連結化"
+    },
+    {
+      "id": "TFT17_Fiora",
+      "name": "Fiora",
+      "tier": 5,
+      "traits": ["N.O.V.A."],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Fiora.png",
+        "community": ""
+      },
+      "skillDesc": "高速連撃。",
+      "notes": "高コストキャリー。",
+      "seci": "表出化"
+    },
+    {
+      "id": "TFT17_Viktor",
+      "name": "Viktor",
+      "tier": 4,
+      "traits": ["Anima"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_Viktor.png",
+        "community": ""
+      },
+      "skillDesc": "強力なAPダメージ。",
+      "notes": "Viktor Rerollの主力。",
+      "seci": "内面化"
+    },
+    {
+      "id": "TFT17_TwistedFate",
+      "name": "Twisted Fate",
+      "tier": 2,
+      "traits": ["Fateweaver"],
+      "image": {
+        "ddragon": "https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_TwistedFate.png",
+        "community": ""
+      },
+      "skillDesc": "カードで複数効果。",
+      "notes": "Fateweaverのキー。",
+      "seci": "共同化"
+    }
+  ]
+}

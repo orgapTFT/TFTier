@@ -3,60 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFT Set 17 画像テスト - CommunityDragon</title>
+  <title>TFT Set 17 主要ユニット一覧</title>
   <style>
-    body { background: #0a0a14; color: #eee; padding: 40px; text-align: center; font-family: Arial, sans-serif; }
-    h1 { color: #ffd700; }
-    .units { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; margin-top: 40px; }
-    .unit { width: 140px; }
-    .unit img { width: 100%; border: 3px solid #666; border-radius: 12px; }
-    .unit:hover img { border-color: #ffd700; transform: scale(1.08); }
-    .name { margin-top: 10px; font-weight: bold; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #0a0a14;
+      color: #eee;
+      margin: 0;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+    h1 {
+      text-align: center;
+      color: #ffd700;
+      margin-bottom: 40px;
+    }
+    .units-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 28px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .unit {
+      position: relative;
+      text-align: center;
+      cursor: pointer;
+    }
+    .unit img {
+      width: 100%;
+      max-width: 150px;
+      border: 3px solid #555;
+      border-radius: 14px;
+      transition: all 0.3s;
+    }
+    .unit:hover img {
+      border-color: #ffd700;
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    }
+    .unit-name {
+      margin-top: 12px;
+      font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* ツールチップ */
+    .tooltip {
+      visibility: hidden;
+      position: absolute;
+      bottom: 115%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(18, 18, 42, 0.98);
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+      padding: 18px;
+      width: 320px;
+      z-index: 100;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.85);
+      text-align: left;
+      font-size: 14.5px;
+    }
+    .unit:hover .tooltip {
+      visibility: visible;
+    }
+    .tooltip strong {
+      color: #ffd700;
+      font-size: 18px;
+      display: block;
+      margin-bottom: 10px;
+    }
+    .trait { color: #99ff99; }
   </style>
 </head>
 <body>
-  <h1>TFT Set 17 画像テスト（CommunityDragon）</h1>
-  <div class="units" id="units"></div>
+  <h1>TFT Set 17 主要ユニット一覧</h1>
+  <div class="units-container" id="units"></div>
 
   <script>
-    const champs = [
-      {name: "Mordekaiser", file: "tft11_ahri_square"},
-      {name: "Blitzcrank", file: "TFT17_Blitzcrank"},
-      {name: "Shen", file: "TFT17_Shen"},
-      {name: "Illaoi", file: "TFT17_Illaoi"},
-      {name: "Jinx", file: "TFT17_Jinx"},
-      {name: "Aurora", file: "TFT17_Aurora"},
-      {name: "Nunu", file: "TFT17_Nunu"},
-      {name: "Xayah", file: "TFT17_Xayah"},
-      {name: "Leona", file: "TFT17_Leona"},
-      {name: "Aatrox", file: "TFT17_Aatrox"}
-    ];
+    // JSONファイルを読み込んで表示
+    async function loadChampions() {
+      try {
+        const response = await fetch('tft17-champions.json');
+        const tftData = await response.json();
 
-    const getImageUrl = (name) => {
-  const lower = name.toLowerCase();
-  return [
-    `https://raw.communitydragon.org/latest/game/assets/characters/tft17_${lower}/skins/base/images/tft17_${lower}_splash_tile_30.tft_set17.png`,
-    `https://raw.communitydragon.org/latest/game/assets/ux/tft/championsplashes/TFT17_${name}.png`,
-    `https://ddragon.leagueoflegends.com/cdn/17.2.1/img/tft-champion/TFT17_${name}.png`
-  ];
-};
+        const container = document.getElementById('units');
+        container.innerHTML = '';
 
-    const container = document.getElementById('units');
+        tftData.champions.forEach(champ => {
+          const div = document.createElement('div');
+          div.className = 'unit';
 
-    champs.forEach(champ => {
-      // CommunityDragonのスプラッシュ画像パス
-      const imgUrl = `https://raw.communitydragon.org/latest/game/assets/ux/tft/championsplashes/${champ.file}.png`;
+          // Data Dragonを優先、なければプレースホルダー
+          const imgUrl = champ.image?.ddragon || 
+                        `https://via.placeholder.com/150x150/333/fff?text=${champ.name}`;
 
-      const div = document.createElement('div');
-      div.className = 'unit';
-      div.innerHTML = `
-        <img src="${imgUrl}" alt="${champ.name}" 
-             onerror="this.src='https://via.placeholder.com/140x140/333/fff?text=${champ.name}'">
-        <div class="name">${champ.name}</div>
-      `;
-      container.appendChild(div);
-    });
+          div.innerHTML = `
+            <img src="${imgUrl}" alt="${champ.name}" 
+                 onerror="this.src='https://via.placeholder.com/150?text=${champ.name}'">
+            <div class="unit-name">${champ.name} <span style="color:#aaa">(${champ.tier}コス)</span></div>
+            
+            <div class="tooltip">
+              <strong>${champ.name}</strong><br>
+              コスト: ${champ.tier}<br>
+              トレイト: <span class="trait">${champ.traits ? champ.traits.join(' / ') : 'なし'}</span><br><br>
+              <strong>スキル:</strong><br>
+              ${champ.skillDesc || 'スキル説明未登録'}<br><br>
+              <strong>メモ:</strong><br>
+              ${champ.notes || 'メモ未登録'}
+            </div>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (error) {
+        console.error('JSON読み込みエラー:', error);
+        document.getElementById('units').innerHTML = `
+          <p style="color:red; text-align:center; grid-column: 1 / -1;">
+            tft17-champions.json の読み込みに失敗しました。<br>
+            同じフォルダにファイルがあるか確認してください。
+          </p>`;
+      }
+    }
+
+    // ページ読み込み時に実行
+    window.onload = loadChampions;
   </script>
-  <img src="https://raw.communitydragon.org/latest/game/assets/characters/tft17_aatrox/skins/base/images/tft17_aatrox_splash_tile_30.tft_set17.png" alt="Aatrox">
 </body>
 </html>
