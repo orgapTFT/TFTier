@@ -3,97 +3,84 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFT Set 17 構成集テスト - 自動読み込み版</title>
+  <title>TFT Set 17 自動読み込みテスト</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #0a0a14;
       color: #eee;
       padding: 30px;
-      line-height: 1.5;
+      text-align: center;
     }
-    h1 { text-align: center; color: #ffd700; margin-bottom: 40px; }
+    h1 { color: #ffd700; }
     .units-container {
       display: flex;
       flex-wrap: wrap;
       gap: 25px;
       justify-content: center;
-      max-width: 1400px;
-      margin: 0 auto;
+      margin-top: 40px;
     }
     .unit {
       position: relative;
       width: 130px;
-      text-align: center;
       cursor: pointer;
     }
     .unit img {
       width: 100%;
       border: 3px solid #555;
       border-radius: 12px;
-      transition: 0.25s;
+      transition: 0.3s;
     }
     .unit:hover img {
       border-color: #ffd700;
-      transform: scale(1.12);
-      box-shadow: 0 0 25px #ffd70088;
+      transform: scale(1.15);
     }
-    .unit-name {
-      margin-top: 8px;
-      font-weight: bold;
-      font-size: 15px;
-    }
+    .unit-name { margin-top: 8px; font-weight: bold; }
 
     .tooltip {
       visibility: hidden;
       position: absolute;
-      bottom: 135%;
+      bottom: 140%;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 15, 35, 0.97);
+      background: rgba(20,20,45,0.98);
       border: 2px solid #ffd700;
       border-radius: 10px;
-      padding: 16px;
-      width: 290px;
-      z-index: 200;
-      box-shadow: 0 10px 35px rgba(0,0,0,0.8);
-      opacity: 0;
-      transition: opacity 0.25s;
-      font-size: 14px;
+      padding: 15px;
+      width: 300px;
+      z-index: 100;
+      text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
-    .unit:hover .tooltip {
-      visibility: visible;
-      opacity: 1;
-    }
-    .tooltip strong { color: #ffd700; font-size: 16px; display: block; margin-bottom: 8px; }
-    .skill { margin-top: 10px; color: #aaffaa; }
+    .unit:hover .tooltip { visibility: visible; }
   </style>
 </head>
 <body>
-  <h1>TFT Set 17 チャンピオン10体（Data Dragon自動読み込み）</h1>
+  <h1>TFT Set 17 チャンピオン10体 自動読み込みテスト</h1>
+  <p>読み込み中... 少し待ってください</p>
   <div class="units-container" id="units"></div>
 
   <script>
     async function loadChampions() {
       const container = document.getElementById('units');
-      container.innerHTML = '<p>データを読み込み中...</p>';
-
+      
       try {
-        // 最新バージョン取得
-        const versionRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
-        const versions = await versionRes.json();
+        // 最新バージョンを取得
+        const verRes = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+        const versions = await verRes.json();
         const version = versions[0];
+        console.log("使用バージョン:", version);
 
-        // tft-champion.json 取得（日本語）
-        const dataRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/ja_JP/tft-champion.json`);
+        // tft-champion.json を取得
+        const dataRes = await fetch(`https://ddragon.leagueoflegends.com/cdn/${version}/data/en_US/tft-champion.json`);
         const tftData = await dataRes.json();
 
         container.innerHTML = '';
 
-        // 表示したい10チャンピオン（内部キー）
         const testIds = [
-          "TFT17_Mordekaiser", "TFT17_Blitzcrank", "TFT17_Shen", "TFT17_Illaoi", "TFT17_Jinx",
-          "TFT17_Aurora", "TFT17_Nunu", "TFT17_Xayah", "TFT17_Leona", "TFT17_Aatrox"
+          "TFT17_Mordekaiser", "TFT17_Blitzcrank", "TFT17_Shen", "TFT17_Illaoi", 
+          "TFT17_Jinx", "TFT17_Aurora", "TFT17_Nunu", "TFT17_Xayah", 
+          "TFT17_Leona", "TFT17_Aatrox"
         ];
 
         testIds.forEach(id => {
@@ -102,31 +89,27 @@
 
           const imgUrl = `https://ddragon.leagueoflegends.com/cdn/${version}/img/tft-champion/${champ.image.full}`;
 
-          // スキル説明（Data Dragonにあれば使う。不完全なので簡易表示）
-          let skillText = champ.ability ? 
-            (champ.ability.desc || "スキル詳細はデータにありません") : 
-            "スキル情報取得中...（不完全）";
-
           const div = document.createElement('div');
           div.className = 'unit';
           div.innerHTML = `
             <img src="${imgUrl}" alt="${champ.name}">
             <div class="unit-name">${champ.name}</div>
             <div class="tooltip">
-              <strong>${champ.name}</strong>
+              <strong>${champ.name}</strong><br>
               コスト: ${champ.tier || '?'}<br>
               トレイト: ${champ.traits ? champ.traits.join(' / ') : 'なし'}<br><br>
-              <span class="skill">スキル: ${skillText}</span>
+              <small>スキル効果: Data Dragonから詳細取得中（現在は簡易表示）</small>
             </div>
           `;
           container.appendChild(div);
         });
 
-        console.log(`Set 17 Data Dragon ${version} から ${testIds.length}体読み込み完了`);
-
-      } catch (e) {
-        console.error(e);
-        container.innerHTML = `<p style="color:red;">読み込み失敗しました。インターネット接続を確認してください。</p>`;
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="color: red; font-size: 18px;">
+          読み込み失敗しました。<br>
+          インターネット接続を確認してから再度開いてください。
+        </p>`;
       }
     }
 
