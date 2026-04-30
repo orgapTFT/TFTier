@@ -115,8 +115,6 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   overflow: hidden;
 }
 .team-builder #board-grid {
-  transform: rotate(90deg);
-  transform-origin: center;
   width: fit-content;
   margin: 0 auto;
 }
@@ -125,7 +123,8 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   height: 104px;
 }
 .team-builder .hex-inner {
-  transform: rotate(-90deg);
+  transform: none;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 .team-builder .hex-board { gap: 6px; }
 .team-builder .hex-row { gap: 6px; }
