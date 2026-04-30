@@ -3,6 +3,17 @@ let project = { version: VERSION, assets: { c: [], i: [], a: [], g: [] }, guides
 let curPalette = 'c'; let selSlot = null; let draggedIndex = null;
 let undoStack = [], redoStack = []; let hasChanges = false; let nextAutoSave = 60;
 
+// Champion files to load
+const championFiles = [
+    "Dummy.avif", "Golem.avif", "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
+    "briar.avif", "cait.avif", "cho.avif", "corki.avif", "diana.avif", "ez.avif", "fiora.avif", "fizz.avif", "gnar.avif", "grag.avif",
+    "gv.avif", "gwen.avif", "illaoi.avif", "jax.avif", "jhin.avif", "jinx.avif", "kaisa.avif", "karma.avif", "kind.avif", "lb.avif",
+    "leona.avif", "liss.avif", "lulu.avif", "maokai.avif", "mech.avif", "meep.avif", "mf.avif", "milio.avif", "morde.avif", "morg.avif",
+    "nami.avif", "nasus.avif", "nunu.avif", "ornn.avif", "pant.avif", "poppy.avif", "pyke.avif", "rammus.avif", "reksai.avif", "rhaast.avif",
+    "riven.avif", "samira.avif", "shen.avif", "sona.avif", "talon.avif", "teemo.avif", "tf.avif", "tk.avif", "urgot.avif", "veig.avif",
+    "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif"
+];
+
 setInterval(() => {
     if (nextAutoSave > 0) {
         nextAutoSave--;
@@ -41,18 +52,29 @@ function getBuilderQuery() {
     };
 }
 
+function loadChampionsIntoPalette() {
+    championFiles.forEach(file => {
+        const name = file.replace('.avif', '');
+        const src = `img/champ/17/${file}`;
+        project.assets.c.push({ src: src, name: name, hidden: false });
+    });
+}
+
 window.onload = () => {
     const query = getBuilderQuery();
     const saved = localStorage.getItem('tft_autosave');
     if (saved) {
         try {
             project = patchProjectData(JSON.parse(saved));
+            loadChampionsIntoPalette();
             renderPalette(); renderGuideList(); loadActiveGuide();
         } catch(e) {
             addNewGuide();
+            loadChampionsIntoPalette();
         }
     } else {
         addNewGuide();
+        loadChampionsIntoPalette();
         if (query.guide) project.guides.pop();
     }
 
