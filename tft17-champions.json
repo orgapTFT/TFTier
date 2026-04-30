@@ -5,332 +5,864 @@
     {
       "file": "img/champ/17/Dummy.avif",
       "name": "Dummy",
-      "description": "プレースホルダー用のダミー画像。"
+      "description": "プレースホルダー用のダミー画像。",
+      "role": "Unknown",
+      "traits": [],
+      "skill": {
+        "name": "None",
+        "mana": "0",
+        "effect": "No skill",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/Golem.avif",
       "name": "Golem",
-      "description": "機械的な巨像を思わせるゴーレム風のイメージ。"
+      "description": "機械的な巨像を思わせるゴーレム風のイメージ。",
+      "role": "Tank",
+      "traits": ["Bastion"],
+      "skill": {
+        "name": "Stone Form",
+        "mana": "50",
+        "effect": "Transform into stone, gaining massive armor and health regeneration.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/aatrox.avif",
       "name": "Aatrox",
-      "description": "赤いオーラと巨剣を携えた戦士の姿。"
+      "description": "赤いオーラと巨剣を携えた戦士の姿。",
+      "role": "Attacker",
+      "traits": ["N.O.V.A.", "Bastion"],
+      "skill": {
+        "name": "Stellar Slash",
+        "mana": "30/90",
+        "effect": "Recover 300/375/575 health and deal 161/242/362 physical damage to the current target. N.O.V.A. Strike: Sweep the battlefield, knocking up all enemies for a short time and dealing 80/121/181 physical damage.",
+        "values": {
+          "health_recovery": [300, 375, 575],
+          "damage": [161, 242, 362],
+          "nova_damage": [80, 121, 181]
+        }
+      }
     },
     {
       "file": "img/champ/17/akali.avif",
       "name": "Akali",
-      "description": "忍者のような軽やかで素早い雰囲気。"
+      "description": "忍者のような軽やかで素早い雰囲気。",
+      "role": "Attacker",
+      "traits": ["Ninja"],
+      "skill": {
+        "name": "Five Point Strike",
+        "mana": "40/80",
+        "effect": "Dash to the farthest enemy, dealing damage and marking them.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/asol.avif",
       "name": "Aurelion Sol",
-      "description": "星を操る竜のような存在。"
+      "description": "星を操る竜のような存在。",
+      "role": "Caster",
+      "traits": ["Astro"],
+      "skill": {
+        "name": "Breath of Light",
+        "mana": "50/100",
+        "effect": "Fire a beam of light dealing magic damage to all enemies in a line.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/aurora.avif",
       "name": "Aurora",
-      "description": "光や氷をまとった幻想的な女性。"
+      "description": "光や氷をまとった幻想的な女性。",
+      "role": "Caster",
+      "traits": ["Anima", "Voyager"],
+      "skill": {
+        "name": "Frozen Orb",
+        "mana": "30/60",
+        "effect": "Launch an orb that freezes and damages enemies.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/bard.avif",
       "name": "Bard",
-      "description": "音楽と星を伴う、旅する守護者。"
+      "description": "音楽と星を伴う、旅する守護者。",
+      "role": "Support",
+      "traits": ["Mystic"],
+      "skill": {
+        "name": "Cosmic Binding",
+        "mana": "40",
+        "effect": "Bind enemies in a circle, stunning them.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/bel.avif",
       "name": "Bel'Veth",
-      "description": "深海や虚空を連想させる異形の存在。"
+      "description": "深海や虚空を連想させる異形の存在。",
+      "role": "Attacker",
+      "traits": ["Void"],
+      "skill": {
+        "name": "Void Surge",
+        "mana": "50/100",
+        "effect": "Dash through enemies, dealing damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/bia.avif",
       "name": "Bia",
-      "description": "未来的な装甲をまとった女性キャラクター。"
+      "description": "未来的な装甲をまとった女性キャラクター。",
+      "role": "Tank",
+      "traits": ["Mecha"],
+      "skill": {
+        "name": "Mech Shield",
+        "mana": "40",
+        "effect": "Deploy a shield that absorbs damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/blitz.avif",
       "name": "Blitzcrank",
-      "description": "鉄の巨人で、強力なアームを持つ。"
+      "description": "鉄の巨人で、強力なアームを持つ。",
+      "role": "Tank",
+      "traits": ["Space Groove", "Vanguard"],
+      "skill": {
+        "name": "Rocket Grab",
+        "mana": "50",
+        "effect": "Grab the farthest enemy and pull them close, stunning.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/briar.avif",
       "name": "Briar",
-      "description": "暗闇と鎖を使う、呪われた戦士。"
+      "description": "暗闇と鎖を使う、呪われた戦士。",
+      "role": "Attacker",
+      "traits": ["Shredder"],
+      "skill": {
+        "name": "Blood Frenzy",
+        "mana": "30/60",
+        "effect": "Leap to enemies, dealing damage and healing.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/cait.avif",
       "name": "Caitlyn",
-      "description": "狙撃の名手でハットとライフルを所持。"
+      "description": "狙撃の名手でハットとライフルを所持。",
+      "role": "Sniper",
+      "traits": ["Sniper"],
+      "skill": {
+        "name": "Ace in the Hole",
+        "mana": "100",
+        "effect": "Fire a powerful shot dealing massive damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/cho.avif",
       "name": "Chogath",
-      "description": "巨大で恐ろしい怪物の姿。"
+      "description": "巨大で恐ろしい怪物の姿。",
+      "role": "Tank",
+      "traits": ["Bruiser"],
+      "skill": {
+        "name": "Vorpal Spikes",
+        "mana": "50/100",
+        "effect": "Erupt spikes dealing damage in an area.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/corki.avif",
       "name": "Corki",
-      "description": "飛行機に乗った陽気なパイロット。"
+      "description": "飛行機に乗った陽気なパイロット。",
+      "role": "Attacker",
+      "traits": ["Pilot"],
+      "skill": {
+        "name": "Missile Barrage",
+        "mana": "40/80",
+        "effect": "Fire missiles at random enemies.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/diana.avif",
       "name": "Diana",
-      "description": "月光をまとった女戦士。"
+      "description": "月光をまとった女戦士。",
+      "role": "Attacker",
+      "traits": ["Moonlight"],
+      "skill": {
+        "name": "Crescent Strike",
+        "mana": "30/60",
+        "effect": "Dash and deal damage in an arc.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/ez.avif",
       "name": "Ezreal",
-      "description": "冒険者風の若者が魔法を使う。"
+      "description": "冒険者風の若者が魔法を使う。",
+      "role": "Caster",
+      "traits": ["Explorer"],
+      "skill": {
+        "name": "Arcane Shift",
+        "mana": "40",
+        "effect": "Teleport and deal damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/fiora.avif",
       "name": "Fiora",
-      "description": "華麗な剣士で、冷静な表情。"
+      "description": "華麗な剣士で、冷静な表情。",
+      "role": "Attacker",
+      "traits": ["N.O.V.A."],
+      "skill": {
+        "name": "Grand Challenge",
+        "mana": "50/100",
+        "effect": "Challenge an enemy, dealing damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/fizz.avif",
       "name": "Fizz",
-      "description": "小柄な海の素早いキャラクター。"
+      "description": "小柄な海の素早いキャラクター。",
+      "role": "Attacker",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Playful Trickster",
+        "mana": "30/60",
+        "effect": "Trickster abilities dealing damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/gnar.avif",
       "name": "Gnar",
-      "description": "かわいらしいが狂暴な原始人ライクな生物。"
+      "description": "かわいらしいが狂暴な原始人ライクな生物。",
+      "role": "Tank",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "GNAR!",
+        "mana": "50",
+        "effect": "Transform and deal damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/grag.avif",
       "name": "Gragas",
-      "description": "太った酒豪の戦士。"
+      "description": "太った酒豪の戦士。",
+      "role": "Caster",
+      "traits": ["Brawler"],
+      "skill": {
+        "name": "Barrel Roll",
+        "mana": "40/80",
+        "effect": "Roll a barrel dealing damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/gv.avif",
       "name": "GV",
-      "description": "未来的・機械的な戦士の雰囲気。"
+      "description": "未来的・機械的な戦士の雰囲気。",
+      "role": "Tank",
+      "traits": ["Mecha"],
+      "skill": {
+        "name": "GV Shield",
+        "mana": "50",
+        "effect": "Deploy shields.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/gwen.avif",
       "name": "Gwen",
-      "description": "人形のような見た目の女性。"
+      "description": "人形のような見た目の女性。",
+      "role": "Attacker",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Snip Snip!",
+        "mana": "30/60",
+        "effect": "Snip with scissors dealing damage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/illaoi.avif",
       "name": "Illaoi",
-      "description": "大きな触手と力強さを備えた女司祭。"
+      "description": "大きな触手と力強さを備えた女司祭。",
+      "role": "Tank",
+      "traits": ["Anima", "Vanguard"],
+      "skill": {
+        "name": "Tentacle Smash",
+        "mana": "50/100",
+        "effect": "Smash with tentacles.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/jax.avif",
       "name": "Jax",
-      "description": "仮面を付けた武器使い。"
+      "description": "仮面を付けた武器使い。",
+      "role": "Attacker",
+      "traits": ["Duelist"],
+      "skill": {
+        "name": "Counter Strike",
+        "mana": "40",
+        "effect": "Counter attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/jhin.avif",
       "name": "Jhin",
-      "description": "芸術的だが冷酷な狙撃手。"
+      "description": "芸術的だが冷酷な狙撃手。",
+      "role": "Sniper",
+      "traits": ["Sniper"],
+      "skill": {
+        "name": "Curtain Call",
+        "mana": "100",
+        "effect": "Final shot.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/jinx.avif",
       "name": "Jinx",
-      "description": "破壊を楽しむ無邪気な爆弾使い。"
+      "description": "破壊を楽しむ無邪気な爆弾使い。",
+      "role": "Attacker",
+      "traits": ["Anima", "Challenger"],
+      "skill": {
+        "name": "Super Mega Death Rocket!",
+        "mana": "50/100",
+        "effect": "Fire rocket.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/kaisa.avif",
       "name": "Kai'Sa",
-      "description": "エネルギー装甲に包まれた戦士。"
+      "description": "エネルギー装甲に包まれた戦士。",
+      "role": "Sniper",
+      "traits": ["Anima"],
+      "skill": {
+        "name": "Icathian Rain",
+        "mana": "40/80",
+        "effect": "Rain of bullets.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/karma.avif",
       "name": "Karma",
-      "description": "落ち着いた指導者のような姿。"
+      "description": "落ち着いた指導者のような姿。",
+      "role": "Caster",
+      "traits": ["Anima"],
+      "skill": {
+        "name": "Mantra",
+        "mana": "30/60",
+        "effect": "Mantra abilities.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/kind.avif",
       "name": "Kindred",
-      "description": "羊と狼をモチーフにした二面性の存在。"
+      "description": "羊と狼をモチーフにした二面性の存在。",
+      "role": "Attacker",
+      "traits": ["Spirit"],
+      "skill": {
+        "name": "Lamb's Respite",
+        "mana": "40",
+        "effect": "Heal and protect.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/lb.avif",
       "name": "LeBlanc",
-      "description": "幻術を操る妖艶な魔術師。"
+      "description": "幻術を操る妖艶な魔術師。",
+      "role": "Caster",
+      "traits": ["Mystic"],
+      "skill": {
+        "name": "Distortion",
+        "mana": "50",
+        "effect": "Distort reality.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/leona.avif",
       "name": "Leona",
-      "description": "太陽の力を宿した騎士。"
+      "description": "太陽の力を宿した騎士。",
+      "role": "Tank",
+      "traits": ["Arbiter", "Vanguard"],
+      "skill": {
+        "name": "Solar Flare",
+        "mana": "50",
+        "effect": "Flare of light.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/liss.avif",
       "name": "Lissandra",
-      "description": "氷の魔女のような冷たい存在。"
+      "description": "氷の魔女のような冷たい存在。",
+      "role": "Caster",
+      "traits": ["Frost"],
+      "skill": {
+        "name": "Frozen Tomb",
+        "mana": "50/100",
+        "effect": "Freeze enemies.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/lulu.avif",
       "name": "Lulu",
-      "description": "妖精の魔法使いで楽しげな表情。"
+      "description": "妖精の魔法使いで楽しげな表情。",
+      "role": "Caster",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Whimsy",
+        "mana": "40",
+        "effect": "Polymorph enemies.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/maokai.avif",
       "name": "Maokai",
-      "description": "樹木の精霊で、自然の力を帯びる。"
+      "description": "樹木の精霊で、自然の力を帯びる。",
+      "role": "Tank",
+      "traits": ["Druid"],
+      "skill": {
+        "name": "Sapling Toss",
+        "mana": "50",
+        "effect": "Toss saplings.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/mech.avif",
       "name": "Mech",
-      "description": "機械の戦闘兵器を連想させる。"
+      "description": "機械の戦闘兵器を連想させる。",
+      "role": "Tank",
+      "traits": ["Mecha"],
+      "skill": {
+        "name": "Mech Assault",
+        "mana": "50",
+        "effect": "Assault with mech.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/meep.avif",
       "name": "Meep",
-      "description": "小さなマスコットや生き物のようなキャラクター。"
+      "description": "小さなマスコットや生き物のようなキャラクター。",
+      "role": "Support",
+      "traits": ["Meeple"],
+      "skill": {
+        "name": "Meep Meep",
+        "mana": "30",
+        "effect": "Support abilities.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/mf.avif",
       "name": "Miss Fortune",
-      "description": "ガンナー風の女性。"
+      "description": "ガンナー風の女性。",
+      "role": "Sniper",
+      "traits": ["Gunner"],
+      "skill": {
+        "name": "Bullet Time",
+        "mana": "100",
+        "effect": "Bullet barrage.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/milio.avif",
       "name": "Milio",
-      "description": "優しそうな若き支援者。"
+      "description": "優しそうな若き支援者。",
+      "role": "Support",
+      "traits": ["Anima"],
+      "skill": {
+        "name": "Ultra Mega Fire Kick",
+        "mana": "40",
+        "effect": "Fire kick.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/morde.avif",
       "name": "Mordekaiser",
-      "description": "重装甲の死霊騎士。"
+      "description": "重装甲の死霊騎士。",
+      "role": "Attacker",
+      "traits": ["Dark Star"],
+      "skill": {
+        "name": "Realm of Death",
+        "mana": "50/100",
+        "effect": "Realm of death.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/morg.avif",
       "name": "Morgana",
-      "description": "闇の翼を持つ堕天使。"
+      "description": "闇の翼を持つ堕天使。",
+      "role": "Caster",
+      "traits": ["Mystic"],
+      "skill": {
+        "name": "Soul Shackles",
+        "mana": "50",
+        "effect": "Shackle souls.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/nami.avif",
       "name": "Nami",
-      "description": "水の力を持つ人魚風の女性。"
+      "description": "水の力を持つ人魚風の女性。",
+      "role": "Caster",
+      "traits": ["Mystic"],
+      "skill": {
+        "name": "Tidal Wave",
+        "mana": "40/80",
+        "effect": "Wave of water.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/nasus.avif",
       "name": "Nasus",
-      "description": "ジャッカルの神のような戦士。"
+      "description": "ジャッカルの神のような戦士。",
+      "role": "Tank",
+      "traits": ["Warrior"],
+      "skill": {
+        "name": "Siphoning Strike",
+        "mana": "30/60",
+        "effect": "Strike and siphon.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/nunu.avif",
       "name": "Nunu & Willump",
-      "description": "少年と雪男のコンビ。"
+      "description": "少年と雪男のコンビ。",
+      "role": "Tank",
+      "traits": ["Meeple", "Shepherd"],
+      "skill": {
+        "name": "Absolute Zero",
+        "mana": "50/100",
+        "effect": "Freeze everything.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/ornn.avif",
       "name": "Ornn",
-      "description": "鍛冶の巨人で炎のオーラ。"
+      "description": "鍛冶の巨人で炎のオーラ。",
+      "role": "Tank",
+      "traits": ["Blacksmith"],
+      "skill": {
+        "name": "Volcanic Rupture",
+        "mana": "50",
+        "effect": "Rupture the ground.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/pant.avif",
       "name": "Pantheon",
-      "description": "槍と盾を持つ戦士。"
+      "description": "槍と盾を持つ戦士。",
+      "role": "Attacker",
+      "traits": ["Warrior"],
+      "skill": {
+        "name": "Grand Skyfall",
+        "mana": "50",
+        "effect": "Skyfall attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/poppy.avif",
       "name": "Poppy",
-      "description": "大きなハンマーを振るう騎士。"
+      "description": "大きなハンマーを振るう騎士。",
+      "role": "Tank",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Keeper's Verdict",
+        "mana": "50",
+        "effect": "Hammer smash.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/pyke.avif",
       "name": "Pyke",
-      "description": "暗い海の暗殺者。"
+      "description": "暗い海の暗殺者。",
+      "role": "Attacker",
+      "traits": ["Assassin"],
+      "skill": {
+        "name": "Death from Below",
+        "mana": "50",
+        "effect": "Dash and execute.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/rammus.avif",
       "name": "Rammus",
-      "description": "鋼の鎧をまとった丸い戦士。"
+      "description": "鋼の鎧をまとった丸い戦士。",
+      "role": "Tank",
+      "traits": ["Bruiser"],
+      "skill": {
+        "name": "Tremors",
+        "mana": "50",
+        "effect": "Cause tremors.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/reksai.avif",
       "name": "RekSai",
-      "description": "地中から現れる獰猛な獣。"
+      "description": "地中から現れる獰猛な獣。",
+      "role": "Attacker",
+      "traits": ["Bruiser"],
+      "skill": {
+        "name": "Burrow",
+        "mana": "40",
+        "effect": "Burrow and attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/rhaast.avif",
       "name": "Rhaast",
-      "description": "黒い魔剣の化身。"
+      "description": "黒い魔剣の化身。",
+      "role": "Attacker",
+      "traits": ["Darkin"],
+      "skill": {
+        "name": "Blades of Torment",
+        "mana": "50",
+        "effect": "Torment blades.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/riven.avif",
       "name": "Riven",
-      "description": "折れた剣を振るう戦士。"
+      "description": "折れた剣を振るう戦士。",
+      "role": "Attacker",
+      "traits": ["Timebreaker"],
+      "skill": {
+        "name": "Broken Wings",
+        "mana": "30/60",
+        "effect": "Broken wings attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/samira.avif",
       "name": "Samira",
-      "description": "ガンブレードを使う自由奔放な戦士。"
+      "description": "ガンブレードを使う自由奔放な戦士。",
+      "role": "Attacker",
+      "traits": ["Gunner"],
+      "skill": {
+        "name": "Wild Rush",
+        "mana": "50",
+        "effect": "Rush and shoot.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/shen.avif",
       "name": "Shen",
-      "description": "目隠しをした忍者の守護者。"
+      "description": "目隠しをした忍者の守護者。",
+      "role": "Tank",
+      "traits": ["Bulwark", "Bastion"],
+      "skill": {
+        "name": "Stand United",
+        "mana": "50",
+        "effect": "Stand united.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/sona.avif",
       "name": "Sona",
-      "description": "音楽で戦う静かな演奏家。"
+      "description": "音楽で戦う静かな演奏家。",
+      "role": "Caster",
+      "traits": ["Mystic"],
+      "skill": {
+        "name": "Crescendo",
+        "mana": "40/80",
+        "effect": "Musical crescendo.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/talon.avif",
       "name": "Talon",
-      "description": "暗殺者らしい暗い衣装。"
+      "description": "暗殺者らしい暗い衣装。",
+      "role": "Attacker",
+      "traits": ["Assassin"],
+      "skill": {
+        "name": "Noxian Diplomacy",
+        "mana": "50",
+        "effect": "Assassinate.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/teemo.avif",
       "name": "Teemo",
-      "description": "小柄な斥候とキノコのイメージ。"
+      "description": "小柄な斥候とキノコのイメージ。",
+      "role": "Attacker",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Blinding Dart",
+        "mana": "30",
+        "effect": "Dart attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/tf.avif",
       "name": "Twisted Fate",
-      "description": "カードを操るトリックスター。"
+      "description": "カードを操るトリックスター。",
+      "role": "Caster",
+      "traits": ["Fateweaver"],
+      "skill": {
+        "name": "Pick a Card",
+        "mana": "40",
+        "effect": "Pick a card.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/tk.avif",
       "name": "Thresh",
-      "description": "鎖とランタンを持つ亡霊。"
+      "description": "鎖とランタンを持つ亡霊。",
+      "role": "Support",
+      "traits": ["Warden"],
+      "skill": {
+        "name": "The Box",
+        "mana": "50",
+        "effect": "Box of souls.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/urgot.avif",
       "name": "Urgot",
-      "description": "機械パーツを備えた恐ろしい怪物。"
+      "description": "機械パーツを備えた恐ろしい怪物。",
+      "role": "Tank",
+      "traits": ["Chemtech"],
+      "skill": {
+        "name": "Fear Beyond Death",
+        "mana": "50",
+        "effect": "Fear attack.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/veig.avif",
       "name": "Veigar",
-      "description": "小さな悪魔のような魔法使い。"
+      "description": "小さな悪魔のような魔法使い。",
+      "role": "Caster",
+      "traits": ["Yordle"],
+      "skill": {
+        "name": "Primordial Burst",
+        "mana": "50/100",
+        "effect": "Burst of magic.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/vex.avif",
       "name": "Vex",
-      "description": "憂鬱な影の魔法使い。"
+      "description": "憂鬱な影の魔法使い。",
+      "role": "Caster",
+      "traits": ["Shadow"],
+      "skill": {
+        "name": "Shadow Surge",
+        "mana": "30/60",
+        "effect": "Surge of shadows.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/viktor.avif",
       "name": "Viktor",
-      "description": "サイバーな科学者戦士。"
+      "description": "サイバーな科学者戦士。",
+      "role": "Caster",
+      "traits": ["Anima"],
+      "skill": {
+        "name": "Chaos Storm",
+        "mana": "50/100",
+        "effect": "Storm of chaos.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/xayah.avif",
       "name": "Xayah",
-      "description": "羽を持つ反抗的な射手。"
+      "description": "羽を持つ反抗的な射手。",
+      "role": "Sniper",
+      "traits": ["Stargazer"],
+      "skill": {
+        "name": "Featherstorm",
+        "mana": "40/80",
+        "effect": "Storm of feathers.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/yi.avif",
       "name": "Master Yi",
-      "description": "剣術の達人で冷静な表情。"
+      "description": "剣術の達人で冷静な表情。",
+      "role": "Attacker",
+      "traits": ["Warrior"],
+      "skill": {
+        "name": "Alpha Strike",
+        "mana": "50",
+        "effect": "Strike multiple times.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/zed.avif",
       "name": "Zed",
-      "description": "影を操る暗殺者。"
+      "description": "影を操る暗殺者。",
+      "role": "Attacker",
+      "traits": ["Ninja"],
+      "skill": {
+        "name": "Living Shadow",
+        "mana": "50",
+        "effect": "Shadow clone.",
+        "values": {}
+      }
     },
     {
       "file": "img/champ/17/zoe.avif",
       "name": "Zoe",
-      "description": "星の力を感じさせる若い魔法少女。"
+      "description": "星の力を感じさせる若い魔法少女。",
+      "role": "Caster",
+      "traits": ["Astro"],
+      "skill": {
+        "name": "Sleepy Trouble Bubble",
+        "mana": "40",
+        "effect": "Bubble trouble.",
+        "values": {}
+      }
     }
   ]
 }

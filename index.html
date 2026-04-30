@@ -9,8 +9,13 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen">
   <header class="bg-black border-b border-yellow-500 py-4">
-    <div class="max-w-6xl mx-auto px-6">
+    <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold text-yellow-400 cursor-pointer" onclick="window.location.href='index.html'">TFTier</h1>
+      <nav class="flex space-x-6">
+        <a href="index.html" class="text-yellow-400 hover:text-yellow-300">👑Tier</a>
+        <a href="info.html" class="text-zinc-400 hover:text-zinc-300">📝Info</a>
+        <a href="links.html" class="text-zinc-400 hover:text-zinc-300">🔗Link</a>
+      </nav>
     </div>
   </header>
 
@@ -91,6 +96,74 @@
       ※ メタはパッチで大きく変わります。最新情報は <a href="https://tftactics.gg" target="_blank" class="text-yellow-400 hover:underline">tftactics.gg</a> や
       <a href="https://mobalytics.gg/tft" target="_blank" class="text-yellow-400 hover:underline">Mobalytics</a> も参考にしてください。
     </div>
+
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-purple-400 mb-6">Set 17 Champions</h2>
+      <div id="champion-grid" class="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4"></div>
+    </section>
   </main>
+
+  <script>
+    let champions = [];
+
+    fetch('tft17-champions.json')
+      .then(response => response.json())
+      .then(data => {
+        champions = data.champions;
+        displayChampions();
+      })
+      .catch(error => console.error('Error loading champions:', error));
+
+    function displayChampions() {
+      const grid = document.getElementById('champion-grid');
+      grid.innerHTML = '';
+      champions.forEach(champ => {
+        const img = document.createElement('img');
+        img.src = champ.file;
+        img.alt = champ.name;
+        img.className = 'w-16 h-16 rounded-lg border border-zinc-700 hover:border-purple-400 transition-all cursor-pointer';
+        img.addEventListener('mouseover', (e) => showTooltip(e, champ));
+        img.addEventListener('mouseout', hideTooltip);
+        grid.appendChild(img);
+      });
+    }
+
+    function showTooltip(event, champ) {
+      const tooltip = document.createElement('div');
+      tooltip.id = 'champion-tooltip';
+      tooltip.className = 'fixed bg-black border border-purple-400 rounded-lg p-4 shadow-lg z-50 max-w-sm';
+      tooltip.innerHTML = `
+        <div class="text-purple-400 font-bold text-lg mb-2">${champ.name}</div>
+        <div class="text-zinc-300 mb-2">${champ.description}</div>
+        <div class="text-zinc-400 text-sm mb-1"><strong>Role:</strong> ${champ.role}</div>
+        <div class="text-zinc-400 text-sm mb-1"><strong>Traits:</strong> ${champ.traits.join(', ')}</div>
+        <div class="text-zinc-400 text-sm mb-1"><strong>Skill:</strong> ${champ.skill.name}</div>
+        <div class="text-zinc-400 text-sm mb-1"><strong>Mana:</strong> ${champ.skill.mana}</div>
+        <div class="text-zinc-400 text-sm">${champ.skill.effect}</div>
+      `;
+      document.body.appendChild(tooltip);
+      positionTooltip(event, tooltip);
+    }
+
+    function hideTooltip() {
+      const tooltip = document.getElementById('champion-tooltip');
+      if (tooltip) tooltip.remove();
+    }
+
+    function positionTooltip(event, tooltip) {
+      const rect = tooltip.getBoundingClientRect();
+      let x = event.pageX + 10;
+      let y = event.pageY + 10;
+      if (x + rect.width > window.innerWidth) x = event.pageX - rect.width - 10;
+      if (y + rect.height > window.innerHeight) y = event.pageY - rect.height - 10;
+      tooltip.style.left = x + 'px';
+      tooltip.style.top = y + 'px';
+    }
+
+    document.addEventListener('mousemove', (e) => {
+      const tooltip = document.getElementById('champion-tooltip');
+      if (tooltip) positionTooltip(e, tooltip);
+    });
+  </script>
 </body>
 </html>
