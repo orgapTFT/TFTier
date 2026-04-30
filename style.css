@@ -87,9 +87,9 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .url-btn { background: #334155; border: none; color: #fff; height: 28px; width: 32px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* Team builder styles */
-.hex-board { display: inline-flex; flex-direction: column; gap: 2px; width: 100%; align-items: center; }
-.hex-row { display: flex; gap: 10px; justify-content: center; }
-.hex-row.offset { margin-left: 50px; }
+.hex-board { display: inline-flex; flex-direction: column; gap: 28px; width: 100%; align-items: center; }
+.hex-row { display: flex; gap: 8px; justify-content: center; }
+.hex-row.offset { margin-left: 55px; }
 .hex-slot { position: relative; width: 110px; height: 126px; cursor: pointer; }
 .hex-inner { width: 100%; height: 100%; background: #111827; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); border: 2px solid #334155; transition: border-color 0.2s, box-shadow 0.2s; }
 .hex-slot.selected .hex-inner { border-color: #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.35); }
