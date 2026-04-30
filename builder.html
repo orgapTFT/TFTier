@@ -80,6 +80,14 @@
             <button onclick="setStars(0)" style="font-size:10px;">★0</button>
             <button onclick="setStars(1)">★1</button><button onclick="setStars(2)">★2</button><button onclick="setStars(3)">★3</button><button onclick="setStars(4)">★4</button>
         </div>
+        <div class="symbol-row">
+            <button class="symbol-btn" onclick="insertSymbol('→')">→</button>
+            <button class="symbol-btn" onclick="insertSymbol('↔')">↔</button>
+            <button class="symbol-btn" onclick="insertSymbol('/')">/</button>
+            <button class="symbol-btn" onclick="insertSymbol('>')">&gt;</button>
+            <button class="symbol-btn" onclick="insertSymbol('<')">&lt;</button>
+        </div>
+        <input id="symbol-input" type="text" placeholder="画像挿入欄" oninput="markChanged()" />
     </div>
     <div style="display:flex; background:#000; flex-shrink: 0;">
         <button class="p-tab active" id="tab-c" onclick="setPalette('c')">CHAMP</button>

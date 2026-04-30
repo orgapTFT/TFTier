@@ -3,7 +3,7 @@ let project = { version: VERSION, assets: { c: [], i: [], a: [], g: [] }, guides
 let curPalette = 'c'; let selSlot = null; let draggedIndex = null;
 let undoStack = [], redoStack = []; let hasChanges = false; let nextAutoSave = 60;
 
-// Champion files to load
+// Default image asset file lists
 const championFiles = [
     "Dummy.avif", "Golem.avif", "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
     "briar.avif", "cait.avif", "cho.avif", "corki.avif", "diana.avif", "ez.avif", "fiora.avif", "fizz.avif", "gnar.avif", "grag.avif",
@@ -13,6 +13,475 @@ const championFiles = [
     "riven.avif", "samira.avif", "shen.avif", "sona.avif", "talon.avif", "teemo.avif", "tf.avif", "tk.avif", "urgot.avif", "veig.avif",
     "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif"
 ];
+
+const itemFiles = [
+    "17_animasquademblemitem.avif",
+    "17_animasquaditem_tier2_annihilator.avif",
+    "17_animasquaditem_tier2_battlebunnycrossbow.avif",
+    "17_animasquaditem_tier2_cyclonicslicers.avif",
+    "17_animasquaditem_tier2_echoingbatblades.avif",
+    "17_animasquaditem_tier2_iceblastarmor.avif",
+    "17_animasquaditem_tier2_lionesslament.avif",
+    "17_animasquaditem_tier2_radiantfield.avif",
+    "17_animasquaditem_tier2_searingshortbow.avif",
+    "17_animasquaditem_tier2_uwublaster.avif",
+    "17_anomaly.avif",
+    "17_artifact_ahriartifact.avif",
+    "17_artifact_ekkoartifact.avif",
+    "17_artifact_evelynnartifact.avif",
+    "17_artifact_sorakaartifact.avif",
+    "17_artifact_threshlantern.avif",
+    "17_artifact_varusartifact.avif",
+    "17_artifact_yasuoartifact.avif",
+    "17_assassintraitemblemitem.avif",
+    "17_astraitemblemitem.avif",
+    "17_astronautemblemitem.avif",
+    "17_darkstaremblemitem.avif",
+    "17_drxemblemitem.avif",
+    "17_favoredemblemitem.avif",
+    "17_flextraitemblemitem.avif",
+    "17_hptankemblemitem.avif",
+    "17_meleetraitemblemitem.avif",
+    "17_primordianemblemitem.avif",
+    "17_psyops_chemicalcapacitormod_radiant.avif",
+    "17_psyops_dronemod_radiant.avif",
+    "17_psyops_grenademod_radiant.avif",
+    "17_psyops_sympatheticimplantmod_radiant.avif",
+    "17_psyops_targetlockmod_radiant.avif",
+    "17_psyopsemblemitem.avif",
+    "17_pulsefireemblemitem.avif",
+    "17_rangedtraitemblemitem.avif",
+    "17_resisttankemblemitem.avif",
+    "17_shieldtankemblemitem.avif",
+    "17_spacegrooveemblemitem.avif",
+    "17_stargazeremblemitem.avif",
+    "17_summontraitemblemitem.avif",
+    "4_ornndeathsdefiance.avif",
+    "4_ornninfinityforce.avif",
+    "4_ornnthecollector.avif",
+    "4_ornnzhonyasparadox.avif",
+    "7_shimmerscalegamblersblade.avif",
+    "7_shimmerscalemogulsmail.avif",
+    "9_crownofdemacia.avif",
+    "9_ornnhorizonfocus.avif",
+    "9_ornnhullbreaker.avif",
+    "adaptivehelm.avif",
+    "archangelsstaff.avif",
+    "artifact_aegisofdawn.avif",
+    "artifact_aegisofdusk.avif",
+    "artifact_blightingjewel.avif",
+    "artifact_cappajuice.avif",
+    "artifact_dawncore.avif",
+    "artifact_eternalpact.avif",
+    "artifact_fishbones.avif",
+    "artifact_hellfirehatchet.avif",
+    "artifact_horizonfocus.avif",
+    "artifact_lichbane.avif",
+    "artifact_lightshieldcrest.avif",
+    "artifact_ludenstempest.avif",
+    "artifact_mittens.avif",
+    "artifact_navoriflickerblades.avif",
+    "artifact_prowlersclaw.avif",
+    "artifact_rapidfirecannon.avif",
+    "artifact_seekersarmguard.avif",
+    "artifact_silvermeredawn.avif",
+    "artifact_statikkshiv.avif",
+    "artifact_talismanofascension.avif",
+    "artifact_theindomitable.avif",
+    "artifact_titanichydra.avif",
+    "artifact_voidgauntlet.avif",
+    "artifact_witsend.avif",
+    "bfsword.avif",
+    "bloodthirster.avif",
+    "bluebuff.avif",
+    "bramblevest.avif",
+    "chainvest.avif",
+    "crownguard.avif",
+    "deathblade.avif",
+    "dragonsclaw.avif",
+    "forceofnature.avif",
+    "frozenheart.avif",
+    "fryingpan.avif",
+    "gargoylestoneplate.avif",
+    "giantsbelt.avif",
+    "guardianangel.avif",
+    "guinsoosrageblade.avif",
+    "hextechgunblade.avif",
+    "infinityedge.avif",
+    "ionicspark.avif",
+    "jeweledgauntlet.avif",
+    "lastwhisper.avif",
+    "leviathan.avif",
+    "madredsbloodrazor.avif",
+    "morellonomicon.avif",
+    "needlesslylargerod.avif",
+    "negatroncloak.avif",
+    "nightharvester.avif",
+    "powergauntlet.avif",
+    "quicksilver.avif",
+    "r_adaptivehelm.avif",
+    "r_archangelsstaff.avif",
+    "r_blue.avif",
+    "r_bramble.avif",
+    "r_bt.avif",
+    "r_crownguard.avif",
+    "r_dcap.avif",
+    "r_deathblade.avif",
+    "r_declaw.avif",
+    "r_eof.avif",
+    "r_frozen.avif",
+    "r_gargoylestoneplate.avif",
+    "r_giantslayer.avif",
+    "r_guinsoosrageblade.avif",
+    "r_gunblade.avif",
+    "r_heartsteel.avif",
+    "r_hoj.avif",
+    "r_ionicspark.avif",
+    "r_jeweledgauntlet.avif",
+    "r_lastwhisper.avif",
+    "r_morello.avif",
+    "r_nashor.avif",
+    "r_quicksilver.avif",
+    "r_redbuff.avif",
+    "r_runaanshurricane.avif",
+    "r_spearofshojin.avif",
+    "r_spectralgauntlet.avif",
+    "r_statikkshiv.avif",
+    "r_steraksgage.avif",
+    "r_striker.avif",
+    "r_sunfirecape.avif",
+    "r_tg.avif",
+    "r_titan.avif",
+    "r_visage.avif",
+    "r_warmog.avif",
+    "rabadonsdeathcap.avif",
+    "rapidfirecannon.avif",
+    "recurvebow.avif",
+    "redbuff.avif",
+    "redemption.avif",
+    "runaanshurricane.avif",
+    "sparringgloves.avif",
+    "spatula.avif",
+    "spearofshojin.avif",
+    "spectralgauntlet.avif",
+    "statikkshiv.avif",
+    "steraksgage.avif",
+    "tacticiansring.avif",
+    "tacticiansscepter.avif",
+    "tearofthegoddess.avif",
+    "thiefsgloves.avif",
+    "titansresolve.avif",
+    "unstableconcoction.avif",
+    "warmogsarmor.avif",
+];
+
+const godFiles = [
+    "ahrigodofopulence1.avif",
+    "aurelionsolgodofwonders1.avif",
+    "ekkogodoftime1.avif",
+    "evelynngodoftemptation1.avif",
+    "kaylegodoforder1.avif",
+    "sorakagodofstars1.avif",
+    "threshgodofpacts1.avif",
+    "varusgodoflove1.avif",
+    "yasuogodoftheabyss1.avif",
+];
+
+const augFiles = {
+    s: [
+        "aatroxhero.avif",
+        "afk.avif",
+        "ascension1.avif",
+        "bandthieves1.avif",
+        "best-friends.avif",
+        "bloodbank.avif",
+        "bonk.avif",
+        "boxinglessons.avif",
+        "branching-out.avif",
+        "building-an-army.avif",
+        "caretaker_s-chosen.avif",
+        "carveapath.avif",
+        "chargetransfer1.avif",
+        "climbtheladder.avif",
+        "cognitivetax.avif",
+        "corrosion.avif",
+        "craftedcrafting.avif",
+        "criticalsuccess.avif",
+        "dhampyr.avif",
+        "dummify.avif",
+        "electrocharge.avif",
+        "exiles1.avif",
+        "expedition.avif",
+        "extrabuckles.avif",
+        "feelinglucky.avif",
+        "findyourcenter.avif",
+        "firesale.avif",
+        "glasscannon.avif",
+        "good-for-something.avif",
+        "griefofthegreatgoddess.avif",
+        "grouphug1.avif",
+        "healing-orbs.avif",
+        "hyperbolicrodextender.avif",
+        "iron-assets.avif",
+        "itemgrabbag1.avif",
+        "kickstart.avif",
+        "late-game-specialist.avif",
+        "leonahero.avif",
+        "lineup.avif",
+        "long-time-crafting.avif",
+        "makeshift1.avif",
+        "marksman.avif",
+        "missed-connections.avif",
+        "onaroll.avif",
+        "one-two-five.avif",
+        "pandora1.avif",
+        "patienceisavirtue.avif",
+        "poppyhero.avif",
+        "powerup.avif",
+        "recombobulator.avif",
+        "recurvewrecker.avif",
+        "restartmission.avif",
+        "risky-moves.avif",
+        "rolling-for-days.avif",
+        "second--wind.avif",
+        "silver-spoon.avif",
+        "sizematters.avif",
+        "slice_of_life.avif",
+        "slightlymagicroll.avif",
+        "smallgrabbag.avif",
+        "standunited1.avif",
+        "survivor.avif",
+        "teaming-up.avif",
+        "thetower.avif",
+        "threes-company.avif",
+        "tiny-titans.avif",
+        "twinguardians.avif",
+    ],
+    g: [
+        "a-magical-roll.avif",
+        "advancedloan.avif",
+        "animacommander.avif",
+        "arcaneviktory.avif",
+        "ascension2.avif",
+        "aurafarming.avif",
+        "backlineblueprint.avif",
+        "best-friends.avif",
+        "birthdayreunion.avif",
+        "bodyguardstraining.avif",
+        "boosterpack1.avif",
+        "bronzeforlife.avif",
+        "calculatedloss2.avif",
+        "carepackage.avif",
+        "chargetransfer2.avif",
+        "clearmind2.avif",
+        "climbtheladder.avif",
+        "clockworkaccelerator.avif",
+        "cognitiveoverload.avif",
+        "constructacompanion.avif",
+        "contractkiller.avif",
+        "cosmicrestart.avif",
+        "crash-test-dummies.avif",
+        "crymeariver.avif",
+        "cybernetic-uplink.avif",
+        "cybernetic2.avif",
+        "dhampyr.avif",
+        "divineamendment.avif",
+        "dizzy.avif",
+        "duoqueue.avif",
+        "earlylearning.avif",
+        "epicrolldown.avif",
+        "epoch.avif",
+        "exclusivecustomization.avif",
+        "exiles2.avif",
+        "explosivegrowth.avif",
+        "feedtheflames.avif",
+        "forwardthinking.avif",
+        "frontlinefoundation.avif",
+        "furiousblows.avif",
+        "gildedsteel.avif",
+        "glasscannon.avif",
+        "godaugmentahri.avif",
+        "grab-bag.avif",
+        "grouphug2.avif",
+        "healing-orbs.avif",
+        "healthygains.avif",
+        "heavyisthecrown.avif",
+        "heroic-grab-bag.avif",
+        "highvoltage.avif",
+        "hyperroll2.avif",
+        "indiscriminateslayer.avif",
+        "infinityprotection.avif",
+        "invaderzed.avif",
+        "jeweled-lotus.avif",
+        "job_s-done.avif",
+        "lategamescaling.avif",
+        "legionofthrees.avif",
+        "little-buddies.avif",
+        "makeshift2.avif",
+        "maythefoursbewithyou.avif",
+        "meepspace9.avif",
+        "mirroredmonetization.avif",
+        "misfits.avif",
+        "missing.avif",
+        "moneyhungry1.avif",
+        "noscoutnopivot.avif",
+        "pandora2.avif",
+        "pilfer.avif",
+        "plotarmor.avif",
+        "portableforge2.avif",
+        "prizefighter.avif",
+        "reachforthestars.avif",
+        "replication.avif",
+        "rodsmith.avif",
+        "salvage2.avif",
+        "savingsaccount.avif",
+        "second--wind.avif",
+        "selfdestruct.avif",
+        "seraphimsstaff.avif",
+        "sharespotlight2.avif",
+        "sideeffects.avif",
+        "slammin.avif",
+        "sololeveling.avif",
+        "soloplate.avif",
+        "speedydoublekill.avif",
+        "spiritofredemption.avif",
+        "spreadingroots.avif",
+        "starconqueror.avif",
+        "sunfireboard2.avif",
+        "swordsmith.avif",
+        "thegoldendragon.avif",
+        "thornplatedarmor.avif",
+        "tons-of-stats.avif",
+        "trade2.avif",
+        "trailofblood.avif",
+        "treasurehunt.avif",
+        "trifecta.avif",
+        "two-tanky.avif",
+        "twomuchvalue.avif",
+        "ultrarapidfire.avif",
+        "unforgotten.avif",
+        "urfsgambit.avif",
+        "warpath.avif",
+        "will-of-the-flail.avif",
+        "windfall2.avif",
+        "worththewait.avif",
+        "you-have-my-bow.avif",
+    ],
+    p: [
+        "anexaltedadventure.avif",
+        "atwhatcost.avif",
+        "awakenedsoul.avif",
+        "bandofthieves2.avif",
+        "beltoverflow.avif",
+        "birthdaypresents.avif",
+        "bronzeforlife2.avif",
+        "buildabud.avif",
+        "buildingacollectionplusplus.avif",
+        "calltochaos.avif",
+        "comebackstory.avif",
+        "constructacompanion.avif",
+        "cursedcrown.avif",
+        "deadliercaps.avif",
+        "exclusivecustomization.avif",
+        "expectedunexpectedness.avif",
+        "flexible.avif",
+        "forceofnature.avif",
+        "forgedinstrength.avif",
+        "gachaaddict.avif",
+        "giantandmighty.avif",
+        "goinglong.avif",
+        "goldengamble.avif",
+        "greaterjeweledlotus.avif",
+        "hardcommit.avif",
+        "hedgefund.avif",
+        "highendsector.avif",
+        "holdtheline.avif",
+        "investedplus.avif",
+        "livingforge.avif",
+        "luckygloves.avif",
+        "luxurysubscription.avif",
+        "maxlevel10.avif",
+        "minmaxer.avif",
+        "moneymonsoon.avif",
+        "museumheist.avif",
+        "onebufftwobuff.avif",
+        "pandorasradiantbox.avif",
+        "primordianprismaticaugment.avif",
+        "retribution.avif",
+        "rollthedice.avif",
+        "shimmerscaleessence.avif",
+        "subscriptionservice.avif",
+        "sweettreats.avif",
+        "swordoverflow.avif",
+        "tacticianskitchen.avif",
+        "thebaronslair.avif",
+        "thegoldenegg.avif",
+        "thriftshop.avif",
+        "tiniesttitanplus.avif",
+        "tinybutdeadly.avif",
+        "tradesector2.avif",
+        "tragicalblade.avif",
+        "traittree.avif",
+        "trifecta2.avif",
+        "upwardmobility.avif",
+        "urfsgrabbag.avif",
+        "wandoverflow.avif",
+        "westicktogether.avif",
+        "winout.avif",
+        "worththewaitprismatic.avif",
+    ],
+};
+
+function ensureProjectAssets(data) {
+    if (!data.assets) data.assets = { c: [], i: [], a: [], g: [] };
+    data.assets.c = data.assets.c || [];
+    data.assets.i = data.assets.i || [];
+    data.assets.a = data.assets.a || [];
+    data.assets.g = data.assets.g || [];
+    return data;
+}
+
+function loadChampionsIntoPalette() {
+    championFiles.forEach(file => {
+        const name = file.replace('.avif', '');
+        const src = `img/champ/17/${file}`;
+        project.assets.c.push({ src: src, name: name, hidden: false });
+    });
+}
+
+function loadItemsIntoPalette() {
+    itemFiles.forEach(file => {
+        const name = file.replace('.avif', '');
+        const src = `img/item/${file}`;
+        project.assets.i.push({ src: src, name: name, hidden: false });
+    });
+}
+
+function loadGodsIntoPalette() {
+    godFiles.forEach(file => {
+        const name = file.replace('.avif', '');
+        const src = `img/god/${file}`;
+        project.assets.g.push({ src: src, name: name, hidden: false });
+    });
+}
+
+function loadAugmentsIntoPalette() {
+    ['s','g','p'].forEach(tier => {
+        augFiles[tier].forEach(file => {
+            const name = file.replace('.avif', '');
+            const src = `img/aug/${tier}/${file}`;
+            project.assets.a.push({ src: src, name: name, hidden: false });
+        });
+    });
+}
+
+function loadDefaultAssets() {
+    project = ensureProjectAssets(project);
+    if (!project.assets.c.length) loadChampionsIntoPalette();
+    if (!project.assets.i.length) loadItemsIntoPalette();
+    if (!project.assets.a.length) loadAugmentsIntoPalette();
+    if (!project.assets.g.length) loadGodsIntoPalette();
+}
 
 setInterval(() => {
     if (nextAutoSave > 0) {
@@ -38,8 +507,10 @@ function executeAutoSave() {
 }
 
 function patchProjectData(data) {
-    if (!data.guides) return data;
-    data.guides.forEach(g => { if (g.urlProg === undefined) g.urlProg = ""; });
+    data = ensureProjectAssets(data);
+    if (data.guides) {
+        data.guides.forEach(g => { if (g.urlProg === undefined) g.urlProg = ""; });
+    }
     data.version = VERSION;
     return data;
 }
@@ -52,29 +523,23 @@ function getBuilderQuery() {
     };
 }
 
-function loadChampionsIntoPalette() {
-    championFiles.forEach(file => {
-        const name = file.replace('.avif', '');
-        const src = `img/champ/17/${file}`;
-        project.assets.c.push({ src: src, name: name, hidden: false });
-    });
-}
-
 window.onload = () => {
     const query = getBuilderQuery();
     const saved = localStorage.getItem('tft_autosave');
     if (saved) {
         try {
             project = patchProjectData(JSON.parse(saved));
-            loadChampionsIntoPalette();
+            loadDefaultAssets();
             renderPalette(); renderGuideList(); loadActiveGuide();
         } catch(e) {
             addNewGuide();
-            loadChampionsIntoPalette();
+            loadDefaultAssets();
+            renderPalette();
         }
     } else {
         addNewGuide();
-        loadChampionsIntoPalette();
+        loadDefaultAssets();
+        renderPalette();
         if (query.guide) project.guides.pop();
     }
 
@@ -208,6 +673,17 @@ function setStars(n) {
         if (!s) { s = document.createElement('div'); s.className = 'star-row'; selSlot.appendChild(s); }
         s.innerHTML = '<span>★</span>'.repeat(n);
     }
+    markChanged();
+}
+
+function insertSymbol(symbol) {
+    const input = document.getElementById('symbol-input');
+    if (!input) return;
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    input.value = input.value.slice(0, start) + symbol + input.value.slice(end);
+    input.focus();
+    input.selectionStart = input.selectionEnd = start + symbol.length;
     markChanged();
 }
 
