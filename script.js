@@ -677,13 +677,12 @@ function setStars(n) {
 }
 
 function insertSymbol(symbol) {
-    const input = document.getElementById('symbol-input');
-    if (!input) return;
-    const start = input.selectionStart || 0;
-    const end = input.selectionEnd || 0;
-    input.value = input.value.slice(0, start) + symbol + input.value.slice(end);
-    input.focus();
-    input.selectionStart = input.selectionEnd = start + symbol.length;
+    if (!selSlot) return;
+    if (selSlot.classList.contains('god-slot')) return;
+    saveHistory();
+    selSlot.innerHTML = `<span class="symbol-text">${symbol}</span><button class="rem-btn" onclick="event.stopPropagation(); clearSlotContent(this.parentElement);">×</button>`;
+    const next = findNextSlot(selSlot);
+    if (next) sel(next);
     markChanged();
 }
 
