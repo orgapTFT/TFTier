@@ -4,7 +4,6 @@ let champions = [];
 let selectedSlot = null;
 let selectedChampion = null;
 let dragSource = null;
-let curPalette = 'c';
 const items = (window.itemFiles || []).map(name => `img/item/${name}`);
 
 
@@ -219,11 +218,12 @@ function renderPlaceholderPalette(palette, type) {
   palette.appendChild(label);
 }
 
-function selectSlot(index) {
+function selectSlot(index, assignChampion = true) {
   selectedSlot = index;
-  if (selectedChampion) {
+  if (assignChampion && selectedChampion) {
     builderState[index].champ = selectedChampion;
     if (builderState[index].stars === 0) builderState[index].stars = 1;
+    renderSlot(index);
   }
   updateSelectedInfo();
   renderBoard();
@@ -235,8 +235,9 @@ function selectChampion(champ) {
     builderState[selectedSlot].champ = champ;
     if (builderState[selectedSlot].stars === 0) builderState[selectedSlot].stars = 1;
     renderSlot(selectedSlot);
+    const next = findNextEmptySlot(selectedSlot);
+    if (next !== null) selectSlot(next, false);
   } else {
-    // 左クリック時にスロット選択がなければ最初の空きスロットを探す
     addChampionToBoard(champ);
   }
   updateSelectedInfo();
@@ -350,6 +351,8 @@ function addChampionToBoard(champ) {
     builderState[selectedSlot].champ = champ;
     if (builderState[selectedSlot].stars === 0) builderState[selectedSlot].stars = 1;
     renderSlot(selectedSlot);
+    const next = findNextEmptySlot(selectedSlot);
+    if (next !== null) selectSlot(next, false);
     updateSelectedInfo();
     return;
   }
@@ -360,18 +363,25 @@ function addChampionToBoard(champ) {
     builderState[target].champ = champ;
     builderState[target].stars = 1;
     renderSlot(target);
+    const next = findNextEmptySlot(target);
+    if (next !== null) selectSlot(next, false);
     updateSelectedInfo();
   }
 }
 
 function getFirstEmptySlot() {
-  let offset = 0;
   for (let row = rows.length - 1; row >= 0; row--) {
-    const rowCount = rows[row];
-    const rowStart = offset + rows.slice(0, row).reduce((sum, count) => sum + count, 0);
-    for (let i = rowStart; i < rowStart + rowCount; i++) {
+    const rowStart = rows.slice(0, row).reduce((sum, count) => sum + count, 0);
+    for (let i = rowStart; i < rowStart + rows[row]; i++) {
       if (!builderState[i].champ) return i;
     }
+  }
+  return null;
+}
+
+function findNextEmptySlot(currentIndex) {
+  for (let i = currentIndex + 1; i < builderState.length; i++) {
+    if (!builderState[i].champ) return i;
   }
   return null;
 }
