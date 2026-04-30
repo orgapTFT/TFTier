@@ -87,7 +87,7 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .url-btn { background: #334155; border: none; color: #fff; height: 28px; width: 32px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* Team builder styles */
-.hex-board { display: inline-flex; flex-direction: column; gap: 10px; width: 100%; align-items: center; }
+.hex-board { display: inline-flex; flex-direction: column; gap: 2px; width: 100%; align-items: center; }
 .hex-row { display: flex; gap: 10px; justify-content: center; }
 .hex-row.offset { margin-left: 50px; }
 .hex-slot { position: relative; width: 110px; height: 126px; cursor: pointer; }
