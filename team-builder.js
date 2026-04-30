@@ -4,6 +4,7 @@ let champions = [];
 let selectedSlot = null;
 let selectedChampion = null;
 let dragSource = null;
+let curPalette = 'c';
 const items = (window.itemFiles || []).map(name => `img/item/${name}`);
 
 
@@ -11,7 +12,7 @@ window.addEventListener('load', () => {
   initBuilderState();
   buildBoard();
   loadChampions();
-  renderItems();
+  renderPalette();
   updateSelectedInfo();
 });
 
@@ -27,7 +28,7 @@ function loadChampions() {
     .then(response => response.json())
     .then(data => {
       champions = data.champions;
-      renderChampionPalette();
+      renderPalette();
     })
     .catch(error => console.error('Champion JSON load failed:', error));
 }
@@ -144,10 +145,27 @@ function handleInnerDragStart(event) {
   event.dataTransfer.setData('index', index);
 }
 
-function renderChampionPalette() {
-  const palette = document.getElementById('champion-palette');
+function renderPalette() {
+  const palette = document.getElementById('palette-grid');
   if (!palette) return;
   palette.innerHTML = '';
+
+  if (curPalette === 'c') {
+    renderChampionPalette(palette);
+  } else if (curPalette === 'i') {
+    renderItemPalette(palette);
+  } else {
+    renderPlaceholderPalette(palette, curPalette);
+  }
+}
+
+function setPalette(t) {
+  curPalette = t;
+  document.querySelectorAll('.p-tab').forEach(b => b.classList.toggle('active', b.id === 'tab-' + t));
+  renderPalette();
+}
+
+function renderChampionPalette(palette) {
   champions.forEach(champ => {
     const button = document.createElement('button');
     button.className = 'champ-card';
@@ -175,10 +193,7 @@ function renderChampionPalette() {
   });
 }
 
-function renderItems() {
-  const palette = document.getElementById('item-palette');
-  if (!palette) return;
-  palette.innerHTML = '';
+function renderItemPalette(palette) {
   items.forEach(item => {
     const button = document.createElement('button');
     button.className = 'item-card';
@@ -195,6 +210,13 @@ function renderItems() {
     button.appendChild(image);
     palette.appendChild(button);
   });
+}
+
+function renderPlaceholderPalette(palette, type) {
+  const label = document.createElement('div');
+  label.className = 'text-zinc-400 p-4 text-sm';
+  label.textContent = type === 'a' ? 'AUGアイテムはまだ未実装です。' : 'GODアイテムはまだ未実装です。';
+  palette.appendChild(label);
 }
 
 function selectSlot(index) {
@@ -263,6 +285,8 @@ function clearSelectedSlot() {
 function updateSelectedInfo() {
   const label = document.getElementById('selected-slot-label');
   const info = document.getElementById('selected-champion-info');
+  if (!label || !info) return;
+
   if (selectedSlot === null) {
     label.textContent = 'スロットが選択されていません。';
     info.textContent = 'なし';
@@ -341,8 +365,15 @@ function addChampionToBoard(champ) {
 }
 
 function getFirstEmptySlot() {
-  const index = builderState.findIndex(slot => !slot.champ);
-  return index >= 0 ? index : null;
+  let offset = 0;
+  for (let row = rows.length - 1; row >= 0; row--) {
+    const rowCount = rows[row];
+    const rowStart = offset + rows.slice(0, row).reduce((sum, count) => sum + count, 0);
+    for (let i = rowStart; i < rowStart + rowCount; i++) {
+      if (!builderState[i].champ) return i;
+    }
+  }
+  return null;
 }
 
 function onDragItem(event, itemPath) {
