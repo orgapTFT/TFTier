@@ -85,3 +85,27 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .url-tool-row { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
 .url-input-group { display: flex; gap: 4px; align-items: center; }
 .url-btn { background: #334155; border: none; color: #fff; height: 28px; width: 32px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+/* Team builder styles */
+.hex-board { display: inline-flex; flex-direction: column; gap: 10px; width: 100%; align-items: center; }
+.hex-row { display: flex; gap: 10px; justify-content: center; }
+.hex-row.offset { margin-left: 50px; }
+.hex-slot { position: relative; width: 110px; height: 126px; cursor: pointer; }
+.hex-inner { width: 100%; height: 100%; background: #111827; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); border: 2px solid #334155; transition: border-color 0.2s, box-shadow 0.2s; }
+.hex-slot.selected .hex-inner { border-color: #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.35); }
+.hex-stars { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; }
+.hex-star { font-size: 16px; color: #f59e0b; text-shadow: 0 0 6px rgba(0, 0, 0, 0.6); }
+.hex-items { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
+.hex-item-icon { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; border: 1px solid #222; }
+.champ-card, .item-card { background: #111827; border: 1px solid #334155; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+.champ-card:hover, .item-card:hover { transform: translateY(-1px); border-color: #f59e0b; }
+.champ-thumb, .item-thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
+.champ-name { font-size: 11px; color: #e5e7eb; text-align: center; display: block; line-height: 1.2; }
+.star-btn { border: 1px solid #334155; background: #0f172a; color: #f8fafc; padding: 10px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+.star-btn:hover { background: #1d2b47; }
+@media (max-width: 1024px) {
+  .hex-row.offset { margin-left: 30px; }
+}
+@media (max-width: 768px) {
+  .hex-row.offset { margin-left: 0; }
+}
