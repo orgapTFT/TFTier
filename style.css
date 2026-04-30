@@ -103,11 +103,25 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .champ-name { font-size: 11px; color: #e5e7eb; text-align: center; display: block; line-height: 1.2; }
 .star-btn { border: 1px solid #334155; background: #0f172a; color: #f8fafc; padding: 10px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
 .star-btn:hover { background: #1d2b47; }
+/* タブレット以下（1024px以下） */
 @media (max-width: 1024px) {
-  .hex-row.offset { margin-left: 30px; }
+  .hex-row.offset {
+    margin-left: 35px;     /* 57px → 少し小さく */
+  }
 }
+
+/* スマホサイズ（768px以下） */
 @media (max-width: 768px) {
-  .hex-row.offset { margin-left: 0; }
+  .hex-row.offset {
+    margin-left: 22px;     /* さらに小さく（0pxだとズレがなくなって不自然） */
+  }
+}
+
+/* さらに小さいスマホ（480px以下）で微調整したい場合は追加 */
+@media (max-width: 480px) {
+  .hex-row.offset {
+    margin-left: 15px;     /* または16pxくらい */
+  }
 }
 
 .team-builder #board-container {
