@@ -3,112 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TFT Set 17 主要ユニット一覧</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0a0a14;
-      color: #eee;
-      margin: 0;
-      padding: 40px 20px;
-    }
-    h1 {
-      text-align: center;
-      color: #ffd700;
-      margin-bottom: 40px;
-    }
-    .units-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 28px;
-      max-width: 1600px;
-      margin: 0 auto;
-    }
-    .unit {
-      position: relative;
-      text-align: center;
-      cursor: pointer;
-    }
-    .unit img {
-      width: 100%;
-      max-width: 150px;
-      border: 3px solid #555;
-      border-radius: 14px;
-      transition: all 0.3s;
-    }
-    .unit:hover img {
-      border-color: #ffd700;
-      transform: scale(1.08);
-      box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-    }
-    .unit-name {
-      margin-top: 12px;
-      font-weight: bold;
-      font-size: 16px;
-    }
-
-    .tooltip {
-      visibility: hidden;
-      position: absolute;
-      bottom: 115%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(18, 18, 42, 0.98);
-      border: 2px solid #ffd700;
-      border-radius: 12px;
-      padding: 18px;
-      width: 320px;
-      z-index: 100;
-      box-shadow: 0 15px 40px rgba(0,0,0,0.85);
-      text-align: left;
-      font-size: 14.5px;
-    }
-    .unit:hover .tooltip {
-      visibility: visible;
-    }
-    .tooltip strong { color: #ffd700; font-size: 18px; display: block; margin-bottom: 10px; }
-    .trait { color: #99ff99; }
-  </style>
+  <title>TFTier</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="index.js" defer></script>
 </head>
-<body>
-  <h1>TFT Set 17 主要ユニット一覧</h1>
-  <div class="units-container" id="units"></div>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+  <header class="bg-black border-b border-yellow-500 py-10">
+    <div class="max-w-6xl mx-auto px-6">
+      <h1 class="text-5xl font-bold text-yellow-400">TFTier</h1>
+      <p class="text-xl text-zinc-400 mt-3">TFT 構成ガイド & Tier List</p>
+    </div>
+  </header>
 
-  <script>
-    async function loadChampions() {
-      try {
-        const response = await fetch('tft17-champions.json');
-        const tftData = await response.json();
+  <main class="max-w-6xl mx-auto px-6 py-16">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-yellow-400 mb-3">Set 17 ティアリスト</h1>
+      <p class="text-zinc-400 text-xl">Patch 17.2 | 2026年4月時点のメタ</p>
+      <p class="text-zinc-500 mt-2">カードレイアウトで作成</p>
+      <p class="text-zinc-500 mt-2 text-sm">カードを右クリックするとビルダーで編集できます。</p>
+    </div>
 
-        const container = document.getElementById('units');
-        container.innerHTML = '';
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-yellow-400 mb-6 flex items-center gap-3">
+        <span class="text-5xl">S</span>
+        <span class="text-yellow-300">Tier - 最強構成</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article class="tier-card bg-zinc-900 border border-yellow-500/50 rounded-2xl p-6 hover:border-yellow-400 transition-all cursor-pointer" data-guide="Vex Fast 9" data-note="安定した高順位・後半強い">
+          <div class="text-yellow-400 font-bold text-xl mb-2">Vex Fast 9</div>
+          <div class="text-zinc-400 text-sm mb-4">安定した高順位・後半強い</div>
+          <ul class="text-zinc-300 space-y-1 text-sm">
+            <li>・Vex + Vanguard / Mecha</li>
+            <li>・Nunu & Willump</li>
+            <li>・Karma / Blitzcrank</li>
+          </ul>
+        </article>
+        <article class="tier-card bg-zinc-900 border border-yellow-500/50 rounded-2xl p-6 hover:border-yellow-400 transition-all cursor-pointer" data-guide="Vanguard Nunu Fast 9" data-note="現在非常に強いタンク構成">
+          <div class="text-yellow-400 font-bold text-xl mb-2">Vanguard Nunu Fast 9</div>
+          <div class="text-zinc-400 text-sm mb-4">現在非常に強いタンク構成！！</div>
+          <ul class="text-zinc-300 space-y-1 text-sm">
+            <li>・Nunu & Willump キャリー</li>
+            <li>・Vanguardシナジー重視</li>
+          </ul>
+        </article>
+        <article class="tier-card bg-zinc-900 border border-yellow-500/50 rounded-2xl p-6 hover:border-yellow-400 transition-all cursor-pointer" data-guide="Space Groove Nami Riven" data-note="ミッド〜レイト強い">
+          <div class="text-yellow-400 font-bold text-xl mb-2">Space Groove Nami Riven</div>
+          <div class="text-zinc-400 text-sm mb-4">ミッド〜レイト強い</div>
+        </article>
+      </div>
+    </section>
 
-        tftData.champions.forEach(champ => {
-          const div = document.createElement('div');
-          div.className = 'unit';
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-emerald-400 mb-6 flex items-center gap-3">
+        <span class="text-5xl">A</span>
+        <span class="text-emerald-300">Tier - 強い構成</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article class="tier-card bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-400 transition-all cursor-pointer" data-guide="Mecha Brawlers" data-note="機械族 + 格闘家シナジー">
+          <div class="text-emerald-400 font-bold text-xl mb-2">Mecha Brawlers</div>
+          <div class="text-zinc-400 text-sm">機械族 + 格闘家シナジー</div>
+        </article>
+        <article class="tier-card bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-400 transition-all cursor-pointer" data-guide="Stargazer Snipers / Xayah" data-note="スターゲイザー狙撃手">
+          <div class="text-emerald-400 font-bold text-xl mb-2">Stargazer Snipers / Xayah</div>
+          <div class="text-zinc-400 text-sm">スターゲイザー狙撃手</div>
+        </article>
+        <article class="tier-card bg-zinc-900 border border-emerald-500/30 rounded-2xl p-6 hover:border-emerald-400 transition-all cursor-pointer" data-guide="Vanguard Karma LeBlanc" data-note="Vanguard + メイジ構成">
+          <div class="text-emerald-400 font-bold text-xl mb-2">Vanguard Karma LeBlanc</div>
+        </article>
+      </div>
+    </section>
 
-          div.innerHTML = `
-            <img src="${champ.file}" alt="${champ.name}" loading="lazy"
-                 onerror="this.src='https://via.placeholder.com/150?text=${encodeURIComponent(champ.name)}'">
-            <div class="unit-name">${champ.name}</div>
-            <div class="tooltip">
-              <strong>${champ.name}</strong>
-              <p>${champ.description}</p>
-            </div>
-          `;
-          container.appendChild(div);
-        });
+    <section class="mb-16">
+      <h2 class="text-3xl font-bold text-sky-400 mb-6 flex items-center gap-3">
+        <span class="text-5xl">B</span>
+        <span class="text-sky-300">Tier - 状況次第で強い</span>
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <article class="tier-card bg-zinc-900 border border-sky-500/30 rounded-2xl p-6 hover:border-sky-400 transition-all cursor-pointer" data-guide="Primordian Marauders / NOVA" data-note="NOVAと戦士シナジー">
+          <div class="text-sky-400 font-bold text-xl mb-2">Primordian Marauders / NOVA</div>
+        </article>
+        <article class="tier-card bg-zinc-900 border border-sky-500/30 rounded-2xl p-6 hover:border-sky-400 transition-all cursor-pointer" data-guide="Rogue Reroll" data-note="Kai'Sa, Fizz などのリロール構成">
+          <div class="text-sky-400 font-bold text-xl mb-2">Rogue Reroll (Kai'Sa, Fizzなど)</div>
+        </article>
+      </div>
+    </section>
 
-      } catch (error) {
-        console.error('JSON読み込みエラー:', error);
-        document.getElementById('units').innerHTML = `
-          <p style="color:red; text-align:center; grid-column: 1 / -1;">
-            tft17-champions.json の読み込みに失敗しました。
-          </p>`;
-      }
-    }
-
-    window.onload = loadChampions;
-  </script>
+    <div class="text-center text-zinc-500 text-sm mt-12">
+      ※ メタはパッチで大きく変わります。最新情報は <a href="https://tftactics.gg" target="_blank" class="text-yellow-400 hover:underline">tftactics.gg</a> や
+      <a href="https://mobalytics.gg/tft" target="_blank" class="text-yellow-400 hover:underline">Mobalytics</a> も参考にしてください。
+    </div>
+  </main>
 </body>
 </html>
