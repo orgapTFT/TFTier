@@ -53,8 +53,8 @@ function buildBoard() {
 
       const inner = document.createElement('div');
       inner.className = 'hex-inner';
-      inner.addEventListener('dragstart', event => onDragSlot(event, index));
       inner.setAttribute('draggable', 'false');
+      inner.addEventListener('dragstart', event => onDragSlot(event, index));
 
       const starBox = document.createElement('div');
       starBox.className = 'hex-stars';
@@ -95,11 +95,13 @@ function renderSlot(index) {
     inner.style.backgroundPosition = 'center';
     inner.innerHTML = '';
     inner.setAttribute('draggable', 'true');
+    inner.addEventListener('dragstart', handleInnerDragStart);
   } else if (state.champ && state.champ.name) {
     inner.style.backgroundImage = 'none';
     inner.style.backgroundColor = '#111827';
     inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
     inner.setAttribute('draggable', 'true');
+    inner.addEventListener('dragstart', handleInnerDragStart);
   } else {
     inner.style.backgroundImage = 'none';
     inner.style.backgroundColor = '#111827';
@@ -127,6 +129,19 @@ function renderSlot(index) {
     icon.addEventListener('contextmenu', event => removeItem(event, index, itemIndex));
     itemsBox.appendChild(icon);
   });
+}
+
+function handleInnerDragStart(event) {
+  const slot = event.target.closest('.hex-slot');
+  if (!slot) return;
+  const index = parseInt(slot.dataset.index, 10);
+  const state = builderState[index];
+  if (!state.champ) {
+    event.preventDefault();
+    return;
+  }
+  event.dataTransfer.setData('type', 'slot');
+  event.dataTransfer.setData('index', index);
 }
 
 function renderChampionPalette() {
@@ -198,6 +213,9 @@ function selectChampion(champ) {
     builderState[selectedSlot].champ = champ;
     if (builderState[selectedSlot].stars === 0) builderState[selectedSlot].stars = 1;
     renderSlot(selectedSlot);
+  } else {
+    // 左クリック時にスロット選択がなければ最初の空きスロットを探す
+    addChampionToBoard(champ);
   }
   updateSelectedInfo();
 }
