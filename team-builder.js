@@ -1,4 +1,4 @@
-const rows = [6, 5, 6, 5, 6];
+const rows = [7, 7, 7, 7];
 const builderState = [];
 let champions = [];
 let selectedSlot = null;
@@ -40,7 +40,7 @@ function buildBoard() {
   rows.forEach((count, rowIndex) => {
     const row = document.createElement('div');
     row.className = 'hex-row';
-    if (count === 5) row.classList.add('offset');
+    if (rowIndex % 2 === 1) row.classList.add('offset');
 
     for (let cell = 0; cell < count; cell++) {
       const slot = document.createElement('div');
@@ -89,14 +89,21 @@ function renderSlot(index) {
 
   slot.classList.toggle('selected', selectedSlot === index);
 
-  if (state.champ) {
+  if (state.champ && state.champ.file) {
     inner.style.backgroundImage = `url('${state.champ.file}')`;
     inner.style.backgroundSize = 'cover';
     inner.style.backgroundPosition = 'center';
+    inner.innerHTML = '';
+    inner.setAttribute('draggable', 'true');
+  } else if (state.champ && state.champ.name) {
+    inner.style.backgroundImage = 'none';
+    inner.style.backgroundColor = '#111827';
+    inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
     inner.setAttribute('draggable', 'true');
   } else {
     inner.style.backgroundImage = 'none';
     inner.style.backgroundColor = '#111827';
+    inner.innerHTML = '';
     inner.setAttribute('draggable', 'false');
   }
 
@@ -124,6 +131,7 @@ function renderSlot(index) {
 
 function renderChampionPalette() {
   const palette = document.getElementById('champion-palette');
+  if (!palette) return;
   palette.innerHTML = '';
   champions.forEach(champ => {
     const button = document.createElement('button');
@@ -154,6 +162,7 @@ function renderChampionPalette() {
 
 function renderItems() {
   const palette = document.getElementById('item-palette');
+  if (!palette) return;
   palette.innerHTML = '';
   items.forEach(item => {
     const button = document.createElement('button');
@@ -251,6 +260,46 @@ function updateSelectedInfo() {
 
   const itemText = state.items.length > 0 ? `アイテム ${state.items.length}個` : 'アイテムなし';
   info.innerHTML = `<strong>${state.champ.name}</strong><br>星: ${state.stars || 0} / ${itemText}`;
+}
+
+function sel(slotElement) {
+  if (!slotElement || !slotElement.dataset || slotElement.dataset.index === undefined) return;
+  const index = parseInt(slotElement.dataset.index, 10);
+  if (Number.isNaN(index)) return;
+  selectSlot(index);
+}
+
+function fill(src, name = '') {
+  if (selectedSlot === null) return;
+  const state = builderState[selectedSlot];
+  if (curPalette === 'i') {
+    if (!state.champ) return;
+    if (state.items.length >= 3) return;
+    state.items.push(src);
+    renderSlot(selectedSlot);
+    updateSelectedInfo();
+    return;
+  }
+
+  const champ = champions.find(c => c.file === src || c.name === name) || { file: src, name: name || 'Custom', description: '', role: '', traits: [] };
+  state.champ = champ;
+  if (state.stars === 0) state.stars = 1;
+  renderSlot(selectedSlot);
+  updateSelectedInfo();
+}
+
+function insertSymbol(symbol) {
+  if (selectedSlot === null) return;
+  const state = builderState[selectedSlot];
+  state.champ = { file: '', name: symbol, description: '', role: 'symbol', traits: [] };
+  state.stars = 0;
+  state.items = [];
+  renderSlot(selectedSlot);
+  updateSelectedInfo();
+}
+
+function changeSelectedSlotSize(size) {
+  // GuideビルダーのUIと一致させるためのボタンを表示するために存在します。
 }
 
 function addChampionToBoard(champ) {

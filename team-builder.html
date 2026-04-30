@@ -13,8 +13,7 @@
     <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold text-yellow-400 cursor-pointer" onclick="window.location.href='index.html'">TFTier</h1>
       <nav class="flex space-x-6">
-        <a href="index.html" class="text-zinc-400 hover:text-zinc-300">👑Tier</a>
-        <a href="team-builder.html" class="text-yellow-400 hover:text-yellow-300">🧩Builder</a>
+        <a href="index.html" class="text-zinc-400 hover:text-zinc-300">👑Tier</a>        <a href="builder.html" class="text-zinc-400 hover:text-zinc-300">📘Guide</a>        <a href="team-builder.html" class="text-yellow-400 hover:text-yellow-300">🧩Builder</a>
         <a href="info.html" class="text-zinc-400 hover:text-zinc-300">📝Info</a>
         <a href="links.html" class="text-zinc-400 hover:text-zinc-300">🔗Link</a>
       </nav>
@@ -40,35 +39,67 @@
         </div>
       </section>
 
-      <aside class="w-full md:w-96 flex flex-col gap-4">
-        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-          <div class="flex items-center justify-between gap-3 mb-4">
-            <div>
-              <h2 class="text-xl font-bold text-yellow-400">選択中スロット</h2>
-              <p id="selected-slot-label" class="text-zinc-400 text-sm mt-1">チャンピオンを置くスロットを選択してください。</p>
+      <aside id="right-sidebar" class="w-full md:w-96 flex flex-col">
+        <div style="background:#000; padding:12px; border-radius:4px; margin-bottom:12px; flex-shrink: 0;">
+            <div style="display:flex; gap:10px; justify-content:center; margin-bottom:15px;">
+                <button onclick="setDifficulty(1)" style="background:green; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
+                <button onclick="setDifficulty(2)" style="background:yellow; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
+                <button onclick="setDifficulty(3)" style="background:red; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
             </div>
-            <button class="px-3 py-2 rounded-xl bg-yellow-500 text-zinc-950 font-semibold hover:bg-yellow-400" onclick="clearSelectedSlot()">解除</button>
-          </div>
-          <div class="grid grid-cols-4 gap-2 mb-4">
-            <button class="star-btn" onclick="setStars(1)">★1</button>
-            <button class="star-btn" onclick="setStars(2)">★2</button>
-            <button class="star-btn" onclick="setStars(3)">★3</button>
-            <button class="star-btn" onclick="setStars(4)">★4</button>
-          </div>
-          <div class="bg-zinc-900 border border-zinc-800 rounded-3xl p-4 text-zinc-300">
-            <p class="text-sm">選択中のチャンピオン:</p>
-            <div id="selected-champion-info" class="mt-3 text-sm text-zinc-200">なし</div>
-          </div>
+            <div style="display:flex; gap:6px; justify-content:center;">
+                <button onclick="setStars(0)" style="font-size:10px;">★0</button>
+                <button onclick="setStars(1)">★1</button><button onclick="setStars(2)">★2</button><button onclick="setStars(3)">★3</button><button onclick="setStars(4)">★4</button>
+            </div>
+            <div class="symbol-row">
+                <button class="symbol-btn" onclick="insertSymbol('→')">→</button>
+                <button class="symbol-btn" onclick="insertSymbol('↔')">↔</button>
+                <button class="symbol-btn" onclick="insertSymbol('/')">/</button>
+                <button class="symbol-btn" onclick="insertSymbol('>')">&gt;</button>
+                <button class="symbol-btn" onclick="insertSymbol('<')">&lt;</button>
+            </div>
+            <div style="font-size:11px; color:#aaa; text-align:center; margin-top:6px;">選択中のスロットに記号を挿入します</div>
+        </div>
+        <div style="display:flex; background:#000; flex-shrink: 0;">
+            <button class="p-tab active" id="tab-c" onclick="setPalette('c')">CHAMP</button>
+            <button class="p-tab" id="tab-i" onclick="setPalette('i')">ITEM</button>
+            <button class="p-tab" id="tab-a" onclick="setPalette('a')">AUG</button>
+            <button class="p-tab" id="tab-g" onclick="setPalette('g')">GOD</button>
         </div>
 
-        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-          <h2 class="text-xl font-bold text-yellow-400 mb-3">チャンピオン選択</h2>
-          <div id="champion-palette" class="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto"></div>
+        <div class="unified-size-ctrl">
+            <button onclick="changeSelectedSlotSize('L')">L</button>
+            <button onclick="changeSelectedSlotSize('M')">M</button>
+            <button onclick="changeSelectedSlotSize('S')">S</button>
         </div>
 
-        <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-          <h2 class="text-xl font-bold text-yellow-400 mb-3">アイテム（最大3つ）</h2>
-          <div id="item-palette" class="grid grid-cols-4 gap-3 max-h-96 overflow-y-auto"></div>
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #222;">
+            <button onclick="document.getElementById('asset-up').click()" style="flex:1; font-size:11px; padding:8px; background:#475569; border:none; color:#fff; cursor:pointer; font-weight:bold;">+ 画像読込</button>
+            <label style="font-size:10px; color:#aaa;"><input type="checkbox" id="show-hidden-toggle" onchange="renderPalette()"> 非表示を表示</label>
+        </div>
+        <input type="file" id="asset-up" multiple style="display:none" onchange="handleAssetUpload(event)">
+        <div id="palette-container" style="flex:1; overflow-y:auto; background:#000; margin:10px 0; border:1px solid #222;">
+            <div id="palette-grid"></div>
+        </div>
+        <div style="margin-top:auto; background:#000; padding:12px; flex-shrink: 0;">
+            <div class="url-tool-row">
+                <label style="font-size:9px; color:#888;">TT Link (Main):</label>
+                <div class="url-input-group">
+                    <input type="text" id="tt-url" style="flex:1; font-size:11px; background:#111; color:#fff; border:1px solid #333; padding:6px; height:28px;" oninput="markChanged()" placeholder="https://...">
+                    <button class="url-btn" onclick="pasteFromClipboard('tt-url')" title="クリップボードのリンクを貼り付け">📋</button>
+                    <button class="url-btn" onclick="insertBuilderLink('tt-url')" title="ビルダーリンクを挿入">↪</button>
+                    <button class="url-btn" onclick="document.getElementById('tt-url').value=''; markChanged();">×</button>
+                    <button class="url-btn" onclick="openLink('tt-url')">🌐</button>
+                </div>
+            </div>
+            <div class="url-tool-row">
+                <label style="font-size:9px; color:#888;">Progression Link:</label>
+                <div class="url-input-group">
+                    <input type="text" id="tt-url-prog" style="flex:1; font-size:11px; background:#111; color:#fff; border:1px solid #333; padding:6px; height:28px;" oninput="markChanged()" placeholder="進行リンク">
+                    <button class="url-btn" onclick="pasteFromClipboard('tt-url-prog')">📋</button>
+                    <button class="url-btn" onclick="document.getElementById('tt-url-prog').value=''; markChanged();">×</button>
+                    <button class="url-btn" onclick="openLink('tt-url-prog')">🌐</button>
+                </div>
+            </div>
         </div>
       </aside>
     </div>

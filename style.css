@@ -125,10 +125,20 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .team-builder .hex-inner {
   transform: none;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.team-builder .hex-board { gap: 6px; }
-.team-builder .hex-row { gap: 6px; }
-.team-builder .hex-row.offset { margin-left: 30px; }
+.team-builder .hex-inner .hex-symbol {
+  font-size: 24px;
+  color: #f8fafc;
+  font-weight: bold;
+}
+.team-builder .hex-board { gap: 2px; align-items: flex-start; }
+.team-builder .hex-row { display: flex; gap: 2px; }
+.team-builder .hex-row.offset { margin-left: 46px; }
+.team-builder .hex-slot { width: 90px; height: 104px; }
+.team-builder .hex-inner { transform: none; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
 .team-builder #builder-link { color: #f8fafc; }
 .team-builder .btn-main { background: #f59e0b; color: #111; }
 .team-builder .btn-main:hover { background: #fbbf24; }
