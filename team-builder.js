@@ -4,20 +4,8 @@ let champions = [];
 let selectedSlot = null;
 let selectedChampion = null;
 let dragSource = null;
-const items = [
-  "img/item/bluebuff.avif",
-  "img/item/rapidfirecannon.avif",
-  "img/item/giantsbelt.avif",
-  "img/item/hextechgunblade.avif",
-  "img/item/bloodthirster.avif",
-  "img/item/infinityedge.avif",
-  "img/item/redbuff.avif",
-  "img/item/guardianangel.avif",
-  "img/item/spatula.avif",
-  "img/item/jeweledgauntlet.avif",
-  "img/item/archangelsstaff.avif",
-  "img/item/runaanshurricane.avif"
-];
+const items = (window.itemFiles || []).map(name => `img/item/${name}`);
+
 
 window.addEventListener('load', () => {
   initBuilderState();
@@ -142,6 +130,10 @@ function renderChampionPalette() {
     button.className = 'champ-card';
     button.type = 'button';
     button.addEventListener('click', () => selectChampion(champ));
+    button.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      addChampionToBoard(champ);
+    });
     button.addEventListener('dragstart', event => onDragChampion(event, champ.name));
     button.draggable = true;
 
@@ -168,6 +160,8 @@ function renderItems() {
     button.className = 'item-card';
     button.type = 'button';
     button.addEventListener('click', () => addItemToSelected(item));
+    button.addEventListener('dragstart', event => onDragItem(event, item));
+    button.draggable = true;
 
     const image = document.createElement('img');
     image.src = item;
@@ -259,6 +253,75 @@ function updateSelectedInfo() {
   info.innerHTML = `<strong>${state.champ.name}</strong><br>星: ${state.stars || 0} / ${itemText}`;
 }
 
+function addChampionToBoard(champ) {
+  if (selectedSlot !== null) {
+    selectedChampion = champ;
+    builderState[selectedSlot].champ = champ;
+    if (builderState[selectedSlot].stars === 0) builderState[selectedSlot].stars = 1;
+    renderSlot(selectedSlot);
+    updateSelectedInfo();
+    return;
+  }
+  const target = getFirstEmptySlot();
+  if (target !== null) {
+    selectedSlot = target;
+    selectedChampion = champ;
+    builderState[target].champ = champ;
+    builderState[target].stars = 1;
+    renderSlot(target);
+    updateSelectedInfo();
+  }
+}
+
+function getFirstEmptySlot() {
+  const index = builderState.findIndex(slot => !slot.champ);
+  return index >= 0 ? index : null;
+}
+
+function onDragItem(event, itemPath) {
+  event.dataTransfer.setData('type', 'item');
+  event.dataTransfer.setData('item', itemPath);
+}
+
+function copyBuilderLink() {
+  const state = builderState.map(slot => ({
+    champ: slot.champ ? slot.champ.name : null,
+    stars: slot.stars,
+    items: slot.items
+  }));
+  const payload = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({ slots: state })))));
+  const base = location.href.split('?')[0];
+  const url = `${base}?builder=${payload}`;
+  const input = document.getElementById('builder-link');
+  input.value = url;
+  navigator.clipboard.writeText(url).then(() => {
+    document.getElementById('builder-copy-status').textContent = 'ビルダーリンクをクリップボードにコピーしました。';
+  }).catch(() => {
+    document.getElementById('builder-copy-status').textContent = 'リンクのコピーに失敗しました。手動でコピーしてください。';
+  });
+}
+
+async function copyBoardImage() {
+  const grid = document.getElementById('board-container');
+  const canvas = await html2canvas(grid, { backgroundColor: '#000000', useCORS: true, scale: 2 });
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  if (navigator.clipboard && navigator.clipboard.write) {
+    const item = new ClipboardItem({ 'image/png': blob });
+    try {
+      await navigator.clipboard.write([item]);
+      document.getElementById('builder-copy-status').textContent = '盤面画像をクリップボードにコピーしました。';
+      return;
+    } catch (err) {
+      // fallback to download if clipboard write not allowed
+    }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'tft-builder-board.png';
+  a.click();
+  document.getElementById('builder-copy-status').textContent = '画像をダウンロードしました。';
+}
+
 function allowDrop(event) {
   event.preventDefault();
 }
@@ -291,6 +354,17 @@ function onDropSlot(event, targetIndex) {
     selectedSlot = targetIndex;
     selectedChampion = champ;
     updateSelectedInfo();
+  }
+  if (type === 'item') {
+    const item = event.dataTransfer.getData('item');
+    if (!item) return;
+    const state = builderState[targetIndex];
+    if (!state.champ || state.items.length >= 3) return;
+    state.items.push(item);
+    renderSlot(targetIndex);
+    selectedSlot = targetIndex;
+    updateSelectedInfo();
+    return;
   }
   if (type === 'slot') {
     const sourceIndex = Number(event.dataTransfer.getData('index'));

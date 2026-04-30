@@ -116,7 +116,8 @@
             <label style="font-size:9px; color:#888;">TT Link (Main):</label>
             <div class="url-input-group">
                 <input type="text" id="tt-url" style="flex:1; font-size:11px; background:#111; color:#fff; border:1px solid #333; padding:6px; height:28px;" oninput="markChanged()" placeholder="https://...">
-                <button class="url-btn" onclick="pasteFromClipboard('tt-url')">📋</button>
+                <button class="url-btn" onclick="pasteFromClipboard('tt-url')" title="クリップボードのビルダーリンクを貼り付け">📋</button>
+                <button class="url-btn" onclick="insertBuilderLink('tt-url')" title="ビルダーリンクを挿入">↪</button>
                 <button class="url-btn" onclick="document.getElementById('tt-url').value=''; markChanged();">×</button>
                 <button class="url-btn" onclick="openLink('tt-url')">🌐</button>
             </div>
@@ -132,6 +133,7 @@
         </div>
     </div>
 </div>
+<div id="board-context-menu" class="board-context-menu"></div>
 
 <script src="script.js"></script>
 </body>

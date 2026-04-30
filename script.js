@@ -543,6 +543,12 @@ window.onload = () => {
         if (query.guide) project.guides.pop();
     }
 
+    const boardArea = document.getElementById('board-area');
+    if (boardArea) {
+        boardArea.addEventListener('contextmenu', showBoardContextMenu);
+    }
+    document.addEventListener('click', hideBoardContextMenu);
+
     if (query.guide) {
         saveHistory();
         project.guides.push({ title: query.guide, html: document.getElementById('canvas').innerHTML, url: '', urlProg: '' });
@@ -828,6 +834,52 @@ function importProject(e) {
 
 async function pasteFromClipboard(targetId) {
     try { const text = await navigator.clipboard.readText(); document.getElementById(targetId).value = text; markChanged(); } catch (err) {}
+}
+
+function insertBuilderLink(targetId) {
+    pasteFromClipboard(targetId);
+}
+
+async function pasteImageFromClipboard() {
+    try {
+        const items = await navigator.clipboard.read();
+        for (const item of items) {
+            for (const type of item.types) {
+                if (type.startsWith('image/')) {
+                    const blob = await item.getType(type);
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const img = document.getElementById('board-img');
+                        img.src = ev.target.result;
+                        img.style.display = 'block';
+                        document.getElementById('board-msg').style.display = 'none';
+                        markChanged();
+                    };
+                    reader.readAsDataURL(blob);
+                    hideBoardContextMenu();
+                    return;
+                }
+            }
+        }
+        alert('クリップボードに画像が見つかりませんでした。');
+    } catch (err) {
+        alert('画像の貼り付けに失敗しました。');
+    }
+}
+
+function showBoardContextMenu(event) {
+    event.preventDefault();
+    const menu = document.getElementById('board-context-menu');
+    if (!menu) return;
+    menu.innerHTML = '<button onclick="pasteImageFromClipboard()">ビルダー画像を貼り付け</button>';
+    menu.style.display = 'block';
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+}
+
+function hideBoardContextMenu() {
+    const menu = document.getElementById('board-context-menu');
+    if (menu) menu.style.display = 'none';
 }
 
 function openLink(targetId) {

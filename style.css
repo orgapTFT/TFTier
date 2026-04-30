@@ -109,3 +109,48 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 @media (max-width: 768px) {
   .hex-row.offset { margin-left: 0; }
 }
+
+.team-builder #board-container {
+  padding: 16px;
+  overflow: hidden;
+}
+.team-builder #board-grid {
+  transform: rotate(90deg);
+  transform-origin: center;
+  width: fit-content;
+  margin: 0 auto;
+}
+.team-builder .hex-slot {
+  width: 90px;
+  height: 104px;
+}
+.team-builder .hex-inner {
+  transform: rotate(-90deg);
+}
+.team-builder .hex-board { gap: 6px; }
+.team-builder .hex-row { gap: 6px; }
+.team-builder .hex-row.offset { margin-left: 30px; }
+.team-builder #builder-link { color: #f8fafc; }
+.team-builder .btn-main { background: #f59e0b; color: #111; }
+.team-builder .btn-main:hover { background: #fbbf24; }
+
+.board-context-menu {
+  position: absolute;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.4);
+  z-index: 1000;
+  display: none;
+  min-width: 180px;
+}
+.board-context-menu button {
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+.board-context-menu button:hover { background: #334155; }

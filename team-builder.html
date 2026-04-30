@@ -5,9 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TFT Team Builder</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen">
+<body class="team-builder bg-zinc-950 text-zinc-100 min-h-screen">
   <header class="bg-black border-b border-yellow-500 py-4">
     <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
       <h1 class="text-3xl font-bold text-yellow-400 cursor-pointer" onclick="window.location.href='index.html'">TFTier</h1>
@@ -23,18 +24,18 @@
   <main class="max-w-7xl mx-auto px-6 py-8">
     <div class="flex flex-col md:flex-row gap-6">
       <section class="flex-1 bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-        <div class="flex items-center justify-between mb-4">
-          <div>
-            <h1 class="text-3xl font-bold text-yellow-400">Team Builder</h1>
-            <p class="text-zinc-400 text-sm mt-1">チャンピオンを六角形に配置して、アイテムと星を設定できます。</p>
-          </div>
-          <div class="text-right text-zinc-400 text-sm">
-            <p>右クリック: 解除</p>
-            <p>ドラッグ: 位置移動</p>
+        <div class="flex flex-col gap-4 mb-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 class="text-3xl font-bold text-yellow-400">Team Builder</h1>
+          <div class="flex flex-wrap gap-2">
+            <button class="btn-main" type="button" onclick="copyBuilderLink()">リンクをコピー</button>
+            <button class="btn-main" type="button" onclick="copyBoardImage()">盤面画像コピー</button>
           </div>
         </div>
-
-        <div id="board-container" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6">
+        <div class="flex flex-col gap-3 mb-4">
+          <input id="builder-link" readonly class="w-full rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-sm text-zinc-200" placeholder="ここにビルダーリンクが生成されます">
+          <div id="builder-copy-status" class="text-xs text-emerald-400"></div>
+        </div>
+        <div id="board-container" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4">
           <div id="board-grid" class="hex-board"></div>
         </div>
       </section>
@@ -73,6 +74,7 @@
     </div>
   </main>
 
+  <script src="script.js"></script>
   <script src="team-builder.js"></script>
 </body>
 </html>
