@@ -89,6 +89,10 @@ function renderSlot(index) {
 
   slot.classList.toggle('selected', selectedSlot === index);
 
+  // Remove old listeners before recreating
+  inner.removeEventListener('dragstart', handleInnerDragStart);
+  inner.removeEventListener('contextmenu', handleInnerContextmenu);
+
   if (state.champ && state.champ.file) {
     inner.style.backgroundImage = `url('${state.champ.file}')`;
     inner.style.backgroundSize = 'cover';
@@ -96,12 +100,14 @@ function renderSlot(index) {
     inner.innerHTML = '';
     inner.setAttribute('draggable', 'true');
     inner.addEventListener('dragstart', handleInnerDragStart);
+    inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, index));
   } else if (state.champ && state.champ.name) {
     inner.style.backgroundImage = 'none';
     inner.style.backgroundColor = '#111827';
     inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
     inner.setAttribute('draggable', 'true');
     inner.addEventListener('dragstart', handleInnerDragStart);
+    inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, index));
   } else {
     inner.style.backgroundImage = 'none';
     inner.style.backgroundColor = '#111827';
@@ -142,6 +148,14 @@ function handleInnerDragStart(event) {
   }
   event.dataTransfer.setData('type', 'slot');
   event.dataTransfer.setData('index', index);
+}
+
+function handleInnerContextmenu(event, index) {
+  event.preventDefault();
+  builderState[index] = { champ: null, stars: 0, items: [] };
+  if (selectedSlot === index) selectedChampion = null;
+  renderSlot(index);
+  updateSelectedInfo();
 }
 
 function renderPalette() {
@@ -370,9 +384,11 @@ function addChampionToBoard(champ) {
 }
 
 function getFirstEmptySlot() {
+  // 盤面左下（row 3）から左から右へ探して、埋まっていれば上の行へ移動
   for (let row = rows.length - 1; row >= 0; row--) {
     const rowStart = rows.slice(0, row).reduce((sum, count) => sum + count, 0);
-    for (let i = rowStart; i < rowStart + rows[row]; i++) {
+    const rowEnd = rowStart + rows[row];
+    for (let i = rowStart; i < rowEnd; i++) {
       if (!builderState[i].champ) return i;
     }
   }
