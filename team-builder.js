@@ -5,6 +5,36 @@ let selectedSlot = null;
 let selectedChampion = null;
 let dragSource = null;
 let curPalette = 'c'; // 初期値を設定
+let currentTab = 'board'; // 現在のタブ
+
+function switchTab(tabName) {
+  // タブボタンのアクティブ状態を更新
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  document.getElementById('tab-' + tabName).classList.add('active');
+
+  // コンテンツパネルの表示を切り替え
+  document.querySelectorAll('.content-panel').forEach(panel => {
+    panel.classList.add('hidden');
+  });
+
+  if (tabName === 'board') {
+    document.getElementById('content-board').classList.remove('hidden');
+    currentTab = 'board';
+  } else {
+    document.getElementById('content-palette').classList.remove('hidden');
+    // パレットタイプを設定
+    const paletteMap = {
+      'champ': 'c',
+      'item': 'i',
+      'aug': 'a',
+      'god': 'g'
+    };
+    setPalette(paletteMap[tabName] || 'c');
+    currentTab = 'palette';
+  }
+}
 const items = (window.itemFiles || []).map(name => `img/item/${name}`);
 
 
@@ -14,6 +44,7 @@ window.addEventListener('load', () => {
   loadChampions();
   renderPalette();
   updateSelectedInfo();
+  switchTab('board'); // 初期タブを設定
 });
 
 function initBuilderState() {

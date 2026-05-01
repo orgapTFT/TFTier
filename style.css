@@ -94,27 +94,55 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .hex-inner {
   width: 100%;
   height: 100%;
-  background: #111827;
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-  border: 2px solid #334155;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #4b5563;
+  border: 2px solid #9ca3af;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 .champ-portrait {
+  position: relative;
+  z-index: 2;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
 }
 .hex-slot.selected .hex-inner { border-color: #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.35); }
-.hex-stars { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; }
+.content-panel {
+  display: block;
+}
+
+.content-panel.hidden {
+  display: none;
+}
 .hex-star { font-size: 16px; color: #f59e0b; text-shadow: 0 0 6px rgba(0, 0, 0, 0.6); }
 .hex-items { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
-.hex-item-icon { width: 28px; height: 28px; object-fit: cover; border-radius: 6px; border: 1px solid #222; }
+.tab-btn {
+  padding: 8px 16px;
+  background: #374151;
+  color: #d1d5db;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  width: 100%;
+  text-align: center;
+}
+
+.tab-btn.active {
+  background: #f59e0b;
+  color: #111827;
+  border-color: #f59e0b;
+}
+
+.tab-btn:hover {
+  background: #4b5563;
+}
 .champ-card, .item-card { background: #111827; border: 1px solid #334155; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
 .champ-card:hover, .item-card:hover { transform: translateY(-1px); border-color: #f59e0b; }
 .champ-thumb, .item-thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
