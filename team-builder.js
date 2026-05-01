@@ -98,23 +98,16 @@ function renderSlot(coord) {
   inner.removeEventListener('contextmenu', handleInnerContextmenu);
 
   if (state.champ && state.champ.file) {
-    inner.style.backgroundImage = `url('${state.champ.file}')`;
-    inner.style.backgroundSize = 'cover';
-    inner.style.backgroundPosition = 'center';
-    inner.innerHTML = '';
+    inner.innerHTML = `<img src="${state.champ.file}" alt="${state.champ.name}" class="champ-portrait" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;">`;
     inner.setAttribute('draggable', 'true');
     inner.addEventListener('dragstart', handleInnerDragStart);
     inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, coord));
   } else if (state.champ && state.champ.name) {
-    inner.style.backgroundImage = 'none';
-    inner.style.backgroundColor = '#111827';
     inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
     inner.setAttribute('draggable', 'true');
     inner.addEventListener('dragstart', handleInnerDragStart);
     inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, coord));
   } else {
-    inner.style.backgroundImage = 'none';
-    inner.style.backgroundColor = '#111827';
     inner.innerHTML = '';
     inner.setAttribute('draggable', 'false');
   }
