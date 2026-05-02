@@ -112,40 +112,45 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 
 /* 1. 盤面全体：7列のグリッド。各マスの横幅を考慮して計算 */
 .hex-board {
-  display: grid;
-  /* 7列ですが、ずらすために実質「14列」の細かい網目で管理します */
-  grid-template-columns: repeat(14, 44px); 
-  gap: 12px 0px; /* 縦の隙間調整 */
+  /* グリッドを解除して、要素が順番に並ぶようにします */
+  display: block; 
   padding: 40px;
   background: #1a2333;
-  width: fit-content;
+  width: 720px; /* 7枚分 + ズレ幅分 */
   margin: 20px auto;
+  line-height: 0; /* 行間の余計な隙間を削除 */
 }
 
 .hex-slot {
+  display: inline-block; /* 横に並べる */
   position: relative;
   width: 88px;
   height: 102px;
   background: #334455;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  /* 1つのスロットで2列分使う設定 */
-  grid-column: span 2; 
+  margin: -12px 2px; /* 縦の重なりを調整しつつ隙間を作る */
+  transition: transform 0.1s;
 }
 
-/* 偶数行の開始位置を「2番目の列」からに設定してずらす */
-/* 2段目（8〜14個目）の最初の要素 */
-.hex-slot:nth-child(8) {
-  grid-column-start: 2;
+/* 2段目（8〜14枚目）の設定 */
+.hex-slot:nth-child(n+8):nth-child(-n+14) {
+  margin-left: 47px; /* 2段目の最初だけ右にずらす */
 }
 
-/* 4段目（22〜28個目）の最初の要素 */
-.hex-slot:nth-child(22) {
-  grid-column-start: 2;
+/* 3段目の最初（15枚目）で強制改行 */
+.hex-slot:nth-child(15) {
+  margin-left: 0; 
 }
 
-/* ホバー時の挙動（transformが上書きされないように注意） */
+/* 4段目（22〜28枚目）の設定 */
+.hex-slot:nth-child(n+22):nth-child(-n+28) {
+  margin-left: 47px;
+}
+
+/* ホバー時に浮き上がるようにする */
 .hex-slot:hover {
   filter: brightness(1.2);
+  transform: scale(1.05);
   z-index: 10;
 }
 
