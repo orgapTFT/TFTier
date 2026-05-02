@@ -113,36 +113,34 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 /* 1. 盤面全体：7列のグリッド。各マスの横幅を考慮して計算 */
 .hex-board {
   display: grid;
-  grid-template-columns: repeat(7, 88px);
-  gap: 4px 6px; /* 縦の隙間を少し詰める */
+  /* 7列ですが、ずらすために実質「14列」の細かい網目で管理します */
+  grid-template-columns: repeat(14, 44px); 
+  gap: 12px 0px; /* 縦の隙間調整 */
   padding: 40px;
   background: #1a2333;
-  border-radius: 20px;
-  width: 710px; /* 7枚分 + ズレる分の幅を確保 */
+  width: fit-content;
   margin: 20px auto;
-  position: relative;
 }
 
-/* 2. 六角形マス目：基本設定 */
 .hex-slot {
   position: relative;
   width: 88px;
   height: 102px;
-  cursor: pointer;
   background: #334455;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  transition: transform 0.1s, filter 0.1s;
+  /* 1つのスロットで2列分使う設定 */
+  grid-column: span 2; 
 }
 
-
-/* 8番目(2段目の最初)から14番目まで */
-.hex-slot:nth-child(n+8):nth-child(-n+14) {
-  transform: translateX(47px);
+/* 偶数行の開始位置を「2番目の列」からに設定してずらす */
+/* 2段目（8〜14個目）の最初の要素 */
+.hex-slot:nth-child(8) {
+  grid-column-start: 2;
 }
 
-/* 22番目(4段目の最初)から28番目まで */
-.hex-slot:nth-child(n+22):nth-child(-n+28) {
-  transform: translateX(47px);
+/* 4段目（22〜28個目）の最初の要素 */
+.hex-slot:nth-child(22) {
+  grid-column-start: 2;
 }
 
 /* ホバー時の挙動（transformが上書きされないように注意） */
