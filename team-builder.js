@@ -75,32 +75,52 @@ function buildBoard() {
   renderBoard();
 }
 
-// ドロップ処理（チャンピオン＋アイテムをセットで移動）
+// ドラッグ開始：スロット全体のデータを保持
+function handleDragStart(event) {
+  const index = event.currentTarget.parentElement.dataset.index;
+  const state = builderState[index];
+  if (!state.champ) return;
+
+  event.dataTransfer.setData('application/json', JSON.stringify({
+    sourceIndex: index,
+    state: state
+  }));
+  // ドラッグ中のゴースト画像を見やすく設定
+  event.dataTransfer.effectAllowed = 'move';
+}
+
+// ドロップ処理：中身のデータだけを入れ替えて再描画
 function onDropSlot(event, targetIndex) {
   event.preventDefault();
-  const slot = document.querySelector(`.hex-slot[data-index='${targetIndex}']`);
-  if (!slot) return;
+  const data = JSON.parse(event.dataTransfer.getData('application/json'));
+  const sourceIndex = data.sourceIndex;
 
-  let data;
-  try {
-    data = JSON.parse(event.dataTransfer.getData('application/json'));
-  } catch {
-    return;
-  }
+  if (sourceIndex === targetIndex) return;
 
-  if (data.type === 'slot') {
-    const sourceIndex = data.index;
-    if (sourceIndex === targetIndex) return;
+  // データの入れ替え（元の場所とターゲット）
+  const temp = builderState[targetIndex];
+  builderState[targetIndex] = builderState[sourceIndex];
+  builderState[sourceIndex] = temp;
 
-    // 移動（チャンピオン＋アイテム＋星を丸ごと移動）
-    const temp = builderState[targetIndex];
-    builderState[targetIndex] = builderState[sourceIndex];
-    builderState[sourceIndex] = temp;
+  // 再描画（DOM構造は変えず、画像やテキストのみ更新）
+  renderSlot(sourceIndex);
+  renderSlot(targetIndex);
+}
 
-    renderSlot(sourceIndex);
-    renderSlot(targetIndex);
-    selectedSlot = targetIndex;
-    updateSelectedInfo();
+// 描画関数：innerHTMLを壊さず、特定の要素のプロパティだけ変える
+function renderSlot(index) {
+  const slot = document.querySelector(`.hex-slot[data-index='${index}']`);
+  const champDisp = slot.querySelector('.champ-display');
+  const itemCont = slot.querySelector('.items-container');
+  const state = builderState[index];
+
+  if (state.champ) {
+    champDisp.style.backgroundImage = `url('${state.champ.file}')`;
+    // アイテムの描画
+    itemCont.innerHTML = state.items.map(item => `<img src="${item}">`).join('');
+  } else {
+    champDisp.style.backgroundImage = 'none';
+    itemCont.innerHTML = '';
   }
 }
 
@@ -135,40 +155,7 @@ function renderBoard() {
   builderState.forEach((state, index) => renderSlot(index));
 }
 
-function renderSlot(index) {
-  const slot = document.querySelector(`.hex-slot[data-index='${index}']`);
-  if (!slot) return;
-  const state = builderState[index];
-  const inner = slot.querySelector('.hex-inner');
-  const starBox = slot.querySelector('.hex-stars');
-  const itemsBox = slot.querySelector('.hex-items');
 
-  slot.classList.toggle('selected', selectedSlot === index);
-
-  inner.ondragstart = null;
-  inner.oncontextmenu = null;
-
-  if (state.champ && state.champ.file) {
-    inner.style.backgroundImage = `url('${state.champ.file}')`;
-    inner.style.backgroundSize = 'cover';
-    inner.style.backgroundPosition = 'center';
-    inner.innerHTML = '';
-    inner.setAttribute('draggable', 'true');
-    inner.ondragstart = handleInnerDragStart;
-    inner.oncontextmenu = event => handleInnerContextmenu(event, index);
-  } else if (state.champ && state.champ.name) {
-    inner.style.backgroundImage = 'none';
-    inner.style.backgroundColor = '#111827';
-    inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
-    inner.setAttribute('draggable', 'true');
-    inner.ondragstart = handleInnerDragStart;
-    inner.oncontextmenu = event => handleInnerContextmenu(event, index);
-  } else {
-    inner.style.backgroundImage = 'none';
-    inner.style.backgroundColor = '#111827';
-    inner.innerHTML = '';
-    inner.setAttribute('draggable', 'false');
-  }
 
   starBox.innerHTML = '';
   if (state.stars > 0) {
