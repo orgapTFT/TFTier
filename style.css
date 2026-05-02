@@ -138,10 +138,10 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   z-index: 10;
 }
 
-/* 3. 互い違いの配置（2段目と4段目を右へ） */
-.hex-slot:nth-child(n+8):nth-child(-n+14),
-.hex-slot:nth-child(n+22):nth-child(-n+28) {
-  margin-left: 47px;
+/* 「hex-row」という名前の、偶数番目(2, 4番目)の要素だけを右にずらす */
+.hex-board .hex-row:nth-child(even) {
+  margin-left: 47px !important; /* 強制的に適用 */
+  display: flex;                /* 横並びを維持 */
 }
 
 /* 4. 内部パーツの配置 */
