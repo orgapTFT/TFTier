@@ -24,7 +24,7 @@
     #board {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 10px 5px;
+      gap: 5px 2px;
       padding: 25px;
       background: #1a1a2e;
       border: 4px solid #444;
