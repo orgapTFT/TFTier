@@ -90,7 +90,6 @@ function buildBoard() {
       const inner = document.createElement('div');
       inner.className = 'hex-inner';
       inner.setAttribute('draggable', 'false');
-      inner.addEventListener('dragstart', event => onDragSlot(event, coord));
 
       const starBox = document.createElement('div');
       starBox.className = 'hex-stars';
@@ -174,8 +173,10 @@ function handleInnerDragStart(event) {
     event.preventDefault();
     return;
   }
-  event.dataTransfer.setData('type', 'slot');
-  event.dataTransfer.setData('coord', coord);
+  const payload = JSON.stringify({ type: 'slot', coord });
+  event.dataTransfer.setData('application/json', payload);
+  event.dataTransfer.setData('text/plain', payload);
+  event.dataTransfer.effectAllowed = 'move';
 }
 
 function handleInnerContextmenu(event, coord) {
@@ -433,8 +434,10 @@ function findNextEmptySlot(currentCoord) {
 }
 
 function onDragItem(event, itemPath) {
-  event.dataTransfer.setData('type', 'item');
-  event.dataTransfer.setData('item', itemPath);
+  const payload = JSON.stringify({ type: 'item', item: itemPath });
+  event.dataTransfer.setData('application/json', payload);
+  event.dataTransfer.setData('text/plain', payload);
+  event.dataTransfer.effectAllowed = 'copy';
 }
 
 function copyBuilderLink() {
@@ -484,8 +487,10 @@ function allowDrop(event) {
 }
 
 function onDragChampion(event, champName) {
-  event.dataTransfer.setData('type', 'champion');
-  event.dataTransfer.setData('name', champName);
+  const payload = JSON.stringify({ type: 'champion', name: champName });
+  event.dataTransfer.setData('application/json', payload);
+  event.dataTransfer.setData('text/plain', payload);
+  event.dataTransfer.effectAllowed = 'copy';
 }
 
 function onDragSlot(event, sourceCoord) {
@@ -494,15 +499,32 @@ function onDragSlot(event, sourceCoord) {
     event.preventDefault();
     return;
   }
-  event.dataTransfer.setData('type', 'slot');
-  event.dataTransfer.setData('coord', sourceCoord);
+  const payload = JSON.stringify({ type: 'slot', coord: sourceCoord });
+  event.dataTransfer.setData('application/json', payload);
+  event.dataTransfer.setData('text/plain', payload);
+  event.dataTransfer.effectAllowed = 'move';
 }
 
 function onDropSlot(event, targetCoord) {
   event.preventDefault();
-  const type = event.dataTransfer.getData('type');
-  if (type === 'champion') {
-    const name = event.dataTransfer.getData('name');
+  let data = null;
+  const raw = event.dataTransfer.getData('application/json') || event.dataTransfer.getData('text/plain');
+  if (raw) {
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      data = {
+        type: event.dataTransfer.getData('type'),
+        name: event.dataTransfer.getData('name'),
+        item: event.dataTransfer.getData('item'),
+        coord: event.dataTransfer.getData('coord')
+      };
+    }
+  }
+  if (!data || !data.type) return;
+
+  if (data.type === 'champion') {
+    const name = data.name;
     const champ = champions.find(c => c.name === name);
     if (!champ) return;
     builderState[targetCoord].champ = champ;
@@ -511,9 +533,11 @@ function onDropSlot(event, targetCoord) {
     selectedSlot = targetCoord;
     selectedChampion = champ;
     updateSelectedInfo();
+    return;
   }
-  if (type === 'item') {
-    const item = event.dataTransfer.getData('item');
+
+  if (data.type === 'item') {
+    const item = data.item;
     if (!item) return;
     const state = builderState[targetCoord];
     if (!state.champ || state.items.length >= 3) return;
@@ -523,8 +547,9 @@ function onDropSlot(event, targetCoord) {
     updateSelectedInfo();
     return;
   }
-  if (type === 'slot') {
-    const sourceCoord = event.dataTransfer.getData('coord');
+
+  if (data.type === 'slot') {
+    const sourceCoord = data.coord;
     if (!sourceCoord || sourceCoord === targetCoord) return;
     const temp = builderState[targetCoord];
     builderState[targetCoord] = builderState[sourceCoord];
@@ -533,5 +558,6 @@ function onDropSlot(event, targetCoord) {
     renderSlot(targetCoord);
     selectedSlot = targetCoord;
     updateSelectedInfo();
+    return;
   }
 }
