@@ -33,16 +33,18 @@ function loadChampions() {
     .catch(error => console.error('Champion JSON load failed:', error));
 }
 
+
+
+
 function buildBoard() {
   const boardGrid = document.getElementById('board-grid');
   boardGrid.innerHTML = '';
-  boardGrid.className = 'hex-board'; // クラスを正しく設定
+  boardGrid.className = 'hex-board';
 
   let index = 0;
   for (let row = 0; row < 4; row++) {
     const rowDiv = document.createElement('div');
     rowDiv.className = 'hex-row';
-    if (row % 2 === 1) rowDiv.classList.add('offset');
 
     for (let col = 0; col < 7; col++) {
       const slot = document.createElement('div');
@@ -51,10 +53,10 @@ function buildBoard() {
 
       slot.addEventListener('click', () => selectSlot(index));
       slot.addEventListener('contextmenu', e => clearSlot(e, index));
-      slot.addEventListener('dragover', allowDrop);
+      slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
+      slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
       slot.addEventListener('drop', e => onDropSlot(e, index));
 
-      // 内側
       const inner = document.createElement('div');
       inner.className = 'hex-inner';
 
@@ -70,9 +72,64 @@ function buildBoard() {
     }
     boardGrid.appendChild(rowDiv);
   }
-
   renderBoard();
 }
+
+// ドロップ処理（チャンピオン＋アイテムをセットで移動）
+function onDropSlot(event, targetIndex) {
+  event.preventDefault();
+  const slot = document.querySelector(`.hex-slot[data-index='${targetIndex}']`);
+  if (!slot) return;
+
+  let data;
+  try {
+    data = JSON.parse(event.dataTransfer.getData('application/json'));
+  } catch {
+    return;
+  }
+
+  if (data.type === 'slot') {
+    const sourceIndex = data.index;
+    if (sourceIndex === targetIndex) return;
+
+    // 移動（チャンピオン＋アイテム＋星を丸ごと移動）
+    const temp = builderState[targetIndex];
+    builderState[targetIndex] = builderState[sourceIndex];
+    builderState[sourceIndex] = temp;
+
+    renderSlot(sourceIndex);
+    renderSlot(targetIndex);
+    selectedSlot = targetIndex;
+    updateSelectedInfo();
+  }
+}
+
+// ドラッグ開始時（データを正しくセット）
+function handleInnerDragStart(event) {
+  const slot = event.target.closest('.hex-slot');
+  if (!slot) return;
+  const index = parseInt(slot.dataset.index);
+  const state = builderState[index];
+  if (!state.champ) return;
+
+  const payload = {
+    type: 'slot',
+    index: index,
+    champ: state.champ,
+    stars: state.stars,
+    items: state.items
+  };
+
+  event.dataTransfer.setData('application/json', JSON.stringify(payload));
+  event.dataTransfer.effectAllowed = 'move';
+
+  // 元の位置を少し遅らせてクリア（視覚的に自然に）
+  setTimeout(() => {
+    builderState[index] = { champ: null, stars: 0, items: [] };
+    renderSlot(index);
+  }, 10);
+}
+
 
 function renderBoard() {
   builderState.forEach((state, index) => renderSlot(index));
@@ -135,20 +192,6 @@ function renderSlot(index) {
   });
 }
 
-function handleInnerDragStart(event) {
-  const slot = event.target.closest('.hex-slot');
-  if (!slot) return;
-  const index = parseInt(slot.dataset.index, 10);
-  const state = builderState[index];
-  if (!state.champ) {
-    event.preventDefault();
-    return;
-  }
-  const payload = JSON.stringify({ type: 'slot', index });
-  event.dataTransfer.setData('application/json', payload);
-  event.dataTransfer.setData('text/plain', payload);
-  event.dataTransfer.effectAllowed = 'move';
-}
 
 function handleInnerContextmenu(event, index) {
   event.preventDefault();
@@ -471,61 +514,7 @@ function onDragSlot(event, sourceIndex) {
   event.dataTransfer.effectAllowed = 'move';
 }
 
-function onDropSlot(event, targetIndex) {
-  event.preventDefault();
-  let data = null;
-  const raw = event.dataTransfer.getData('application/json') || event.dataTransfer.getData('text/plain');
-  if (raw) {
-    try {
-      data = JSON.parse(raw);
-    } catch (err) {
-      data = {
-        type: event.dataTransfer.getData('type'),
-        name: event.dataTransfer.getData('name'),
-        item: event.dataTransfer.getData('item'),
-        index: Number(event.dataTransfer.getData('index'))
-      };
-    }
-  }
-  if (!data || !data.type) return;
 
-  if (data.type === 'champion') {
-    const champ = champions.find(c => c.name === data.name);
-    if (!champ) return;
-    builderState[targetIndex].champ = champ;
-    if (builderState[targetIndex].stars === 0) builderState[targetIndex].stars = 1;
-    renderSlot(targetIndex);
-    selectedSlot = targetIndex;
-    selectedChampion = champ;
-    updateSelectedInfo();
-    return;
-  }
-
-  if (data.type === 'item') {
-    const item = data.item;
-    if (!item) return;
-    const state = builderState[targetIndex];
-    if (!state.champ || state.items.length >= 3) return;
-    state.items.push(item);
-    renderSlot(targetIndex);
-    selectedSlot = targetIndex;
-    updateSelectedInfo();
-    return;
-  }
-
-  if (data.type === 'slot') {
-    const sourceIndex = Number(data.index);
-    if (isNaN(sourceIndex) || sourceIndex === targetIndex) return;
-    const temp = builderState[targetIndex];
-    builderState[targetIndex] = builderState[sourceIndex];
-    builderState[sourceIndex] = temp;
-    renderSlot(sourceIndex);
-    renderSlot(targetIndex);
-    selectedSlot = targetIndex;
-    updateSelectedInfo();
-    return;
-  }
-}
 
 // === シンプルドラッグ＆ドロップ版（上書き用）===
 let builderState = []; // 必要なら既存のものと統合
