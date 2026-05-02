@@ -233,34 +233,47 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .board-context-menu button:hover { background: #334155; }
 
 
-   .hex {
-      width: 88px;
-      height: 102px;
-      background: #334455;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-      transition: all 0.2s;
-      cursor: pointer;
-    }
-    .hex:hover { filter: brightness(1.2); }
+
+
+
+.hex-board {
+  display: grid;
+  grid-template-columns: repeat(7, 88px);
+  gap: 8px 6px;
+  padding: 30px 20px;
+  background: #1a2333;
+  border-radius: 20px;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.hex {
+  width: 88px;
+  height: 102px;
+  background: #334455;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.hex:hover {
+  filter: brightness(1.25);
+  transform: scale(1.05);
+}
+
+/* 重要な部分：2段目と4段目を半分ずらす */
+.hex:nth-child(7n+1):nth-child(n+8):nth-child(-n+14),
+.hex:nth-child(7n+1):nth-child(n+22) {
+  margin-left: 47px;   /* 六角形の半分ずらし */
+}
     .hex.dragover { background: #0a5 !important; box-shadow: 0 0 20px #0f0; }
 
-    .hex-board {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px 6px;
-      padding: 20px;
-      background: #1a1a2e;
-      border-radius: 16px;
-      width: fit-content;
-      margin: 0 auto;
-    }
-    .hex:nth-child(7n+1) { margin-top: 51px; } /* 六角形のオフセット */
 
     .piece {
       width: 68px;

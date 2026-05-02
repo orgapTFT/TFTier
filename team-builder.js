@@ -36,25 +36,27 @@ function loadChampions() {
 function buildBoard() {
   const boardGrid = document.getElementById('board-grid');
   boardGrid.innerHTML = '';
+  boardGrid.className = 'hex-board'; // クラスを正しく設定
+
   let index = 0;
+  for (let row = 0; row < 4; row++) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'hex-row';
+    if (row % 2 === 1) rowDiv.classList.add('offset');
 
-  rows.forEach((count, rowIndex) => {
-    const row = document.createElement('div');
-    row.className = 'hex-row';
-    if (rowIndex % 2 === 1) row.classList.add('offset');
-
-    for (let cell = 0; cell < count; cell++) {
+    for (let col = 0; col < 7; col++) {
       const slot = document.createElement('div');
       slot.className = 'hex-slot';
       slot.dataset.index = index;
-      slot.addEventListener('click', () => selectSlot(index));
-      slot.addEventListener('contextmenu', event => clearSlot(event, index));
-      slot.addEventListener('dragover', allowDrop);
-      slot.addEventListener('drop', event => onDropSlot(event, index));
 
+      slot.addEventListener('click', () => selectSlot(index));
+      slot.addEventListener('contextmenu', e => clearSlot(e, index));
+      slot.addEventListener('dragover', allowDrop);
+      slot.addEventListener('drop', e => onDropSlot(e, index));
+
+      // 内側
       const inner = document.createElement('div');
       inner.className = 'hex-inner';
-      inner.setAttribute('draggable', 'false');
 
       const starBox = document.createElement('div');
       starBox.className = 'hex-stars';
@@ -62,15 +64,12 @@ function buildBoard() {
       const itemsBox = document.createElement('div');
       itemsBox.className = 'hex-items';
 
-      slot.appendChild(inner);
-      slot.appendChild(starBox);
-      slot.appendChild(itemsBox);
-      row.appendChild(slot);
-      index += 1;
+      slot.append(inner, starBox, itemsBox);
+      rowDiv.appendChild(slot);
+      index++;
     }
-
-    boardGrid.appendChild(row);
-  });
+    boardGrid.appendChild(rowDiv);
+  }
 
   renderBoard();
 }
