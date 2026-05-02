@@ -111,43 +111,40 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 /* --- Team builder styles --- */
 
 /* 1. 盤面全体：7列のグリッド。各マスの横幅を考慮して計算 */
+/* --- 盤面レイアウト：Flexboxジグザグ版 --- */
+
 .hex-board {
-  /* グリッドを解除して、要素が順番に並ぶようにします */
-  display: block; 
+  display: flex;
+  flex-wrap: wrap;       /* 7個並んだら自動で折り返す */
+  width: 670px;          /* 88px * 7個 + 隙間 に合わせた幅 */
   padding: 40px;
   background: #1a2333;
-  width: 720px; /* 7枚分 + ズレ幅分 */
+  border-radius: 20px;
   margin: 20px auto;
-  line-height: 0; /* 行間の余計な隙間を削除 */
+  gap: 12px 6px;         /* 縦と横の隙間 */
+  justify-content: flex-start;
 }
 
 .hex-slot {
-  display: inline-block; /* 横に並べる */
   position: relative;
   width: 88px;
   height: 102px;
   background: #334455;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  margin: -12px 2px; /* 縦の重なりを調整しつつ隙間を作る */
-  transition: transform 0.1s;
+  flex-shrink: 0;        /* 勝手に縮まないように固定 */
 }
 
-/* 2段目（8〜14枚目）の設定 */
-.hex-slot:nth-child(n+8):nth-child(-n+14) {
-  margin-left: 47px; /* 2段目の最初だけ右にずらす */
-}
-
-/* 3段目の最初（15枚目）で強制改行 */
-.hex-slot:nth-child(15) {
-  margin-left: 0; 
-}
-
-/* 4段目（22〜28枚目）の設定 */
-.hex-slot:nth-child(n+22):nth-child(-n+28) {
+/* 2段目（8〜14個目）の塊を右にずらす */
+.hex-slot:nth-child(7n+8) {
   margin-left: 47px;
 }
 
-/* ホバー時に浮き上がるようにする */
+/* 4段目なども含め、奇数行の最初（1段目、3段目）はマージンをリセット */
+.hex-slot:nth-child(14n+15) {
+  margin-left: 0;
+}
+
+/* ホバー設定 */
 .hex-slot:hover {
   filter: brightness(1.2);
   transform: scale(1.05);
