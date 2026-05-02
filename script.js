@@ -886,3 +886,84 @@ function openLink(targetId) {
     const url = document.getElementById(targetId).value;
     if (url && url.startsWith('http')) window.open(url, '_blank');
 }
+
+
+
+
+
+
+
+   const itemEmojis = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
+
+    function createBoard() {
+      const board = document.getElementById('board');
+      board.innerHTML = '';
+
+      for (let i = 0; i < 28; i++) {
+        const hex = document.createElement('div');
+        hex.className = 'hex';
+        hex.ondragover = (e) => { e.preventDefault(); hex.classList.add('dragover'); };
+        hex.ondragleave = () => hex.classList.remove('dragover');
+        hex.ondrop = (e) => handleDrop(e, hex);
+        board.appendChild(hex);
+      }
+    }
+
+    function initBench() {
+      const bench = document.getElementById('bench');
+      const champs = ['🐻','🐺','🐉','🦅','🐍','🦁'];
+      champs.forEach(icon => {
+        const div = document.createElement('div');
+        div.className = 'piece bg-zinc-800 border border-zinc-600 rounded-xl';
+        div.draggable = true;
+        div.textContent = icon;
+        div.ondragstart = e => e.dataTransfer.setData('text/plain', icon);
+        bench.appendChild(div);
+      });
+    }
+
+    function initItems() {
+      const container = document.getElementById('items-palette');
+      itemEmojis.forEach(emo => {
+        const div = document.createElement('div');
+        div.className = 'w-12 h-12 bg-zinc-800 rounded-lg flex items-center justify-center text-3xl cursor-grab active:cursor-grabbing';
+        div.draggable = true;
+        div.textContent = emo;
+        div.ondragstart = e => e.dataTransfer.setData('text/plain', 'item:' + emo);
+        container.appendChild(div);
+      });
+    }
+
+    function handleDrop(e, hex) {
+      e.preventDefault();
+      hex.classList.remove('dragover');
+      const data = e.dataTransfer.getData('text/plain');
+
+      if (data.startsWith('item:')) {
+        let itemsDiv = hex.querySelector('.items');
+        if (!itemsDiv) {
+          itemsDiv = document.createElement('div');
+          itemsDiv.className = 'items';
+          hex.appendChild(itemsDiv);
+        }
+        if (itemsDiv.children.length < 3) {
+          const slot = document.createElement('div');
+          slot.className = 'item-slot';
+          slot.textContent = data.split(':')[1];
+          itemsDiv.appendChild(slot);
+        }
+      } else {
+        // チャンピオン配置
+        hex.innerHTML = `
+          <div class="piece">${data}</div>
+          <div class="items"></div>
+        `;
+      }
+    }
+
+    // 初期化
+    window.addEventListener('load', () => {
+      createBoard();
+      initBench();
+      initItems();
+    });

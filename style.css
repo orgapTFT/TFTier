@@ -231,3 +231,58 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   cursor: pointer;
 }
 .board-context-menu button:hover { background: #334155; }
+
+
+   .hex {
+      width: 88px;
+      height: 102px;
+      background: #334455;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .hex:hover { filter: brightness(1.2); }
+    .hex.dragover { background: #0a5 !important; box-shadow: 0 0 20px #0f0; }
+
+    .hex-board {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 8px 6px;
+      padding: 20px;
+      background: #1a1a2e;
+      border-radius: 16px;
+      width: fit-content;
+      margin: 0 auto;
+    }
+    .hex:nth-child(7n+1) { margin-top: 51px; } /* 六角形のオフセット */
+
+    .piece {
+      width: 68px;
+      height: 68px;
+      font-size: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .items {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .item-slot {
+      width: 24px;
+      height: 24px;
+      background: #222;
+      border: 2px solid #777;
+      border-radius: 6px;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
