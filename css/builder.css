@@ -23,7 +23,10 @@
 
     #board {
       display: grid;
-      grid-template-columns: repeat(7, 90px);
+      grid-template-columns: repeat(7, 92px);
+      width: calc(92px * 7 + 50px);           /* 7枚分 + 余白を追加 */
+  　　padding-right: 60px;                    /* 右側余白を確保 */
+  　　box-sizing: border-box;                 /* パディングを幅に含める */
       gap: 2px 2px;
       padding: 15px;
       background: #1a1a2e;
