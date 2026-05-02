@@ -1,145 +1,145 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TFT Guide Builder</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<!-- 1. 変数と基盤 -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFT Team Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <link rel="stylesheet" href="css/base.css">
-<!-- 2. 共通コンポーネント -->
 <link rel="stylesheet" href="css/components.css">
-<!-- 3. 各モードの専用スタイル -->
-<link rel="stylesheet" href="css/editor.css">
 <link rel="stylesheet" href="css/builder.css">
 </head>
-<body onpaste="handlePaste(event)" class="flex">
-<div id="nav-sidebar">
+<body class="team-builder bg-zinc-950 text-zinc-100 min-h-screen flex">
+  <div id="nav-sidebar">
     <h1 class="nav-title" onclick="window.location.href='index.html'">TFTier</h1>
     <nav class="nav-menu">
-        <a href="index.html" class="nav-link">👑Tier</a>
-        <a href="builder.html" class="nav-link active">📘Guide</a>
-        <a href="team-builder.html" class="nav-link">🧩Builder</a>
-        <a href="info.html" class="nav-link">📝Info</a>
-        <a href="links.html" class="nav-link">🔗Link</a>
+      <a href="index.html" class="nav-link">👑Tier</a>
+      <a href="builder.html" class="nav-link">📘Guide</a>
+      <a href="team-builder.html" class="nav-link active">🧩Builder</a>
+      <a href="info.html" class="nav-link">📝Info</a>
+      <a href="links.html" class="nav-link">🔗Link</a>
     </nav>
-</div>
+  </div>
+ 
 
-<div id="left-sidebar">
-    <div style="display:flex; gap:5px; margin-bottom:10px;">
-        <button class="btn-main" style="flex:1; margin:0;" onclick="undo()">↩ 戻す</button>
-        <button class="btn-main" style="flex:1; margin:0;" onclick="redo()">↪ 進む</button>
-    </div>
-    <button class="btn-main" onclick="savePNG()">PNG保存</button>
-    <button class="btn-main" style="background:#22c55e;" onclick="addNewGuide()">+ ガイド追加</button>
-    <div id="guide-list" style="flex:1; overflow-y:auto;"></div>
-    <div style="padding-top:10px; border-top:1px solid #333;">
-        <div id="save-timer-display">保存まで: 60s</div>
-        <div id="autosave-status">● 自動保存完了</div>
-        <button class="btn-main" style="background:#334155;" onclick="exportProject()">プロジェクト保存</button>
-        <button class="btn-main" style="background:#334155;" onclick="document.getElementById('import-input').click()">読込</button>
-        <input type="file" id="import-input" style="display:none" onchange="importProject(event)">
-    </div>
-</div>
 
-<div id="main-editor">
-    <div id="canvas">
-        <div id="header">
-            <div id="header-left">
-                <div id="header-icons">
-                    <div class="slot size-L header-slot" onclick="sel(this)"></div>
-                    <div class="slot size-L header-slot" onclick="sel(this)"></div>
-                    <div class="slot size-L header-slot" onclick="sel(this)"></div>
-                </div>
-                <div id="difficulty-box"></div>
+  <main class="flex-1 px-6 py-8 overflow-y-auto">
+    <div class="flex flex-col gap-6">
+      <section class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 class="text-3xl font-bold text-yellow-400">TFTeam Builder</h1>
+          </div>
+        </div>
+
+        <div id="board-container" class="mt-6">
+          <div class="flex gap-8 justify-center">
+            <!-- item -->
+            <div>
+              <h3 class="text-yellow-400 mb-3 text-center">ITEMS</h3>
+              <div id="items-palette" class="flex flex-wrap gap-3 max-w-[140px]"></div>
             </div>
-            <div id="title-container"><div id="in-title" contenteditable="true" data-placeholder="TITLE" oninput="markChanged()"></div></div>
-        </div>
 
-        <div id="board-area">
-            <img id="board-img" crossOrigin="anonymous" style="display:none">
-            <p id="board-msg" style="color:#222; font-size:24px;">Ctrl+V で画像を貼り付け</p>
-        </div>
-
-        <div class="black-section"><div class="slot-group" id="row-alt" style="justify-content:center; gap: 8px;"></div></div>
-        <div class="row-wrap"><div class="slot-group" id="row-prog"></div></div>
-        <div id="equip-area"></div>
-        <div style="padding: 0 60px; margin-top: 28px; display: flex; justify-content: space-between; align-items: flex-start; width: 100%; box-sizing: border-box;">
-            <div class="slot-group" id="row-aug"></div>
-            <div class="slot-group" id="row-god"></div>
-        </div>
-        <div id="footer">
-            <div id="f-bold" contenteditable="true" data-placeholder="強調メッセージ" oninput="markChanged()"></div>
-            <div id="f-desc" contenteditable="true" data-placeholder="詳細な解説文を入力..." oninput="markChanged()"></div>
-        </div>
-    </div>
+            <!-- 盤面 -->
+<div>
+  <div id="board" class="hex-board"></div> 
 </div>
 
-<div id="right-sidebar">
-    <div style="background:#000; padding:12px; border-radius:4px; margin-bottom:12px; flex-shrink: 0;">
-        <div style="display:flex; gap:10px; justify-content:center; margin-bottom:15px;">
-            <button onclick="setDifficulty(1)" style="background:green; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
-            <button onclick="setDifficulty(2)" style="background:yellow; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
-            <button onclick="setDifficulty(3)" style="background:red; width:35px; height:35px; border:none; cursor:pointer; border-radius:3px;"></button>
+            
+
+            <!-- champ -->
+            <div>
+              <h3 class="text-yellow-400 mb-3 text-center">CHAMPIONS</h3>
+              <div id="bench" class="flex flex-col gap-4"></div>
+            </div>
+          </div>
         </div>
-        <div style="display:flex; gap:6px; justify-content:center;">
-            <button onclick="setStars(0)" style="font-size:10px;">★0</button>
-            <button onclick="setStars(1)">★1</button><button onclick="setStars(2)">★2</button><button onclick="setStars(3)">★3</button><button onclick="setStars(4)">★4</button>
-        </div>
-        <div class="symbol-row">
-            <button class="symbol-btn" onclick="insertSymbol('→')">→</button>
-            <button class="symbol-btn" onclick="insertSymbol('↔')">↔</button>
-            <button class="symbol-btn" onclick="insertSymbol('/')">/</button>
-            <button class="symbol-btn" onclick="insertSymbol('>')">&gt;</button>
-            <button class="symbol-btn" onclick="insertSymbol('<')">&lt;</button>
-        </div>
-        <div style="font-size:11px; color:#aaa; text-align:center; margin-top:6px;">選択中のスロットに記号を挿入します</div>
-    </div>
-    <div style="display:flex; background:#000; flex-shrink: 0;">
-        <button class="p-tab active" id="tab-c" onclick="setPalette('c')">CHAMP</button>
-        <button class="p-tab" id="tab-i" onclick="setPalette('i')">ITEM</button>
-        <button class="p-tab" id="tab-a" onclick="setPalette('a')">AUG</button>
-        <button class="p-tab" id="tab-g" onclick="setPalette('g')">GOD</button>
+      </section>
     </div>
 
-    <div class="unified-size-ctrl">
-        <button onclick="changeSelectedSlotSize('L')">L</button>
-        <button onclick="changeSelectedSlotSize('M')">M</button>
-        <button onclick="changeSelectedSlotSize('S')">S</button>
-    </div>
 
-    <div style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid #222;">
-        <button onclick="document.getElementById('asset-up').click()" style="flex:1; font-size:11px; padding:8px; background:#475569; border:none; color:#fff; cursor:pointer; font-weight:bold;">+ 画像読込</button>
-        <label style="font-size:10px; color:#aaa;"><input type="checkbox" id="show-hidden-toggle" onchange="renderPalette()"> 非表示を表示</label>
-    </div>
-    <input type="file" id="asset-up" multiple style="display:none" onchange="handleAssetUpload(event)">
-    <div id="palette-container" style="flex:1; overflow-y:auto; background:#000; margin:10px 0; border:1px solid #222;">
-        <div id="palette-grid"></div>
-    </div>
-    <div style="margin-top:auto; background:#000; padding:12px; flex-shrink: 0;">
-        <div class="url-tool-row">
-            <label style="font-size:9px; color:#888;">TT Link (Main):</label>
-            <div class="url-input-group">
-                <input type="text" id="tt-url" style="flex:1; font-size:11px; background:#111; color:#fff; border:1px solid #333; padding:6px; height:28px;" oninput="markChanged()" placeholder="https://...">
-                <button class="url-btn" onclick="pasteFromClipboard('tt-url')" title="クリップボードのビルダーリンクを貼り付け">📋</button>
-                <button class="url-btn" onclick="insertBuilderLink('tt-url')" title="ビルダーリンクを挿入">↪</button>
+
+      <section class="flex flex-col gap-6 lg:flex-row">
+        <aside id="right-sidebar" class="w-full lg:w-96 flex flex-col gap-4">
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-center gap-3">
+                <button onclick="setDifficulty(1)" class="symbol-btn" style="background:green; width:36px; height:36px;">1</button>
+                <button onclick="setDifficulty(2)" class="symbol-btn" style="background:yellow; width:36px; height:36px;">2</button>
+                <button onclick="setDifficulty(3)" class="symbol-btn" style="background:red; width:36px; height:36px;">3</button>
+              </div>
+              <div class="flex justify-center gap-2 flex-wrap">
+                <button onclick="setStars(0)" class="star-btn">★0</button>
+                <button onclick="setStars(1)" class="star-btn">★1</button>
+                <button onclick="setStars(2)" class="star-btn">★2</button>
+                <button onclick="setStars(3)" class="star-btn">★3</button>
+                <button onclick="setStars(4)" class="star-btn">★4</button>
+              </div>
+              <div class="symbol-row justify-center">
+                <button class="symbol-btn" onclick="insertSymbol('→')">→</button>
+                <button class="symbol-btn" onclick="insertSymbol('↔')">↔</button>
+                <button class="symbol-btn" onclick="insertSymbol('/')">/</button>
+                <button class="symbol-btn" onclick="insertSymbol('>')">&gt;</button>
+                <button class="symbol-btn" onclick="insertSymbol('<')">&lt;</button>
+              </div>
+              <div class="text-center text-xs text-zinc-400">選択中のスロットに記号を挿入します</div>
+            </div>
+          </div>
+
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
+            <div class="flex gap-1 bg-black rounded-2xl overflow-hidden">
+              <button class="p-tab active" id="tab-c" onclick="setPalette('c')">CHAMP</button>
+              <button class="p-tab" id="tab-i" onclick="setPalette('i')">ITEM</button>
+              <button class="p-tab" id="tab-a" onclick="setPalette('a')">AUG</button>
+              <button class="p-tab" id="tab-g" onclick="setPalette('g')">GOD</button>
+            </div>
+            <div class="unified-size-ctrl mt-4">
+              <button onclick="changeSelectedSlotSize('L')">L</button>
+              <button onclick="changeSelectedSlotSize('M')">M</button>
+              <button onclick="changeSelectedSlotSize('S')">S</button>
+            </div>
+            <div class="mt-4 flex items-center gap-2">
+              <button onclick="document.getElementById('asset-up').click()" class="btn-main" style="flex:1;">+ 画像読込</button>
+              <label class="text-xs text-zinc-400"><input type="checkbox" id="show-hidden-toggle" onchange="renderPalette()"> 非表示を表示</label>
+            </div>
+            <input type="file" id="asset-up" multiple style="display:none" onchange="handleAssetUpload(event)">
+            <div id="palette-container" class="mt-4 bg-black border border-zinc-800 rounded-2xl p-3" style="min-height: 280px;">
+              <div id="palette-grid"></div>
+            </div>
+          </div>
+
+          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
+            <div class="url-tool-row">
+              <label class="text-xs text-zinc-400 mb-2 block">TT Link (Main):</label>
+              <div class="url-input-group">
+                <input type="text" id="tt-url" class="flex-1 rounded-2xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200" oninput="markChanged()" placeholder="https://...">
+                <button class="url-btn" onclick="pasteFromClipboard('tt-url')">📋</button>
+                <button class="url-btn" onclick="insertBuilderLink('tt-url')">↪</button>
                 <button class="url-btn" onclick="document.getElementById('tt-url').value=''; markChanged();">×</button>
                 <button class="url-btn" onclick="openLink('tt-url')">🌐</button>
+              </div>
             </div>
-        </div>
-        <div class="url-tool-row">
-            <label style="font-size:9px; color:#888;">Progression Link:</label>
-            <div class="url-input-group">
-                <input type="text" id="tt-url-prog" style="flex:1; font-size:11px; background:#111; color:#fff; border:1px solid #333; padding:6px; height:28px;" oninput="markChanged()" placeholder="進行リンク">
+            <div class="url-tool-row mt-4">
+              <label class="text-xs text-zinc-400 mb-2 block">Progression Link:</label>
+              <div class="url-input-group">
+                <input type="text" id="tt-url-prog" class="flex-1 rounded-2xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200" oninput="markChanged()" placeholder="進行リンク">
                 <button class="url-btn" onclick="pasteFromClipboard('tt-url-prog')">📋</button>
                 <button class="url-btn" onclick="document.getElementById('tt-url-prog').value=''; markChanged();">×</button>
                 <button class="url-btn" onclick="openLink('tt-url-prog')">🌐</button>
+              </div>
             </div>
-        </div>
+          </div>
+        </aside>
+      </section>
     </div>
-</div>
-<div id="board-context-menu" class="board-context-menu"></div>
+  </main>
 
-<script src="script.js"></script>
+
+
+<script src="js/data.js"></script>
+<script src="js/core.js"></script>
+<script src="js/builder.js"></script>
+  
 </body>
 </html>

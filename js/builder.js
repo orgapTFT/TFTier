@@ -1,11 +1,3 @@
-const rows = [7, 7, 7, 7];
-const builderState = [];
-let champions = [];
-let selectedSlot = null;
-let selectedChampion = null;
-let dragSource = null;
-let curPalette = 'c';
-const items = (window.itemFiles || []).map(name => `img/item/${name}`);
 
 
 window.addEventListener('load', () => {
@@ -24,7 +16,7 @@ function initBuilderState() {
 }
 
 function loadChampions() {
-  fetch('tft17-champions.json')
+  fetch('../json/tft17-champions.json')
     .then(response => response.json())
     .then(data => {
       champions = data.champions;
@@ -32,9 +24,6 @@ function loadChampions() {
     })
     .catch(error => console.error('Champion JSON load failed:', error));
 }
-
-
-
 
 function buildBoard() {
   const board = document.getElementById('board');
@@ -138,13 +127,9 @@ function handleInnerDragStart(event) {
   }, 10);
 }
 
-
 function renderBoard() {
   builderState.forEach((state, index) => renderSlot(index));
 }
-
-
-
   starBox.innerHTML = '';
   if (state.stars > 0) {
     for (let i = 0; i < state.stars; i++) {
@@ -166,7 +151,6 @@ function renderBoard() {
     itemsBox.appendChild(icon);
   });
 }
-
 
 function handleInnerContextmenu(event, index) {
   event.preventDefault();

@@ -5,14 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TFTier</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="index.js" defer></script>
-<!-- 1. 変数と基盤 -->
+  <script src="js/index.js" defer></script>
 <link rel="stylesheet" href="css/base.css">
-<!-- 2. 共通コンポーネント -->
 <link rel="stylesheet" href="css/components.css">
-<!-- 3. 各モードの専用スタイル -->
-<link rel="stylesheet" href="css/editor.css">
-<link rel="stylesheet" href="css/builder.css">
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex">
 <div id="nav-sidebar">
@@ -113,7 +108,7 @@
   <script>
     let champions = [];
 
-    fetch('tft17-champions.json')
+    fetch('json/tft17-champions.json')
       .then(response => response.json())
       .then(data => {
         champions = data.champions;
