@@ -23,7 +23,7 @@
 
     #board {
       display: grid;
-      grid-template-columns: repeat(7, 88px);
+      grid-template-columns: repeat(7, 90px);
       gap: 2px 2px;
       padding: 15px;
       background: #1a1a2e;
