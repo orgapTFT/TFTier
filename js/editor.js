@@ -1,3 +1,25 @@
+window.onload = () => {
+    // 1. まずプロジェクトデータを共通処理で読み込む
+    initCommonProject();
+
+    // 2. ガイドが一つもない場合は新規作成、ある場合は読み込み
+    if (project.guides.length === 0) {
+        addNewGuide(); 
+    } else {
+        renderGuideList();
+        loadActiveGuide();
+    }
+
+    // 3. パレットの表示
+    renderPalette();
+
+    // 4. エディタ特有のイベント設定
+    const boardArea = document.getElementById('board-area');
+    if (boardArea) {
+        boardArea.addEventListener('contextmenu', showBoardContextMenu);
+    }
+};
+
 function ensureProjectAssets(data) {
     if (!data.assets) data.assets = { c: [], i: [], a: [], g: [] };
     data.assets.c = data.assets.c || [];

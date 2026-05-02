@@ -66,3 +66,17 @@ function updateTabData() {
         renderGuideList();
     }
 }
+
+// 代わりに共通の初期化ロジックを関数にする
+function initCommonProject() {
+    const saved = localStorage.getItem('tft_autosave');
+    if (saved) {
+        try {
+            project = patchProjectData(JSON.parse(saved));
+        } catch(e) {
+            console.error("ロード失敗:", e);
+            project.guides = []; // 失敗時は空にする
+        }
+    }
+    loadDefaultAssets(); // data.jsの関数
+}
