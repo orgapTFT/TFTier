@@ -35,20 +35,7 @@
 }
 
 /* ★2,4段目（8〜14枚目、22〜28枚目）を右にずらす */
-.hex:nth-child(14n+8), 
-.hex:nth-child(14n+9), 
-.hex:nth-child(14n+10), 
-.hex:nth-child(14n+11), 
-.hex:nth-child(14n+12), 
-.hex:nth-child(14n+13), 
-.hex:nth-child(14n+14),
-.hex:nth-child(14n+22),
-.hex:nth-child(14n+23),
-.hex:nth-child(14n+24),
-.hex:nth-child(14n+25),
-.hex:nth-child(14n+26),
-.hex:nth-child(14n+27),
-.hex:nth-child(14n+28) {
+.hex:nth-child(14n+8) {
     margin-left: 54px; /* 右にずらす */
 }
 
