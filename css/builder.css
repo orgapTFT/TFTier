@@ -1,46 +1,52 @@
+ .sidebar { display: flex; flex-direction: column; gap: 25px; }
 
-.hex {
-  width: 88px;
-  height: 102px;
-  background: #334455;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-  cursor: pointer;
-}
+    #bench, #items {
+      background: #1f1f2e;
+      padding: 15px;
+      border-radius: 12px;
+      border: 2px solid #444;
+    }
 
-.hex-board {
-  display: grid;
-  /* 7列固定。1マスの幅(88px) + 隙間(6px) を計算 */
-  grid-template-columns: repeat(7, 88px); 
-  gap: 10px 6px; 
-  /* 横幅を「88px * 7 + 隙間 + ズレ幅」分、余裕を持って確保 */
-  width: 720px; 
-  padding: 40px;
-  background: #1a2333;
-  border-radius: 20px;
-  margin: 20px auto;
-}
+    .piece, .item {
+      width: 72px;
+      height: 72px;
+      background: #222;
+      border: 3px solid #666;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 42px;
+      cursor: grab;
+    }
+    .item { font-size: 34px; width: 62px; height: 62px; }
 
-.hex-slot {
-  position: relative;
-  width: 88px;
-  height: 102px;
-  background: #334455;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
+    #board {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px 5px;
+      padding: 25px;
+      background: #1a1a2e;
+      border: 4px solid #444;
+      border-radius: 15px;
+    }
 
-/* ★2,4段目（8〜14枚目、22〜28枚目）を右にずらす */
-.hex:nth-child(14n+8) {
-    margin-left: 54px; /* 右にずらす */
-}
+    .hex {
+      width: 88px;
+      height: 108px;
+      background: #334;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 12px;
+      position: relative;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+    }
+    .hex:nth-child(7n+1) { margin-top: 54px; }
 
-
-.hex .champ {
+    .hex .champ {
       width: 68px;
       height: 68px;
       background: #222;
