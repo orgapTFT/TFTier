@@ -527,3 +527,119 @@ function onDropSlot(event, targetIndex) {
     return;
   }
 }
+
+// === シンプルドラッグ＆ドロップ版（上書き用）===
+let builderState = []; // 必要なら既存のものと統合
+
+const itemEmojis = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
+
+function initSimpleBoard() {
+  const board = document.getElementById('board');
+  if (!board) return;
+  board.innerHTML = '';
+  board.style.display = 'grid';
+  board.style.gridTemplateColumns = 'repeat(7, 1fr)';
+  board.style.gap = '10px 5px';
+  board.style.width = 'fit-content';
+  board.style.margin = '0 auto';
+
+  for (let i = 0; i < 28; i++) {
+    const hex = document.createElement('div');
+    hex.className = 'hex';
+    hex.style.width = '88px';
+    hex.style.height = '102px';
+    hex.style.background = '#334455';
+    hex.style.clipPath = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)';
+    hex.style.display = 'flex';
+    hex.style.flexDirection = 'column';
+    hex.style.alignItems = 'center';
+    hex.style.justifyContent = 'center';
+    hex.style.position = 'relative';
+    hex.style.cursor = 'pointer';
+
+    if (i % 7 === 0 && Math.floor(i/7) % 2 === 1) {
+      hex.style.marginTop = '51px';
+    }
+
+    hex.ondragover = e => { e.preventDefault(); hex.style.background = '#0a5'; };
+    hex.ondragleave = () => hex.style.background = '#334455';
+    hex.ondrop = e => handleDropOnHex(e, hex);
+
+    board.appendChild(hex);
+  }
+
+  // ベンチ
+  const bench = document.getElementById('bench');
+  ['🐻','🐺','🐉','🦅','🐍','🦁'].forEach(icon => {
+    const p = document.createElement('div');
+    p.className = 'piece';
+    p.style.width = '70px'; p.style.height = '70px';
+    p.style.fontSize = '42px';
+    p.style.background = '#222';
+    p.style.border = '3px solid #666';
+    p.style.borderRadius = '12px';
+    p.style.display = 'flex';
+    p.style.alignItems = 'center';
+    p.style.justifyContent = 'center';
+    p.draggable = true;
+    p.textContent = icon;
+    p.ondragstart = e => e.dataTransfer.setData('text/plain', icon);
+    bench.appendChild(p);
+  });
+
+  // アイテムパレット
+  const itemPal = document.getElementById('items-palette');
+  itemEmojis.forEach(emo => {
+    const i = document.createElement('div');
+    i.style.fontSize = '32px';
+    i.style.width = '52px';
+    i.style.height = '52px';
+    i.style.background = '#222';
+    i.style.borderRadius = '10px';
+    i.style.display = 'flex';
+    i.style.alignItems = 'center';
+    i.style.justifyContent = 'center';
+    i.draggable = true;
+    i.textContent = emo;
+    i.ondragstart = e => e.dataTransfer.setData('text/plain', 'item:' + emo);
+    itemPal.appendChild(i);
+  });
+}
+
+function handleDropOnHex(e, hex) {
+  e.preventDefault();
+  const data = e.dataTransfer.getData('text/plain');
+
+  if (data.startsWith('item:')) {
+    // アイテム追加
+    let itemsDiv = hex.querySelector('.items');
+    if (!itemsDiv) {
+      itemsDiv = document.createElement('div');
+      itemsDiv.className = 'items';
+      itemsDiv.style.display = 'flex';
+      itemsDiv.style.gap = '4px';
+      itemsDiv.style.marginTop = '6px';
+      hex.appendChild(itemsDiv);
+    }
+    if (itemsDiv.children.length < 3) {
+      const slot = document.createElement('div');
+      slot.style.fontSize = '18px';
+      slot.textContent = data.split(':')[1];
+      itemsDiv.appendChild(slot);
+    }
+  } else {
+    // チャンピオン配置・移動
+    hex.innerHTML = `
+      <div style="font-size:42px; margin-bottom:6px;">${data}</div>
+      <div class="items" style="display:flex; gap:4px;"></div>
+    `;
+  }
+}
+
+// ページ読み込み時に実行
+window.addEventListener('load', () => {
+  // 既存の初期化はそのまま残して
+  setTimeout(() => {
+    initSimpleBoard();
+  }, 800);
+});

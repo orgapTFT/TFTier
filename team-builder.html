@@ -45,9 +45,27 @@
           <div id="builder-copy-status" class="mt-2 text-xs text-emerald-400"></div>
         </div>
 
-        <div id="board-container" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-4 mt-6">
-          <div id="board-grid" class="hex-board"></div>
-        </div>
+<div id="board-container" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 mt-6">
+  <div class="flex gap-8">
+    <!-- 左: チャンピオン一覧 -->
+    <div class="w-28">
+      <h3 class="text-yellow-400 text-sm mb-3">CHAMPIONS</h3>
+      <div id="bench" class="flex flex-col gap-3"></div>
+    </div>
+
+    <!-- 中央: Hexボード -->
+    <div>
+      <h1 class="text-3xl font-bold text-yellow-400 mb-4">TFT Hex Board</h1>
+      <div id="board" class="hex-board"></div>
+    </div>
+
+    <!-- 右: アイテム一覧 -->
+    <div class="w-28">
+      <h3 class="text-yellow-400 text-sm mb-3">ITEMS</h3>
+      <div id="items-palette" class="flex flex-wrap gap-3"></div>
+    </div>
+  </div>
+</div>
       </section>
 
       <section class="flex flex-col gap-6 lg:flex-row">
