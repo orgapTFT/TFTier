@@ -1,24 +1,23 @@
 window.onload = () => {
-    // 1. まずプロジェクトデータを共通処理で読み込む
-    initCommonProject();
-
-    // 2. ガイドが一つもない場合は新規作成、ある場合は読み込み
-    if (project.guides.length === 0) {
-        addNewGuide(); 
+    const query = getBuilderQuery();
+    const saved = localStorage.getItem('tft_autosave');
+    if (saved) {
+        try {
+            project = patchProjectData(JSON.parse(saved));
+            loadDefaultAssets();
+            renderPalette(); renderGuideList(); loadActiveGuide();
+        } catch(e) {
+            addNewGuide();
+            loadDefaultAssets();
+            renderPalette();
+        }
     } else {
-        renderGuideList();
-        loadActiveGuide();
+        addNewGuide();
+        loadDefaultAssets();
+        renderPalette();
+        if (query.guide) project.guides.pop();
     }
-
-    // 3. パレットの表示
-    renderPalette();
-
-    // 4. エディタ特有のイベント設定
-    const boardArea = document.getElementById('board-area');
-    if (boardArea) {
-        boardArea.addEventListener('contextmenu', showBoardContextMenu);
-    }
-};
+}
 
 function ensureProjectAssets(data) {
     if (!data.assets) data.assets = { c: [], i: [], a: [], g: [] };
@@ -79,12 +78,8 @@ setInterval(() => {
         if (hasChanges) executeAutoSave();
         nextAutoSave = 60;
     }
-}, 1000);
-
-function markChanged() {
-    hasChanges = true;
-    updateTabData();
-}
+}, 1000
+);
 
 function executeAutoSave() {
     localStorage.setItem('tft_autosave', JSON.stringify(project));
@@ -111,25 +106,7 @@ function getBuilderQuery() {
     };
 }
 
-window.onload = () => {
-    const query = getBuilderQuery();
-    const saved = localStorage.getItem('tft_autosave');
-    if (saved) {
-        try {
-            project = patchProjectData(JSON.parse(saved));
-            loadDefaultAssets();
-            renderPalette(); renderGuideList(); loadActiveGuide();
-        } catch(e) {
-            addNewGuide();
-            loadDefaultAssets();
-            renderPalette();
-        }
-    } else {
-        addNewGuide();
-        loadDefaultAssets();
-        renderPalette();
-        if (query.guide) project.guides.pop();
-    }
+
 
     const boardArea = document.getElementById('board-area');
     if (boardArea) {
@@ -146,14 +123,9 @@ window.onload = () => {
         document.getElementById('in-title').innerText = query.guide;
         if (query.note) document.getElementById('f-desc').innerText = query.note;
         updateTabData();
-    }
-};
+    };
 
-function saveHistory() {
-    undoStack.push(JSON.stringify(project));
-    if (undoStack.length > 50) undoStack.shift();
-    redoStack = [];
-}
+
 
 function undo() {
     if (undoStack.length === 0) return;
