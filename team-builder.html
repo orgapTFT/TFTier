@@ -41,7 +41,6 @@
 
             <!-- 盤面 -->
             <div>
-              <h2 class="text-2xl font-bold text-center mb-4">TFT Hex Board</h2>
               <div id="board" class="hex-board"></div>
             </div>
 
@@ -57,17 +56,22 @@
 
 
 <div id="board-container" class="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 mt-6">
-  <div class="flex gap-8">
-    <!-- 左: チャンピオン一覧 -->
+  <div class="flex gap-8 justify-center">
+    <!-- 左: チャンピオン -->
     <div class="w-28">
-      <h3 class="text-yellow-400 text-sm mb-3">CHAMPIONS</h3>
+      <h3 class="text-yellow-400 text-sm mb-3 text-center">CHAMPIONS</h3>
       <div id="bench" class="flex flex-col gap-3"></div>
     </div>
 
+    <!-- 中央: 盤面 -->
+    <div class="flex-1 max-w-[620px]">
+      <h2 class="text-2xl font-bold text-center mb-4 text-yellow-400">TFTeam Board</h2>
+      <div id="board" class="hex-board mx-auto"></div>
+    </div>
 
-    <!-- 右: アイテム一覧 -->
+    <!-- 右: アイテム -->
     <div class="w-28">
-      <h3 class="text-yellow-400 text-sm mb-3">ITEMS</h3>
+      <h3 class="text-yellow-400 text-sm mb-3 text-center">ITEMS</h3>
       <div id="items-palette" class="flex flex-wrap gap-3"></div>
     </div>
   </div>
@@ -150,30 +154,6 @@
   </main>
 
 
-  <main class="flex-1 px-6 py-8 overflow-y-auto">
-    <div class="flex flex-col gap-6">
-      <section class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-yellow-400">TFT Team Builder</h1>
-            <p class="text-zinc-400 mt-2">四行×七列の六角形ボードと、右側パレットでチャンピオンを配置します。</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <button class="btn-main" type="button" onclick="copyBuilderLink()">リンクをコピー</button>
-            <button class="btn-main" type="button" onclick="copyBoardImage()">盤面画像コピー</button>
-          </div>
-        </div>
-
-        <div class="mt-5 rounded-2xl border border-zinc-800 bg-zinc-950 p-4">
-          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <div id="selected-slot-label" class="text-sm text-zinc-300">スロットが選択されていません。</div>
-              <div id="selected-champion-info" class="mt-1 text-xs text-zinc-400">チャンピオンを選択してください。</div>
-            </div>
-            <input id="builder-link" readonly class="w-full sm:w-80 rounded-2xl border border-zinc-700 bg-zinc-950 px-4 py-2 text-sm text-zinc-200" placeholder="ここにビルダーリンクが生成されます">
-          </div>
-          <div id="builder-copy-status" class="mt-2 text-xs text-emerald-400"></div>
-        </div>
 
   <script src="script.js"></script>
   <script src="team-builder.js"></script>
