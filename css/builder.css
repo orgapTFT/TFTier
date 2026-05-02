@@ -1,0 +1,186 @@
+
+.hex {
+  width: 88px;
+  height: 102px;
+  background: #334455;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  cursor: pointer;
+}
+
+.hex-board {
+  display: grid;
+  /* 7列固定。1マスの幅(88px) + 隙間(6px) を計算 */
+  grid-template-columns: repeat(7, 88px); 
+  gap: 10px 6px; 
+  /* 横幅を「88px * 7 + 隙間 + ズレ幅」分、余裕を持って確保 */
+  width: 720px; 
+  padding: 40px;
+  background: #1a2333;
+  border-radius: 20px;
+  margin: 20px auto;
+}
+
+.hex-slot {
+  position: relative;
+  width: 88px;
+  height: 102px;
+  background: #334455;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+/* ★2段目（8〜14枚目）を右にずらす */
+.hex-slot:nth-child(n+8):nth-child(-n+14) {
+  transform: translateX(47px);
+}
+
+/* ★4段目（22〜28枚目）を右にずらす */
+.hex-slot:nth-child(n+22):nth-child(-n+28) {
+  transform: translateX(47px);
+}
+
+/* ホバー時の設定（transformが上書きされないように注意） */
+.hex-slot:hover {
+  filter: brightness(1.2);
+  z-index: 10;
+  /* スケールアップさせたい場合は以下のように書く */
+  /* transform: translateX(47px) scale(1.05); ※2,4段目の場合 */
+}
+
+/* 内部パーツ（画像など） */
+.hex-inner {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
+.champ-display {
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.items-container {
+  position: absolute;
+  bottom: 12px;
+  display: flex; gap: 3px; justify-content: center;
+  width: 100%; z-index: 20;
+}
+
+.items-container img {
+  width: 22px; height: 22px;
+  border-radius: 4px; border: 1px solid #111;
+}
+
+/* 選択中などの状態 */
+.hex-slot.selected {
+  outline: 3px solid var(--accent);
+}
+
+/* 右サイドバー・カード類 */
+.champ-card, .item-card {
+  background: #111827; border: 1px solid #334155; border-radius: 12px;
+  padding: 8px; cursor: pointer; transition: 0.2s;
+}
+.champ-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.champ-thumb { width: 48px; height: 48px; border-radius: 8px; }
+.champ-name { font-size: 11px; margin-top: 4px; text-align: center; }
+
+/* タブボタン */
+.tab-btn {
+  padding: 8px; width: 100%; background: #374151; color: #fff;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.tab-btn.active { background: var(--accent); color: #111; }
+
+
+
+.tab-btn:hover {
+  background: #4b5563;
+}
+.champ-card, .item-card { background: #111827; border: 1px solid #334155; border-radius: 16px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: transform 0.2s, border-color 0.2s; }
+.champ-card:hover, .item-card:hover { transform: translateY(-1px); border-color: #f59e0b; }
+.champ-thumb, .item-thumb { width: 48px; height: 48px; border-radius: 12px; object-fit: cover; }
+.champ-name { font-size: 11px; color: #e5e7eb; text-align: center; display: block; line-height: 1.2; }
+.star-btn { border: 1px solid #334155; background: #0f172a; color: #f8fafc; padding: 10px; border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+.star-btn:hover { background: #1d2b47; }
+/* タブレット以下（1024px以下） */
+@media (max-width: 1024px) {
+  .hex-row.offset {
+    margin-left: 35px;     /* 57px → 少し小さく */
+  }
+}
+
+/* スマホサイズ（768px以下） */
+@media (max-width: 768px) {
+  .hex-row.offset {
+    margin-left: 22px;     /* さらに小さく（0pxだとズレがなくなって不自然） */
+  }
+}
+
+/* さらに小さいスマホ（480px以下）で微調整したい場合は追加 */
+@media (max-width: 480px) {
+  .hex-row.offset {
+    margin-left: 15px;     /* または16pxくらい */
+  }
+}
+
+.team-builder #board-container {
+  padding: 16px;
+  overflow: hidden;
+}
+.team-builder #board-grid {
+  width: fit-content;
+  margin: 0 auto;
+}
+.team-builder .hex-slot {
+  width: 90px;
+  height: 104px;
+}
+.team-builder .hex-inner {
+  transform: none;
+  clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.team-builder .hex-inner .hex-symbol {
+  font-size: 24px;
+  color: #f8fafc;
+  font-weight: bold;
+}
+.team-builder .hex-board { gap: 2px; align-items: flex-start; }
+.team-builder .hex-row { display: flex; gap: 2px; }
+.team-builder .hex-row.offset { margin-left: 46px; }
+.team-builder .hex-slot { width: 90px; height: 104px; }
+.team-builder .hex-inner { transform: none; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+.team-builder #builder-link { color: #f8fafc; }
+.team-builder .btn-main { background: #f59e0b; color: #111; }
+.team-builder .btn-main:hover { background: #fbbf24; }
+
+.board-context-menu {
+  position: absolute;
+  background: #111827;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0,0,0,.4);
+  z-index: 1000;
+  display: none;
+  min-width: 180px;
+}
+.board-context-menu button {
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+}
+.board-context-menu button:hover { background: #334155; }

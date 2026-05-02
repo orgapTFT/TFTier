@@ -1,0 +1,2 @@
+:root { --bg: #060e20; --panel: #0c121d; --accent: #f59e0b; --text: #ffffff; --border: #2c3b5a; --active: #3b82f6; }
+body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color: var(--text); display: flex; height: 100vh; margin: 0; overflow: hidden; }
