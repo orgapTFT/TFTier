@@ -113,16 +113,19 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 /* 1. 盤面全体：7列のグリッド。各マスの横幅を考慮して計算 */
 /* --- 盤面レイアウト：Flexboxジグザグ版 --- */
 
+/* --- 盤面レイアウト：7列グリッド固定 --- */
+
 .hex-board {
-  display: flex;
-  flex-wrap: wrap;       /* 7個並んだら自動で折り返す */
-  width: 670px;          /* 88px * 7個 + 隙間 に合わせた幅 */
+  display: grid;
+  /* 7列固定。1マスの幅(88px) + 隙間(6px) を計算 */
+  grid-template-columns: repeat(7, 88px); 
+  gap: 10px 6px; 
+  /* 横幅を「88px * 7 + 隙間 + ズレ幅」分、余裕を持って確保 */
+  width: 720px; 
   padding: 40px;
   background: #1a2333;
   border-radius: 20px;
   margin: 20px auto;
-  gap: 12px 6px;         /* 縦と横の隙間 */
-  justify-content: flex-start;
 }
 
 .hex-slot {
@@ -131,24 +134,24 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   height: 102px;
   background: #334455;
   clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  flex-shrink: 0;        /* 勝手に縮まないように固定 */
 }
 
-/* 2段目（8〜14個目）の塊を右にずらす */
-.hex-slot:nth-child(7n+8) {
-  margin-left: 47px;
+/* ★2段目（8〜14枚目）を右にずらす */
+.hex-slot:nth-child(n+8):nth-child(-n+14) {
+  transform: translateX(47px);
 }
 
-/* 4段目なども含め、奇数行の最初（1段目、3段目）はマージンをリセット */
-.hex-slot:nth-child(14n+15) {
-  margin-left: 0;
+/* ★4段目（22〜28枚目）を右にずらす */
+.hex-slot:nth-child(n+22):nth-child(-n+28) {
+  transform: translateX(47px);
 }
 
-/* ホバー設定 */
+/* ホバー時の設定（transformが上書きされないように注意） */
 .hex-slot:hover {
   filter: brightness(1.2);
-  transform: scale(1.05);
   z-index: 10;
+  /* スケールアップさせたい場合は以下のように書く */
+  /* transform: translateX(47px) scale(1.05); ※2,4段目の場合 */
 }
 
 /* 内部パーツ（画像など） */
