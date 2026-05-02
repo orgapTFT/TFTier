@@ -1,40 +1,10 @@
 const rows = [7, 7, 7, 7];
-const builderState = {};
+const builderState = [];
 let champions = [];
 let selectedSlot = null;
 let selectedChampion = null;
 let dragSource = null;
-let curPalette = 'c'; // 初期値を設定
-let currentTab = 'board'; // 現在のタブ
-
-function switchTab(tabName) {
-  // タブボタンのアクティブ状態を更新
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.classList.remove('active');
-  });
-  document.getElementById('tab-' + tabName).classList.add('active');
-
-  // コンテンツパネルの表示を切り替え
-  document.querySelectorAll('.content-panel').forEach(panel => {
-    panel.classList.add('hidden');
-  });
-
-  if (tabName === 'board') {
-    document.getElementById('content-board').classList.remove('hidden');
-    currentTab = 'board';
-  } else {
-    document.getElementById('content-palette').classList.remove('hidden');
-    // パレットタイプを設定
-    const paletteMap = {
-      'champ': 'c',
-      'item': 'i',
-      'aug': 'a',
-      'god': 'g'
-    };
-    setPalette(paletteMap[tabName] || 'c');
-    currentTab = 'palette';
-  }
-}
+let curPalette = 'c';
 const items = (window.itemFiles || []).map(name => `img/item/${name}`);
 
 
@@ -44,17 +14,13 @@ window.addEventListener('load', () => {
   loadChampions();
   renderPalette();
   updateSelectedInfo();
-  switchTab('board'); // 初期タブを設定
 });
 
 function initBuilderState() {
-  const rowLabels = ['A', 'B', 'C', 'D'];
-  rows.forEach((count, rowIndex) => {
-    for (let col = 1; col <= count; col++) {
-      const coord = rowLabels[rowIndex] + col;
-      builderState[coord] = { champ: null, stars: 0, items: [] };
-    }
-  });
+  const total = rows.reduce((sum, count) => sum + count, 0);
+  for (let i = 0; i < total; i++) {
+    builderState[i] = { champ: null, stars: 0, items: [] };
+  }
 }
 
 function loadChampions() {
@@ -70,7 +36,7 @@ function loadChampions() {
 function buildBoard() {
   const boardGrid = document.getElementById('board-grid');
   boardGrid.innerHTML = '';
-  const rowLabels = ['A', 'B', 'C', 'D'];
+  let index = 0;
 
   rows.forEach((count, rowIndex) => {
     const row = document.createElement('div');
@@ -78,14 +44,13 @@ function buildBoard() {
     if (rowIndex % 2 === 1) row.classList.add('offset');
 
     for (let cell = 0; cell < count; cell++) {
-      const coord = rowLabels[rowIndex] + (cell + 1);
       const slot = document.createElement('div');
       slot.className = 'hex-slot';
-      slot.dataset.coord = coord;
-      slot.addEventListener('click', () => selectSlot(coord));
-      slot.addEventListener('contextmenu', event => clearSlot(event, coord));
+      slot.dataset.index = index;
+      slot.addEventListener('click', () => selectSlot(index));
+      slot.addEventListener('contextmenu', event => clearSlot(event, index));
       slot.addEventListener('dragover', allowDrop);
-      slot.addEventListener('drop', event => onDropSlot(event, coord));
+      slot.addEventListener('drop', event => onDropSlot(event, index));
 
       const inner = document.createElement('div');
       inner.className = 'hex-inner';
@@ -101,6 +66,7 @@ function buildBoard() {
       slot.appendChild(starBox);
       slot.appendChild(itemsBox);
       row.appendChild(slot);
+      index += 1;
     }
 
     boardGrid.appendChild(row);
@@ -110,34 +76,40 @@ function buildBoard() {
 }
 
 function renderBoard() {
-  Object.keys(builderState).forEach(coord => renderSlot(coord));
+  builderState.forEach((state, index) => renderSlot(index));
 }
 
-function renderSlot(coord) {
-  const slot = document.querySelector(`.hex-slot[data-coord='${coord}']`);
+function renderSlot(index) {
+  const slot = document.querySelector(`.hex-slot[data-index='${index}']`);
   if (!slot) return;
-  const state = builderState[coord];
+  const state = builderState[index];
   const inner = slot.querySelector('.hex-inner');
   const starBox = slot.querySelector('.hex-stars');
   const itemsBox = slot.querySelector('.hex-items');
 
-  slot.classList.toggle('selected', selectedSlot === coord);
+  slot.classList.toggle('selected', selectedSlot === index);
 
-  // Remove old listeners before recreating
-  inner.removeEventListener('dragstart', handleInnerDragStart);
-  inner.removeEventListener('contextmenu', handleInnerContextmenu);
+  inner.ondragstart = null;
+  inner.oncontextmenu = null;
 
   if (state.champ && state.champ.file) {
-    inner.innerHTML = `<img src="${state.champ.file}" alt="${state.champ.name}" class="champ-portrait" style="width: 100%; height: 100%; object-fit: cover; border-radius: 0;">`;
+    inner.style.backgroundImage = `url('${state.champ.file}')`;
+    inner.style.backgroundSize = 'cover';
+    inner.style.backgroundPosition = 'center';
+    inner.innerHTML = '';
     inner.setAttribute('draggable', 'true');
-    inner.addEventListener('dragstart', handleInnerDragStart);
-    inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, coord));
+    inner.ondragstart = handleInnerDragStart;
+    inner.oncontextmenu = event => handleInnerContextmenu(event, index);
   } else if (state.champ && state.champ.name) {
+    inner.style.backgroundImage = 'none';
+    inner.style.backgroundColor = '#111827';
     inner.innerHTML = `<span class="hex-symbol">${state.champ.name}</span>`;
     inner.setAttribute('draggable', 'true');
-    inner.addEventListener('dragstart', handleInnerDragStart);
-    inner.addEventListener('contextmenu', (event) => handleInnerContextmenu(event, coord));
+    inner.ondragstart = handleInnerDragStart;
+    inner.oncontextmenu = event => handleInnerContextmenu(event, index);
   } else {
+    inner.style.backgroundImage = 'none';
+    inner.style.backgroundColor = '#111827';
     inner.innerHTML = '';
     inner.setAttribute('draggable', 'false');
   }
@@ -159,7 +131,7 @@ function renderSlot(coord) {
     icon.alt = `Item ${itemIndex + 1}`;
     icon.title = '右クリックで削除';
     icon.className = 'hex-item-icon';
-    icon.addEventListener('contextmenu', event => removeItem(event, coord, itemIndex));
+    icon.addEventListener('contextmenu', event => removeItem(event, index, itemIndex));
     itemsBox.appendChild(icon);
   });
 }
@@ -167,23 +139,23 @@ function renderSlot(coord) {
 function handleInnerDragStart(event) {
   const slot = event.target.closest('.hex-slot');
   if (!slot) return;
-  const coord = slot.dataset.coord;
-  const state = builderState[coord];
+  const index = parseInt(slot.dataset.index, 10);
+  const state = builderState[index];
   if (!state.champ) {
     event.preventDefault();
     return;
   }
-  const payload = JSON.stringify({ type: 'slot', coord });
+  const payload = JSON.stringify({ type: 'slot', index });
   event.dataTransfer.setData('application/json', payload);
   event.dataTransfer.setData('text/plain', payload);
   event.dataTransfer.effectAllowed = 'move';
 }
 
-function handleInnerContextmenu(event, coord) {
+function handleInnerContextmenu(event, index) {
   event.preventDefault();
-  builderState[coord] = { champ: null, stars: 0, items: [] };
-  if (selectedSlot === coord) selectedChampion = null;
-  renderSlot(coord);
+  builderState[index] = { champ: null, stars: 0, items: [] };
+  if (selectedSlot === index) selectedChampion = null;
+  renderSlot(index);
   updateSelectedInfo();
 }
 
@@ -261,12 +233,12 @@ function renderPlaceholderPalette(palette, type) {
   palette.appendChild(label);
 }
 
-function selectSlot(coord, assignChampion = true) {
-  selectedSlot = coord;
+function selectSlot(index, assignChampion = true) {
+  selectedSlot = index;
   if (assignChampion && selectedChampion) {
-    builderState[coord].champ = selectedChampion;
-    if (builderState[coord].stars === 0) builderState[coord].stars = 1;
-    renderSlot(coord);
+    builderState[index].champ = selectedChampion;
+    if (builderState[index].stars === 0) builderState[index].stars = 1;
+    renderSlot(index);
   }
   updateSelectedInfo();
   renderBoard();
@@ -302,19 +274,19 @@ function addItemToSelected(item) {
   renderSlot(selectedSlot);
 }
 
-function removeItem(event, coord, itemIndex) {
+function removeItem(event, slotIndex, itemIndex) {
   event.preventDefault();
-  const state = builderState[coord];
+  const state = builderState[slotIndex];
   if (!state || !state.items[itemIndex]) return;
   state.items.splice(itemIndex, 1);
-  renderSlot(coord);
+  renderSlot(slotIndex);
 }
 
-function clearSlot(event, coord) {
+function clearSlot(event, index) {
   event.preventDefault();
-  builderState[coord] = { champ: null, stars: 0, items: [] };
-  if (selectedSlot === coord) selectedChampion = null;
-  renderSlot(coord);
+  builderState[index] = { champ: null, stars: 0, items: [] };
+  if (selectedSlot === index) selectedChampion = null;
+  renderSlot(index);
   updateSelectedInfo();
 }
 
@@ -337,7 +309,7 @@ function updateSelectedInfo() {
     return;
   }
 
-  label.textContent = `スロット ${selectedSlot} が選択されています。`;
+  label.textContent = `スロット ${selectedSlot + 1} が選択されています。`;
   const state = builderState[selectedSlot];
   if (!state.champ) {
     info.textContent = 'このスロットにはチャンピオンが配置されていません。チャンピオンを選択してください。';
@@ -349,10 +321,10 @@ function updateSelectedInfo() {
 }
 
 function sel(slotElement) {
-  if (!slotElement || !slotElement.dataset || slotElement.dataset.coord === undefined) return;
-  const coord = slotElement.dataset.coord;
-  if (!builderState[coord]) return;
-  selectSlot(coord);
+  if (!slotElement || !slotElement.dataset || slotElement.dataset.index === undefined) return;
+  const index = parseInt(slotElement.dataset.index, 10);
+  if (Number.isNaN(index)) return;
+  selectSlot(index);
 }
 
 function fill(src, name = '') {
@@ -414,21 +386,19 @@ function addChampionToBoard(champ) {
 
 function getFirstEmptySlot() {
   // 盤面左下（row 3）から左から右へ探して、埋まっていれば上の行へ移動
-  const rowLabels = ['D', 'C', 'B', 'A'];
-  for (const rowLabel of rowLabels) {
-    for (let col = 1; col <= 7; col++) {
-      const coord = rowLabel + col;
-      if (!builderState[coord].champ) return coord;
+  for (let row = rows.length - 1; row >= 0; row--) {
+    const rowStart = rows.slice(0, row).reduce((sum, count) => sum + count, 0);
+    const rowEnd = rowStart + rows[row];
+    for (let i = rowStart; i < rowEnd; i++) {
+      if (!builderState[i].champ) return i;
     }
   }
   return null;
 }
 
-function findNextEmptySlot(currentCoord) {
-  const coords = Object.keys(builderState).sort();
-  const currentIndex = coords.indexOf(currentCoord);
-  for (let i = currentIndex + 1; i < coords.length; i++) {
-    if (!builderState[coords[i]].champ) return coords[i];
+function findNextEmptySlot(currentIndex) {
+  for (let i = currentIndex + 1; i < builderState.length; i++) {
+    if (!builderState[i].champ) return i;
   }
   return null;
 }
@@ -441,14 +411,11 @@ function onDragItem(event, itemPath) {
 }
 
 function copyBuilderLink() {
-  const state = {};
-  Object.keys(builderState).forEach(coord => {
-    state[coord] = {
-      champ: builderState[coord].champ ? builderState[coord].champ.name : null,
-      stars: builderState[coord].stars,
-      items: builderState[coord].items
-    };
-  });
+  const state = builderState.map(slot => ({
+    champ: slot.champ ? slot.champ.name : null,
+    stars: slot.stars,
+    items: slot.items
+  }));
   const payload = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify({ slots: state })))));
   const base = location.href.split('?')[0];
   const url = `${base}?builder=${payload}`;
@@ -493,19 +460,19 @@ function onDragChampion(event, champName) {
   event.dataTransfer.effectAllowed = 'copy';
 }
 
-function onDragSlot(event, sourceCoord) {
-  const state = builderState[sourceCoord];
+function onDragSlot(event, sourceIndex) {
+  const state = builderState[sourceIndex];
   if (!state.champ) {
     event.preventDefault();
     return;
   }
-  const payload = JSON.stringify({ type: 'slot', coord: sourceCoord });
+  const payload = JSON.stringify({ type: 'slot', index: sourceIndex });
   event.dataTransfer.setData('application/json', payload);
   event.dataTransfer.setData('text/plain', payload);
   event.dataTransfer.effectAllowed = 'move';
 }
 
-function onDropSlot(event, targetCoord) {
+function onDropSlot(event, targetIndex) {
   event.preventDefault();
   let data = null;
   const raw = event.dataTransfer.getData('application/json') || event.dataTransfer.getData('text/plain');
@@ -517,20 +484,19 @@ function onDropSlot(event, targetCoord) {
         type: event.dataTransfer.getData('type'),
         name: event.dataTransfer.getData('name'),
         item: event.dataTransfer.getData('item'),
-        coord: event.dataTransfer.getData('coord')
+        index: Number(event.dataTransfer.getData('index'))
       };
     }
   }
   if (!data || !data.type) return;
 
   if (data.type === 'champion') {
-    const name = data.name;
-    const champ = champions.find(c => c.name === name);
+    const champ = champions.find(c => c.name === data.name);
     if (!champ) return;
-    builderState[targetCoord].champ = champ;
-    if (builderState[targetCoord].stars === 0) builderState[targetCoord].stars = 1;
-    renderSlot(targetCoord);
-    selectedSlot = targetCoord;
+    builderState[targetIndex].champ = champ;
+    if (builderState[targetIndex].stars === 0) builderState[targetIndex].stars = 1;
+    renderSlot(targetIndex);
+    selectedSlot = targetIndex;
     selectedChampion = champ;
     updateSelectedInfo();
     return;
@@ -539,24 +505,24 @@ function onDropSlot(event, targetCoord) {
   if (data.type === 'item') {
     const item = data.item;
     if (!item) return;
-    const state = builderState[targetCoord];
+    const state = builderState[targetIndex];
     if (!state.champ || state.items.length >= 3) return;
     state.items.push(item);
-    renderSlot(targetCoord);
-    selectedSlot = targetCoord;
+    renderSlot(targetIndex);
+    selectedSlot = targetIndex;
     updateSelectedInfo();
     return;
   }
 
   if (data.type === 'slot') {
-    const sourceCoord = data.coord;
-    if (!sourceCoord || sourceCoord === targetCoord) return;
-    const temp = builderState[targetCoord];
-    builderState[targetCoord] = builderState[sourceCoord];
-    builderState[sourceCoord] = temp;
-    renderSlot(sourceCoord);
-    renderSlot(targetCoord);
-    selectedSlot = targetCoord;
+    const sourceIndex = Number(data.index);
+    if (isNaN(sourceIndex) || sourceIndex === targetIndex) return;
+    const temp = builderState[targetIndex];
+    builderState[targetIndex] = builderState[sourceIndex];
+    builderState[sourceIndex] = temp;
+    renderSlot(sourceIndex);
+    renderSlot(targetIndex);
+    selectedSlot = targetIndex;
     updateSelectedInfo();
     return;
   }
