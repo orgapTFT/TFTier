@@ -108,15 +108,17 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   box-shadow: 0 4px 12px rgba(0,0,0,0.6);
   cursor: pointer;
 }
-/* 1. 盤面全体：7列グリッドで管理 */
+/* --- Team builder styles --- */
+
+/* 1. 盤面全体：7列のグリッド。各マスの横幅を考慮して計算 */
 .hex-board {
   display: grid;
   grid-template-columns: repeat(7, 88px);
-  gap: 12px 6px;
+  gap: 4px 6px; /* 縦の隙間を少し詰める */
   padding: 40px;
   background: #1a2333;
   border-radius: 20px;
-  width: fit-content;
+  width: 710px; /* 7枚分 + ズレる分の幅を確保 */
   margin: 20px auto;
   position: relative;
 }
@@ -132,19 +134,24 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   transition: transform 0.1s, filter 0.1s;
 }
 
+
+/* 8番目(2段目の最初)から14番目まで */
+.hex-slot:nth-child(n+8):nth-child(-n+14) {
+  transform: translateX(47px);
+}
+
+/* 22番目(4段目の最初)から28番目まで */
+.hex-slot:nth-child(n+22):nth-child(-n+28) {
+  transform: translateX(47px);
+}
+
+/* ホバー時の挙動（transformが上書きされないように注意） */
 .hex-slot:hover {
   filter: brightness(1.2);
-  transform: scale(1.05);
   z-index: 10;
 }
 
-/* 「hex-row」という名前の、偶数番目(2, 4番目)の要素だけを右にずらす */
-.hex-board .hex-row:nth-child(even) {
-  margin-left: 47px !important; /* 強制的に適用 */
-  display: flex;                /* 横並びを維持 */
-}
-
-/* 4. 内部パーツの配置 */
+/* 内部パーツ（画像など） */
 .hex-inner {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
@@ -168,17 +175,10 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .items-container img {
   width: 22px; height: 22px;
   border-radius: 4px; border: 1px solid #111;
-  background: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.8);
 }
 
-/* 5. 状態変化（ドラッグ・選択） */
-.hex-slot.dragover {
-  background: #4a5568 !important;
-  box-shadow: inset 0 0 15px var(--accent);
-}
-
+/* 選択中などの状態 */
 .hex-slot.selected {
-  background: #4b5563;
   outline: 3px solid var(--accent);
 }
 

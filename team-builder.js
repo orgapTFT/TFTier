@@ -569,34 +569,37 @@ function initSimpleBoard() {
   });
 }
 
-function handleDropOnHex(e, hex) {
-  e.preventDefault();
-  const data = e.dataTransfer.getData('text/plain');
+// ドラッグ開始時に「どのスロットから」動かしたかを記録しておく
+let dragSourceSlot = null;
 
-  if (data.startsWith('item:')) {
-    // アイテム追加
-    let itemsDiv = hex.querySelector('.items');
-    if (!itemsDiv) {
-      itemsDiv = document.createElement('div');
-      itemsDiv.className = 'items';
-      itemsDiv.style.display = 'flex';
-      itemsDiv.style.gap = '4px';
-      itemsDiv.style.marginTop = '6px';
-      hex.appendChild(itemsDiv);
+function handleDragStart(e) {
+    dragSourceSlot = e.currentTarget; // 動かし始めたスロットを保存
+    // ...その他の処理（データのセットなど）
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    const targetSlot = e.currentTarget; // 重ねた先のスロット
+
+    if (dragSourceSlot && dragSourceSlot !== targetSlot) {
+        // 1. 移動先のデータを一時保存
+        const targetData = {
+            champ: targetSlot.dataset.champ,
+            items: targetSlot.dataset.items 
+        };
+
+        // 2. 移動先にドラッグ元のデータをセット
+        updateSlot(targetSlot, {
+            champ: dragSourceSlot.dataset.champ,
+            items: dragSourceSlot.dataset.items
+        });
+
+        // 3. ★ここが重要：元の位置を「移動先のデータ」で上書き（入れ替え）
+        // 移動先が空だったなら、元の位置も空（null）になる
+        updateSlot(dragSourceSlot, targetData);
+        
+        dragSourceSlot = null; // リセット
     }
-    if (itemsDiv.children.length < 3) {
-      const slot = document.createElement('div');
-      slot.style.fontSize = '18px';
-      slot.textContent = data.split(':')[1];
-      itemsDiv.appendChild(slot);
-    }
-  } else {
-    // チャンピオン配置・移動
-    hex.innerHTML = `
-      <div style="font-size:42px; margin-bottom:6px;">${data}</div>
-      <div class="items" style="display:flex; gap:4px;"></div>
-    `;
-  }
 }
 
 // ページ読み込み時に実行
