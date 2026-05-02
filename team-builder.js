@@ -574,7 +574,16 @@ let dragSourceSlot = null;
 
 function handleDragStart(e) {
     dragSourceSlot = e.currentTarget; // 動かし始めたスロットを保存
-    // ...その他の処理（データのセットなど）
+const index = event.currentTarget.parentElement.dataset.index;
+  const state = builderState[index];
+  if (!state.champ) return;
+
+  event.dataTransfer.setData('application/json', JSON.stringify({
+    sourceIndex: index,
+    state: state
+  }));
+  // ドラッグ中のゴースト画像を見やすく設定
+  event.dataTransfer.effectAllowed = 'move';
 }
 
 function handleDrop(e) {
