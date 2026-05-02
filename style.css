@@ -95,58 +95,97 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
 .url-btn { background: #334155; border: none; color: #fff; height: 28px; width: 32px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
 
 /* Team builder styles */
-.hex-board { display: inline-flex; flex-direction: column; gap: 28px; width: 100%; align-items: center; }
-.hex-row { display: flex; gap: 28px; justify-content: center; }
-.hex-row.offset { margin-left: 55px; }
-.hex-slot { position: relative; width: 110px; height: 126px; cursor: pointer; }
-.hex-inner {
-  width: 100%;
-  height: 100%;
-  background: #4b5563;
-  border: 2px solid #9ca3af;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+/* 1. 盤面全体：7列グリッドで管理 */
+.hex-board {
+  display: grid;
+  grid-template-columns: repeat(7, 88px);
+  gap: 12px 6px;
+  padding: 40px;
+  background: #1a2333;
+  border-radius: 20px;
+  width: fit-content;
+  margin: 20px auto;
   position: relative;
 }
 
-.champ-portrait {
+/* 2. 六角形マス目：基本設定 */
+.hex-slot {
   position: relative;
-  z-index: 2;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-}
-.hex-slot.selected .hex-inner { border-color: #f59e0b; box-shadow: 0 0 18px rgba(245, 158, 11, 0.35); }
-.content-panel {
-  display: block;
-}
-
-.content-panel.hidden {
-  display: none;
-}
-.hex-star { font-size: 16px; color: #f59e0b; text-shadow: 0 0 6px rgba(0, 0, 0, 0.6); }
-.hex-items { position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; }
-.tab-btn {
-  padding: 8px 16px;
-  background: #374151;
-  color: #d1d5db;
-  border: 1px solid #4b5563;
-  border-radius: 8px;
+  width: 88px;
+  height: 102px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  width: 100%;
-  text-align: center;
+  background: #334455;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  transition: transform 0.1s, filter 0.1s;
 }
 
-.tab-btn.active {
-  background: #f59e0b;
-  color: #111827;
-  border-color: #f59e0b;
+.hex-slot:hover {
+  filter: brightness(1.2);
+  transform: scale(1.05);
+  z-index: 10;
 }
+
+/* 3. 互い違いの配置（2段目と4段目を右へ） */
+.hex-slot:nth-child(n+8):nth-child(-n+14),
+.hex-slot:nth-child(n+22):nth-child(-n+28) {
+  margin-left: 47px;
+}
+
+/* 4. 内部パーツの配置 */
+.hex-inner {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  pointer-events: none;
+}
+
+.champ-display {
+  width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+}
+
+.items-container {
+  position: absolute;
+  bottom: 12px;
+  display: flex; gap: 3px; justify-content: center;
+  width: 100%; z-index: 20;
+}
+
+.items-container img {
+  width: 22px; height: 22px;
+  border-radius: 4px; border: 1px solid #111;
+  background: #000; box-shadow: 0 2px 5px rgba(0,0,0,0.8);
+}
+
+/* 5. 状態変化（ドラッグ・選択） */
+.hex-slot.dragover {
+  background: #4a5568 !important;
+  box-shadow: inset 0 0 15px var(--accent);
+}
+
+.hex-slot.selected {
+  background: #4b5563;
+  outline: 3px solid var(--accent);
+}
+
+/* 右サイドバー・カード類 */
+.champ-card, .item-card {
+  background: #111827; border: 1px solid #334155; border-radius: 12px;
+  padding: 8px; cursor: pointer; transition: 0.2s;
+}
+.champ-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.champ-thumb { width: 48px; height: 48px; border-radius: 8px; }
+.champ-name { font-size: 11px; margin-top: 4px; text-align: center; }
+
+/* タブボタン */
+.tab-btn {
+  padding: 8px; width: 100%; background: #374151; color: #fff;
+  border: none; border-radius: 6px; cursor: pointer;
+}
+.tab-btn.active { background: var(--accent); color: #111; }
+
+
 
 .tab-btn:hover {
   background: #4b5563;
@@ -231,102 +270,3 @@ body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #111; color
   cursor: pointer;
 }
 .board-context-menu button:hover { background: #334155; }
-
-
-
-
-
-.hex-board {
-  display: grid;
-  grid-template-columns: repeat(7, 88px);
-  gap: 8px 6px;
-  padding: 30px 20px;
-  background: #1a2333;
-  border-radius: 20px;
-  width: fit-content;
-  margin: 0 auto;
-}
-
-.hex {
-  width: 88px;
-  height: 102px;
-  background: #334455;
-  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-  cursor: pointer;
-}
-
-.hex:hover { filter: brightness(1.25); }
-
-/* 2段目と4段目をすべて半分ずらす */
-.hex:nth-child(n+8):nth-child(-n+14),
-.hex:nth-child(n+22):nth-child(-n+28) {
-  margin-left: 47px;
-}
-    .hex.dragover { background: #0a5 !important; box-shadow: 0 0 20px #0f0; }
-
-
-    .piece {
-      width: 68px;
-      height: 68px;
-      font-size: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .items {
-      display: flex;
-      gap: 4px;
-      margin-top: 6px;
-    }
-    .item-slot {
-      width: 24px;
-      height: 24px;
-      background: #222;
-      border: 2px solid #777;
-      border-radius: 6px;
-      font-size: 16px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-
-
-    .hex-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center; /* チャンピオンを中央に */
-}
-
-.champ-display {
-  width: 70px; /* サイズ固定 */
-  height: 70px;
-  background-size: cover;
-  background-position: center;
-  z-index: 2;
-}
-
-.items-container {
-  position: absolute;
-  bottom: 15px; /* 下部に配置 */
-  display: flex;
-  gap: 2px;
-  z-index: 3;
-}
-
-.items-container img {
-  width: 20px; /* アイテムは小さく */
-  height: 20px;
-  border-radius: 4px;
-  border: 1px solid #444;
-}

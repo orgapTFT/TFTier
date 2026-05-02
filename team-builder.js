@@ -37,42 +37,30 @@ function loadChampions() {
 
 
 function buildBoard() {
-  const boardGrid = document.getElementById('board-grid');
-  boardGrid.innerHTML = '';
-  boardGrid.className = 'hex-board';
+  const board = document.getElementById('board');
+  board.innerHTML = '';
 
-  let index = 0;
-  for (let row = 0; row < 4; row++) {
-    const rowDiv = document.createElement('div');
-    rowDiv.className = 'hex-row';
+  for (let i = 0; i < 28; i++) {
+    const slot = document.createElement('div');
+    slot.className = 'hex-slot';
+    slot.dataset.index = i;
 
-    for (let col = 0; col < 7; col++) {
-      const slot = document.createElement('div');
-      slot.className = 'hex-slot';
-      slot.dataset.index = index;
+    // クリックやドロップのイベント設定[cite: 2]
+    slot.onclick = () => selectSlot(i);
+    slot.ondragover = (e) => { e.preventDefault(); slot.classList.add('dragover'); };
+    slot.ondragleave = () => slot.classList.remove('dragover');
+    slot.ondrop = (e) => onDropSlot(e, i);
 
-      slot.addEventListener('click', () => selectSlot(index));
-      slot.addEventListener('contextmenu', e => clearSlot(e, index));
-      slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('dragover'); });
-      slot.addEventListener('dragleave', () => slot.classList.remove('dragover'));
-      slot.addEventListener('drop', e => onDropSlot(e, index));
+    // ★ ここがポイント：崩れない内部構造をJSで生成
+    slot.innerHTML = `
+      <div class="hex-inner">
+        <div class="champ-display"></div>  <!-- チャンピオン表示用 -->
+        <div class="items-container"></div> <!-- アイテム表示用 -->
+      </div>
+    `;
 
-      const inner = document.createElement('div');
-      inner.className = 'hex-inner';
-
-      const starBox = document.createElement('div');
-      starBox.className = 'hex-stars';
-
-      const itemsBox = document.createElement('div');
-      itemsBox.className = 'hex-items';
-
-      slot.append(inner, starBox, itemsBox);
-      rowDiv.appendChild(slot);
-      index++;
-    }
-    boardGrid.appendChild(rowDiv);
+    board.appendChild(slot);
   }
-  renderBoard();
 }
 
 // ドラッグ開始：スロット全体のデータを保持
