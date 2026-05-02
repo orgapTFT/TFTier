@@ -31,19 +31,19 @@
       border-radius: 15px;
     }
 
-    .hex {
-      width: 88px;
-      height: 108px;
-      background: #334;
-      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      padding-top: 3px;
-      position: relative;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.5);
-    }
+.hex {
+  width: 88px;
+  height: 102px;
+  background: #334455;
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+  cursor: pointer;
+}
 
 /* 2段目と4段目をすべて半分ずらす */
 .hex:nth-child(n+8):nth-child(-n+14),
