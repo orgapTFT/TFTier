@@ -1,22 +1,36 @@
 window.onload = () => {
     const query = getBuilderQuery();
     const saved = localStorage.getItem('tft_autosave');
+    
     if (saved) {
         try {
             project = patchProjectData(JSON.parse(saved));
             loadDefaultAssets();
-            renderPalette(); renderGuideList(); loadActiveGuide();
+            
+            // 枠（スロットの土台）を生成する関数をここで呼ぶ！
+            if (typeof initCanvasStructure === 'function') {
+                initCanvasStructure(); 
+            }
+            
+            renderPalette(); 
+            renderGuideList(); 
+            loadActiveGuide();
         } catch(e) {
-            addNewGuide();
-            loadDefaultAssets();
-            renderPalette();
+            console.error("Load Error:", e);
+            setupInitialGuide();
         }
     } else {
-        addNewGuide();
-        loadDefaultAssets();
-        renderPalette();
+        setupInitialGuide();
         if (query.guide) project.guides.pop();
     }
+};
+
+// 共通の初期化用に関数化しておくとスッキリします
+function setupInitialGuide() {
+    if (typeof initCanvasStructure === 'function') initCanvasStructure();
+    addNewGuide();
+    loadDefaultAssets();
+    renderPalette();
 }
 
 function ensureProjectAssets(data) {

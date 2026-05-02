@@ -23,117 +23,22 @@
   </div>
  
 
-
-  <main class="flex-1 px-6 py-8 overflow-y-auto">
-    <div class="flex flex-col gap-6">
-      <section class="bg-zinc-900 border border-zinc-700 rounded-3xl p-5">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-3xl font-bold text-yellow-400">TFTeam Builder</h1>
-          </div>
-        </div>
-
-        <div id="board-container" class="mt-6">
-          <div class="flex gap-8 justify-center">
-            <!-- item -->
-            <div>
-              <h3 class="text-yellow-400 mb-3 text-center">ITEMS</h3>
-              <div id="items-palette" class="flex flex-wrap gap-3 max-w-[140px]"></div>
-            </div>
-
-            <!-- 盤面 -->
-<div>
-  <div id="board" class="hex-board"></div> 
-</div>
-
-            
-
-            <!-- champ -->
-            <div>
-              <h3 class="text-yellow-400 mb-3 text-center">CHAMPIONS</h3>
-              <div id="bench" class="flex flex-col gap-4"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+  <div class="sidebar">
+    <div>
+      <h2>📦 チャンピオン</h2>
+      <div id="bench"></div>
     </div>
 
-
-
-      <section class="flex flex-col gap-6 lg:flex-row">
-        <aside id="right-sidebar" class="w-full lg:w-96 flex flex-col gap-4">
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
-            <div class="flex flex-col gap-4">
-              <div class="flex justify-center gap-3">
-                <button onclick="setDifficulty(1)" class="symbol-btn" style="background:green; width:36px; height:36px;">1</button>
-                <button onclick="setDifficulty(2)" class="symbol-btn" style="background:yellow; width:36px; height:36px;">2</button>
-                <button onclick="setDifficulty(3)" class="symbol-btn" style="background:red; width:36px; height:36px;">3</button>
-              </div>
-              <div class="flex justify-center gap-2 flex-wrap">
-                <button onclick="setStars(0)" class="star-btn">★0</button>
-                <button onclick="setStars(1)" class="star-btn">★1</button>
-                <button onclick="setStars(2)" class="star-btn">★2</button>
-                <button onclick="setStars(3)" class="star-btn">★3</button>
-                <button onclick="setStars(4)" class="star-btn">★4</button>
-              </div>
-              <div class="symbol-row justify-center">
-                <button class="symbol-btn" onclick="insertSymbol('→')">→</button>
-                <button class="symbol-btn" onclick="insertSymbol('↔')">↔</button>
-                <button class="symbol-btn" onclick="insertSymbol('/')">/</button>
-                <button class="symbol-btn" onclick="insertSymbol('>')">&gt;</button>
-                <button class="symbol-btn" onclick="insertSymbol('<')">&lt;</button>
-              </div>
-              <div class="text-center text-xs text-zinc-400">選択中のスロットに記号を挿入します</div>
-            </div>
-          </div>
-
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
-            <div class="flex gap-1 bg-black rounded-2xl overflow-hidden">
-              <button class="p-tab active" id="tab-c" onclick="setPalette('c')">CHAMP</button>
-              <button class="p-tab" id="tab-i" onclick="setPalette('i')">ITEM</button>
-              <button class="p-tab" id="tab-a" onclick="setPalette('a')">AUG</button>
-              <button class="p-tab" id="tab-g" onclick="setPalette('g')">GOD</button>
-            </div>
-            <div class="unified-size-ctrl mt-4">
-              <button onclick="changeSelectedSlotSize('L')">L</button>
-              <button onclick="changeSelectedSlotSize('M')">M</button>
-              <button onclick="changeSelectedSlotSize('S')">S</button>
-            </div>
-            <div class="mt-4 flex items-center gap-2">
-              <button onclick="document.getElementById('asset-up').click()" class="btn-main" style="flex:1;">+ 画像読込</button>
-              <label class="text-xs text-zinc-400"><input type="checkbox" id="show-hidden-toggle" onchange="renderPalette()"> 非表示を表示</label>
-            </div>
-            <input type="file" id="asset-up" multiple style="display:none" onchange="handleAssetUpload(event)">
-            <div id="palette-container" class="mt-4 bg-black border border-zinc-800 rounded-2xl p-3" style="min-height: 280px;">
-              <div id="palette-grid"></div>
-            </div>
-          </div>
-
-          <div class="bg-zinc-900 border border-zinc-700 rounded-3xl p-4">
-            <div class="url-tool-row">
-              <label class="text-xs text-zinc-400 mb-2 block">TT Link (Main):</label>
-              <div class="url-input-group">
-                <input type="text" id="tt-url" class="flex-1 rounded-2xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200" oninput="markChanged()" placeholder="https://...">
-                <button class="url-btn" onclick="pasteFromClipboard('tt-url')">📋</button>
-                <button class="url-btn" onclick="insertBuilderLink('tt-url')">↪</button>
-                <button class="url-btn" onclick="document.getElementById('tt-url').value=''; markChanged();">×</button>
-                <button class="url-btn" onclick="openLink('tt-url')">🌐</button>
-              </div>
-            </div>
-            <div class="url-tool-row mt-4">
-              <label class="text-xs text-zinc-400 mb-2 block">Progression Link:</label>
-              <div class="url-input-group">
-                <input type="text" id="tt-url-prog" class="flex-1 rounded-2xl border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-200" oninput="markChanged()" placeholder="進行リンク">
-                <button class="url-btn" onclick="pasteFromClipboard('tt-url-prog')">📋</button>
-                <button class="url-btn" onclick="document.getElementById('tt-url-prog').value=''; markChanged();">×</button>
-                <button class="url-btn" onclick="openLink('tt-url-prog')">🌐</button>
-              </div>
-            </div>
-          </div>
-        </aside>
-      </section>
+    <div>
+      <h2>⚔️ アイテム</h2>
+      <div id="items"></div>
     </div>
-  </main>
+  </div>
+
+  <div>
+    <h1>🛡️ TFT Hex ボード</h1>
+    <div id="board"></div>
+  </div>
 
 
 <script src="js/core.js"></script>
