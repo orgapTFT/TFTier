@@ -44,7 +44,11 @@
       position: relative;
       box-shadow: 0 4px 8px rgba(0,0,0,0.5);
     }
-    .hex:nth-child(7n+1) { margin-top: 54px; }
+
+/* 2段目(8枚目)と4段目(22枚目)の左側に余白を作り、行全体を押し出す */
+.hex:nth-child(14n+8) {
+    margin-left: 54px; 
+}
 
     .hex .champ {
       width: 68px;
