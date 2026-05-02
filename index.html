@@ -6,22 +6,21 @@
   <title>TFTier</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="index.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen">
-  <header class="bg-black border-b border-yellow-500 py-4">
-    <div class="max-w-6xl mx-auto px-6 flex justify-between items-center">
-      <h1 class="text-3xl font-bold text-yellow-400 cursor-pointer" onclick="window.location.href='index.html'">TFTier</h1>
-      <nav class="flex space-x-6">
-        <a href="index.html" class="text-yellow-400 hover:text-yellow-300">👑Tier</a>
-        <a href="builder.html" class="text-zinc-400 hover:text-zinc-300">📘Guide</a>
-        <a href="team-builder.html" class="text-zinc-400 hover:text-zinc-300">🧩Builder</a>
-        <a href="info.html" class="text-zinc-400 hover:text-zinc-300">📝Info</a>
-        <a href="links.html" class="text-zinc-400 hover:text-zinc-300">🔗Link</a>
-      </nav>
-    </div>
-  </header>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex">
+<div id="nav-sidebar">
+    <h1 class="nav-title" onclick="window.location.href='index.html'">TFTier</h1>
+    <nav class="nav-menu">
+        <a href="index.html" class="nav-link active">👑Tier</a>
+        <a href="builder.html" class="nav-link">📘Guide</a>
+        <a href="team-builder.html" class="nav-link">🧩Builder</a>
+        <a href="info.html" class="nav-link">📝Info</a>
+        <a href="links.html" class="nav-link">🔗Link</a>
+    </nav>
+</div>
 
-  <main class="max-w-6xl mx-auto px-6 py-8">
+  <main class="flex-1 px-6 py-8 overflow-y-auto">
     <div class="text-center mb-8">
       <h1 class="text-4xl font-bold text-yellow-400 mb-3">Set 17 ティアリスト</h1>
       <p class="text-zinc-400 text-xl">Patch 17.2 | 2026年4月時点のメタ</p>
