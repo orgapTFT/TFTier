@@ -236,23 +236,24 @@ html, body {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 4px;
+    gap: 1px;
     z-index: 15;
 }
 
 /* 装備済みアイテムスロット */
 .item-slot {
-    width: 22px;
-    height: 22px;
+    width: 25px;
+    height: 25px;
     background: #000;
     border: 1px solid #fff;
-    border-radius: 4px;
+    border-radius: 3px;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     cursor: help;
     overflow: hidden;
+    flex-shrink: 0;              /* 縮まないように */
 }
 
 /* アイテム名は通常非表示 */

@@ -54,18 +54,18 @@ function placeChampion(container, data) {
     champ.dataset.name = champName;    // 念のため保存
 
     // 画像表示
-champ.innerHTML = `
-    <img src="./img/champ/17/${champName}.avif" 
-         alt="${champName}" 
-         class="champ-icon"
-         style="width:88%; height:88%; object-fit:contain;"
-         onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
+    champ.innerHTML = `
+        <img src="./img/champ/17/${champName}.avif" 
+             alt="${champName}" 
+             class="champ-icon"
+             style="width:88%; height:88%; object-fit:contain;"
+             onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
 
-    <!-- 盤面チャンピオン名 -->
-    <div class="champ-name-onboard">
-        ${champName}
-    </div>
-`;
+        <!-- 盤面用チャンピオン名 -->
+        <div class="champ-name-onboard">
+            ${champName}
+        </div>
+    `;
 
     // 星の要素（そのまま）
     const starLabel = document.createElement('div');
