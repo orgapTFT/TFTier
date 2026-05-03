@@ -33,9 +33,13 @@ function addDragToChampion(champ) {
         }, 10);
     });
 
-    champ.addEventListener('dragend', () => {
-        champ.classList.remove('dragging-hidden');
+champ.addEventListener('dragend', () => {
+    champ.classList.remove('dragging-hidden');
+    document.querySelectorAll('.dragging-hidden').forEach(el => {
+        el.classList.remove('dragging-hidden');
     });
+    window.currentDragSourceItem = null;
+});
 }
 
 function placeChampion(container, data) {
@@ -86,6 +90,33 @@ function placeChampion(container, data) {
     addDragToChampion(champ);
 }
 
+/*コピー先*/
+function addItemSlot(container, icon) {
+    const slot = document.createElement('div');
+    slot.className = 'item-slot';
+    slot.textContent = icon;
+    slot.draggable = true;
+    
+    slot.addEventListener('dragstart', e => {
+        const champContainer = slot.closest('.hex'); // または親のchampコンテナ
+        window.currentDragSourceItem = slot; // ← 重要
+        
+        e.dataTransfer.setData('application/json', JSON.stringify({
+            type: 'item',
+            icon: icon,
+            fromHex: Array.from(document.querySelectorAll('.hex')).indexOf(champContainer)
+        }));
+        
+        slot.classList.add('dragging-hidden');
+    });
+    
+    slot.addEventListener('dragend', () => {
+        slot.classList.remove('dragging-hidden');
+    });
+    
+    container.appendChild(slot);
+}
+
 function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
@@ -113,24 +144,30 @@ function handleDrop(e, hex) {
         } 
        // --- アイテムの移動・入れ替え ---
         else if (data.type === 'item') {
-            const existingChamp = hex.querySelector('.champ');
-            if (!existingChamp) {
-                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
-                return;
-            }
-              let itemsDiv = hex.querySelector('.items') || document.createElement('div');
-            itemsDiv.className = 'items';
-            hex.appendChild(itemsDiv);
+    const existingChamp = hex.querySelector('.champ');
+    if (!existingChamp) return;
 
-            // 同じマス内か、3枠空いている場合のみ移動許可
-            if (itemsDiv.children.length < 3 || hex === document.querySelectorAll('.hex')[data.fromHexIndex]) {
-                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                addItemSlot(itemsDiv, data.icon);
-            } else {
-                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
-                alert("アイテム枠がいっぱいです");
-            }
+    let itemsDiv = hex.querySelector('.items-container') || 
+                   hex.querySelector('.items');
+    
+    if (!itemsDiv) {
+        itemsDiv = document.createElement('div');
+        itemsDiv.className = 'items-container';
+        hex.appendChild(itemsDiv);
+    }
+
+    // 空きがあるか、同じマス内
+    if (itemsDiv.children.length < 3) {
+        // 元のアイテムを確実に削除
+        if (window.currentDragSourceItem) {
+            window.currentDragSourceItem.remove();
+            window.currentDragSourceItem = null;
         }
+        
+        addItemSlot(itemsDiv, data.icon);
+    } else {
+    }
+}
     } catch (err) {
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 4) { // アイコン単体（ベンチ）の場合
