@@ -46,59 +46,64 @@
 }
 
 
-/* マス目の基本：六角形を維持 */
+/* 六角形（マス）の基準 */
 .hex {
     position: relative;
     width: 100px;
     height: 110px;
-    /* 背景色を少し明るくするか、境界線を引くと形が見えやすくなります */
-    background: #1a1a2e; 
+    background: #1a1a2e; /* 形が見えるように背景色を設定 */
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    transition: background 0.2s;
-}
-
-/* 枠線を見せたい場合のおまじない（擬似要素で枠を作る） */
-.hex::after {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    pointer-events: none;
+    overflow: hidden;
 }
 
 /* チャンピオン：上下いっぱいに表示 */
 .champ {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1; /* アイテムより下 */
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px; /* 絵文字のサイズ */
+    z-index: 1; /* 下に配置 */
 }
 
-/* アイテムコンテナ：初期配置で左に寄るのを防ぐ */
+/* アイテムコンテナ：最初から中央下に固定 */
 .items-container {
     position: absolute;
-    bottom: 12px; /* 少し上に上げて欠けるのを防ぐ */
-    left: 50%; /* 中央寄せの起点 */
-    transform: translateX(-50%); /* 起点から半分戻して完全中央 */
-    width: 90%; /* 六角形の角に当たらないよう少し狭める */
+    bottom: 15px; /* 下に寄せる（欠けないギリギリの高さ） */
+    left: 0;
+    width: 100%; /* 横幅いっぱいにしてから */
     display: flex;
-    justify-content: center;
-    align-items: center;
+    justify-content: center; /* 中身を中央寄せ */
     gap: 2px;
-    z-index: 10; /* 最前面 */
+    z-index: 10; /* キャラより上に表示 */
+    pointer-events: none; /* ドラッグ操作を邪魔しない */
 }
 
-/* アイテムスロット：欠けないように小さめにする */
+/* 個別アイテムスロット */
 .item-slot {
     width: 22px;
     height: 22px;
-    background: #000;
+    background: rgba(0, 0, 0, 0.8);
     border: 1px solid #fff;
     border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 12px;
+    pointer-events: auto; /* スロットだけはクリック・ドラッグ可能に */
+}
+
+/* 星（レベル）：上部に固定 */
+.star {
+    position: absolute;
+    top: 5px;
+    width: 100%;
+    text-align: center;
+    color: #ffd700;
+    font-size: 16px;
+    z-index: 5;
 }
 
 /* チャンピオン画像がある場合（imgタグなど） */
@@ -106,18 +111,6 @@
     width: 100%;
     height: 100%;
     object-fit: cover; /* 縦横比を維持しつつ隙間なく表示 */
-}
-
-/* 星（レベル）：上部に表示 */
-.star {
-    position: absolute;
-    top: 5px;
-    width: 100%;
-    text-align: center;
-    color: #ffd700;
-    text-shadow: 0 0 3px #000;
-    font-size: 14px;
-    z-index: 3;
 }
 
     .hex.dragover { background: #0a5 !important; }
