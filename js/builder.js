@@ -16,20 +16,23 @@ function createBoard() {
 
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
-        const parent = champ.parentElement;
-        window.currentDragSource = parent;
+        // ドラッグ開始時の親要素（マス）を確実に保持
+        window.currentDragSource = champ.parentElement;
 
-        // 【重要】星の数は champ.dataset.stars から確実に取得
+        // 現在の星の数を取得（未設定なら1）
         const currentStars = champ.dataset.stars || "1";
 
         const data = {
             type: 'champ',
             icon: champ.querySelector('.champ-icon').innerHTML,
             stars: currentStars,
-            items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+            // アイテムスロットからアイコンを取得
+            items: Array.from(window.currentDragSource.querySelectorAll('.item-slot')).map(s => s.innerHTML)
         };
+        
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
+        // 残像を残して本体を隠す
         setTimeout(() => {
             if(champ) champ.classList.add('dragging-hidden');
         }, 10);
@@ -44,19 +47,31 @@ function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
 
+    // 数値として扱う
     let currentStars = parseInt(data.stars) || 1;
 
+    // 1. チャンピオン本体
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     champ.dataset.stars = currentStars; 
     champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
-    // 星の要素
+    // 2. アイテム（星より下に配置するため先に作る）
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'items-container';
+    if (data.items) {
+        data.items.forEach(icon => {
+            if (typeof addItemSlot === 'function') addItemSlot(itemsDiv, icon);
+        });
+    }
+
+    // 3. 星（.hexの直下。-17pxの位置調整などがCSSで効くようにする）
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
+    // 星のクリック/ドラッグ判定
     let startX, startY;
     starLabel.addEventListener('mousedown', (e) => {
         startX = e.screenX;
@@ -69,20 +84,13 @@ function placeChampion(container, data) {
         const diffY = Math.abs(e.screenY - startY);
         if (diffX > 5 || diffY > 5) return;
 
+        // 星1(非)→2(★)→3(★★)→4(★★★)→5(★★★★)→1(非)
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    const itemsDiv = document.createElement('div');
-    itemsDiv.className = 'items-container';
-    if (data.items) {
-        data.items.forEach(icon => {
-            if (typeof addItemSlot === 'function') addItemSlot(itemsDiv, icon);
-        });
-    }
-
-    // 重なり順：下から チャンピョン -> アイテム -> 星
+    // まとめて追加（順番：下から アイコン -> アイテム -> 星）
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel); 
@@ -100,11 +108,12 @@ function handleDrop(e, hex) {
         const data = JSON.parse(rawData);
 
         if (data.type === 'champ') {
-            const targetChamp = hex.querySelector('.champ');
             const source = window.currentDragSource;
+            const targetChamp = hex.querySelector('.champ');
 
-            if (targetChamp) {
-                // --- スワップ機能：移動先のデータを保存 ---
+            if (targetChamp && source && source !== hex) {
+                // --- 【スワップ実行】 ---
+                // 移動先（target）の情報を一時保存
                 const targetData = {
                     type: 'champ',
                     icon: targetChamp.querySelector('.champ-icon').innerHTML,
@@ -112,16 +121,18 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                 };
 
-                // 元の場所にターゲットを置く
+                // 1. 元の場所(source)に、移動先にいた駒を置く
                 placeChampion(source, targetData);
-                // 新しい場所にドラッグした駒を置く
+                // 2. 移動先(hex)に、ドラッグしてきた駒を置く
                 placeChampion(hex, data);
+                
             } else {
-                // 通常移動：元の場所を空にする
+                // --- 【通常移動】 ---
                 if (source) source.innerHTML = '';
                 placeChampion(hex, data);
             }
         } else if (data.type === 'item') {
+            // アイテムドロップ処理
             const existingChamp = hex.querySelector('.champ');
             if (existingChamp) {
                 let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
@@ -136,6 +147,7 @@ function handleDrop(e, hex) {
             }
         }
     } catch (err) {
+        // ベンチからの新規配置
         const icon = e.dataTransfer.getData('text/plain');
         if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
