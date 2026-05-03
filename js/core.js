@@ -1,7 +1,22 @@
 /* core.js */
-const ITEM_LIST = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
-let draggedChampionData = null; 
-window.currentDragSource = null; // スワップ時の元マスの特定に必要
+/* core.js */
+window.ITEM_LIST = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
+window.currentDragSource = null; // スワップ時に「どこから動かしたか」を保存する用
+
+// プロジェクト管理用
+const VERSION = "2.2";
+window.undoStack = []; // 以前のコードの「,」を「;」に修正
+window.redoStack = []; 
+window.hasChanges = false; 
+
+// 共通関数
+window.addItemSlot = function(container, icon) {
+    const slot = document.createElement('div');
+    slot.className = 'item-slot';
+    slot.textContent = icon;
+    container.appendChild(slot);
+};
+
 
 const rows = [7, 7, 7, 7];
 const builderState = [];
