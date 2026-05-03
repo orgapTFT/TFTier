@@ -32,18 +32,15 @@ function addDragToChampion(champ) {
 
 function placeChampion(container, data) {
     if (!container) return;
-    container.innerHTML = ''; // マスをリセット
+    container.innerHTML = ''; 
 
-    // 現在の星の数（データがなければ1）
     let currentStars = parseInt(data.stars) || 1;
 
-    // 1. チャンピオン用の箱
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     champ.dataset.stars = currentStars; 
     
-    // 星の表示判定：1より大きい時だけ表示、1の時は空文字
     const starText = currentStars > 1 ? '★'.repeat(currentStars) : '';
     
     champ.innerHTML = `
@@ -51,17 +48,41 @@ function placeChampion(container, data) {
         <div class="champ-icon">${data.icon}</div>
     `;
 
-    // ★星をクリックした時の進化処理を追加
     const starLabel = champ.querySelector('.star');
-    starLabel.addEventListener('click', (e) => {      
-        e.stopPropagation(); // ドラッグ発動を防ぐ
-        let s = (parseInt(champ.dataset.stars) % 5) + 1; // 0→1→2→3→0...
-        champ.dataset.stars = s;
-        // 0の時は非表示、それ以外は表示
-        starLabel.textContent = s > 0 ? '★'.repeat(s-1) : '';
+
+    // --- ★ここから修正：ドラッグとクリックの競合防止策 ---
+    let isMoving = false;
+
+    // ドラッグが開始されたらフラグを立てる
+    champ.addEventListener('dragstart', () => {
+        isMoving = true;
     });
 
-    // 2. アイテム用の箱
+    starLabel.addEventListener('click', (e) => {
+        e.stopPropagation();
+
+        // もしドラッグ中（移動中）だったら星を増やさない
+        if (isMoving) {
+            isMoving = false; // フラグをリセット
+            return;
+        }
+
+        // 純粋なクリックの時だけ星を切り替える
+        let s = (parseInt(champ.dataset.stars) || 1);
+        s = (s % 3) + 1; // 1→2→3→1のループ
+        
+        champ.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s) : '';
+        
+        console.log("星を切り替えました:", s);
+    });
+
+    // ドロップが終わったらフラグをリセット（念のため）
+    champ.addEventListener('dragend', () => {
+        setTimeout(() => { isMoving = false; }, 10);
+    });
+    // --- ★ここまで ---
+
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     
@@ -72,6 +93,12 @@ function placeChampion(container, data) {
             }
         });
     }
+
+    container.appendChild(champ);
+    container.appendChild(itemsDiv);
+
+    addDragToChampion(champ);
+}
 
     // 3. 配置
     container.appendChild(champ);
