@@ -1,21 +1,19 @@
 /* core.js */
-// どこからでも見えるように window をつける
 window.ITEM_LIST = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
 window.currentDragSource = null;
 
-const VERSION = "2.2";
-window.undoStack = []; // ← ここが以前「,」になっていたので修正
+// プロジェクト設定
+window.undoStack = []; 
 window.redoStack = []; 
-window.hasChanges = false; 
 
-// アイテム追加
+// アイテムスロット作成（共通関数）
 window.addItemSlot = function(container, icon) {
     const slot = document.createElement('div');
     slot.className = 'item-slot';
     slot.textContent = icon;
-    slot.draggable = true; // アイ体単体での移動を許可
+    slot.draggable = true;
 
-    // 右クリック解除
+    // 右クリックで解除
     slot.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         slot.remove();
@@ -27,12 +25,12 @@ window.addItemSlot = function(container, icon) {
         const data = {
             type: 'item',
             icon: icon,
-            fromHexIndex: Array.from(document.querySelectorAll('.hex')).indexOf(parentHex),
-            slotElement: slot.outerHTML // スワップ用に自分の情報を保持
+            // 盤面の全hexから自分がどこにいたか記録（builder.jsの判定で使う）
+            fromHexIndex: Array.from(document.querySelectorAll('.hex')).indexOf(parentHex)
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
         
-        // ドラッグ開始したら、一旦元のスロットを非表示（ドロップ成功で削除、失敗で復活させるため）
+        // ドラッグ中に元の場所を薄くする（CSSで定義が必要）
         setTimeout(() => slot.classList.add('dragging-hidden'), 10);
     });
 

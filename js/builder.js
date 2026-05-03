@@ -51,13 +51,14 @@ function handleDrop(e, hex) {
     hex.classList.remove('dragover');
 
     try {
-        const data = JSON.parse(e.dataTransfer.getData('application/json'));
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) throw new Error("Go to catch"); // JSONデータがない場合は新規配置へ
+        const data = JSON.parse(rawData);
 
-        // --- チャンピオンの移動処理 ---
+        // --- チャンピオンの移動・スワップ ---
         if (data.type === 'champ') {
             const targetChamp = hex.querySelector('.champ');
             if (targetChamp && window.currentDragSource) {
-                // 既存のスワップ処理を実行
                 const targetData = {
                     type: 'champ',
                     icon: targetChamp.querySelector('div:last-child').innerHTML,
@@ -70,14 +71,10 @@ function handleDrop(e, hex) {
                 placeChampion(hex, data);
             }
         } 
-        
-        // --- アイテムの移動・入れ替え処理 ---
+        // --- アイテムの移動・入れ替え ---
         else if (data.type === 'item') {
             const existingChamp = hex.querySelector('.champ');
-            
-            // チャンピオンがいないマスへのアイテム移動は不可
             if (!existingChamp) {
-                // 元の場所に戻す（ドラッグ中の非表示を解除）
                 document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
                 return;
             }
@@ -86,21 +83,23 @@ function handleDrop(e, hex) {
             itemsDiv.className = 'items';
             hex.appendChild(itemsDiv);
 
-            // 1. 同じマス内のアイテム移動（位置交換はHTMLの並び順で解決）
-            // 2. 別のキャラへの移動（3枠チェック）
+            // 同じマス内か、3枠空いている場合のみ移動許可
             if (itemsDiv.children.length < 3 || hex === document.querySelectorAll('.hex')[data.fromHexIndex]) {
-                // ドラッグ元のアイテムを完全に消去
                 document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                // 新しい場所にスロットを追加
                 addItemSlot(itemsDiv, data.icon);
             } else {
-                // 3枠埋まっている場合は何もしない（元に戻す）
                 document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
                 alert("アイテム枠がいっぱいです");
             }
         }
     } catch (err) {
-        // ...新規配置処理（既存のまま）
+        // ★ここが重要：ベンチからの新規配置処理
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon) {
+            // マスを掃除してから新しいチャンピオンを配置
+            hex.innerHTML = ''; 
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
