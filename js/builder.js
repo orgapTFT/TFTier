@@ -31,31 +31,25 @@ function addDragToChampion(champ) {
 }
 
 function placeChampion(container, data) {
-    if (!container) return;
-    container.innerHTML = ''; // マスを一旦空にする
+    container.innerHTML = ''; 
 
-    // 1. チャンピオン（背景）を作成
+    // 1. チャンピオン用の箱（ここで clip-path される）
     const champ = document.createElement('div');
     champ.className = 'champ';
-    champ.draggable = true;
-    champ.dataset.stars = data.stars || 1;
-    
-    // 中身（星とアイコン）を構築
-    champ.innerHTML = `
-        <div class="star">${'★'.repeat(data.stars || 1)}</div>
-        <div class="champ-icon">${data.icon}</div>
-    `;
+    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
-    // 2. アイテムコンテナを作成（これが左寄せを防ぐ鍵）
+    // 2. アイテム用の箱（.champ の外側、.hex の直下に入れる）
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     
     if (data.items) {
-        data.items.forEach(icon => {
-            // addItemSlotの中で itemsDiv に appendChild されるようにする
-            addItemSlot(itemsDiv, icon);
-        });
+        data.items.forEach(icon => addItemSlot(itemsDiv, icon));
     }
+
+    // 両方を .hex (container) に追加
+    container.appendChild(champ);
+    container.appendChild(itemsDiv);
+}
 
     // 3. マスに追加（追加する順番が大事）
     container.appendChild(champ);
