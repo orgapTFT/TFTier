@@ -55,10 +55,10 @@ function placeChampion(container, data) {
     const starLabel = champ.querySelector('.star');
     starLabel.addEventListener('click', (e) => {
         e.stopPropagation(); // ドラッグ発動を防ぐ
-        let s = (parseInt(champ.dataset.stars) % 3) + 1; // 1→2→3→1...
+        let s = (parseInt(champ.dataset.stars) % 4) + 1; // 0→1→2→3→0...
         champ.dataset.stars = s;
-        // 1の時は非表示、それ以外は表示
-        starLabel.textContent = s > 1 ? '★'.repeat(s) : '';
+        // 0の時は非表示、それ以外は表示
+        starLabel.textContent = s > 0 ? '★'.repeat(s) : '';
     });
 
     // 2. アイテム用の箱
