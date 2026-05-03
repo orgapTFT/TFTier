@@ -149,13 +149,15 @@ body {
 /* 星（レベル） */
 .star {
     position: absolute;
-    top: 8px;
+    top: 5px;
     width: 100%;
     text-align: center;
-    color: #ffd700;
+    color: #ffd700; /* ゴールド */
     font-size: 14px;
+    text-shadow: 0 0 3px #000;
+    cursor: pointer;
     z-index: 5;
-    text-shadow: 1px 1px 2px #000;
+    min-height: 1em; /* 非表示時もクリック判定を維持したいならこれ */
 }
 
 /* チャンピオン画像がある場合（imgタグなど） */
