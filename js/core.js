@@ -1,6 +1,8 @@
-/* builder */
+/* core.js */
 const ITEM_LIST = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
-let draggedChampionData = null; // スワップ用に一時保存する変数など
+let draggedChampionData = null; 
+window.currentDragSource = null; // スワップ時の元マスの特定に必要
+
 const rows = [7, 7, 7, 7];
 const builderState = [];
 let champions = [];
@@ -12,11 +14,11 @@ const items = (window.itemFiles || []).map(name => `../img/item/${name}`);
 
 const VERSION = "2.2";
 let project = { version: VERSION, assets: { c: [], i: [], a: [], g: [] }, guides: [], activeIndex: 0 };
-let selSlot = null;    // 選択中のスロット
-let undoStack = [], 
+let selSlot = null; 
+let undoStack = []; // カンマをセミコロンに修正
 let redoStack = []; 
 let hasChanges = false; 
-let nextAutoSave = 60; // 自動保存のタイマー
+let nextAutoSave = 60; 
 
 // --- 共通ロジック ---
 function saveHistory() {
@@ -27,5 +29,13 @@ function saveHistory() {
 
 function markChanged() {
     hasChanges = true;
-    updateTabData();
+    if (typeof updateTabData === 'function') updateTabData();
+}
+
+// 共通パーツ生成
+function addItemSlot(container, icon) {
+    const slot = document.createElement('div');
+    slot.className = 'item-slot';
+    slot.textContent = icon;
+    container.appendChild(slot);
 }
