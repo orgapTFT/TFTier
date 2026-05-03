@@ -31,31 +31,38 @@ function addDragToChampion(champ) {
 }
 
 function placeChampion(container, data) {
-    container.innerHTML = ''; 
+    if (!container) return;
+    container.innerHTML = ''; // マスをリセット
 
-    // 1. チャンピオン用の箱（ここで clip-path される）
+    // 1. チャンピオン用の箱（CSSで clip-path して、はみ出しをガードする）
     const champ = document.createElement('div');
     champ.className = 'champ';
-    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
+    champ.draggable = true;
+    champ.dataset.stars = data.stars || 1; // 星の数をデータとして保持
+    
+    // 中身：星の表示と、チャンピオンのアイコン
+    champ.innerHTML = `
+        <div class="star">${'★'.repeat(data.stars || 1)}</div>
+        <div class="champ-icon">${data.icon}</div>
+    `;
 
-    // 2. アイテム用の箱（.champ の外側、.hex の直下に入れる）
+    // 2. アイテム用の箱（.champ の外側に置くことで、はみ出しを許可する）
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     
-    if (data.items) {
-        data.items.forEach(icon => addItemSlot(itemsDiv, icon));
+    if (data.items && data.items.length > 0) {
+        data.items.forEach(icon => {
+            // アイテムスロットを追加する既存の関数を呼び出す
+            addItemSlot(itemsDiv, icon);
+        });
     }
 
-    // 両方を .hex (container) に追加
-    container.appendChild(champ);
-    container.appendChild(itemsDiv);
-}
-
-    // 3. マスに追加（追加する順番が大事）
+    // 3. 両方を .hex (container) に追加
+    // 順番は champ → itemsDiv の順にすることで、アイテムが常に上に重なります
     container.appendChild(champ);
     container.appendChild(itemsDiv);
 
-    // ドラッグイベントを再付与
+    // 4. ドラッグイベントを再付与（残像対策版のイベントを付ける）
     addDragToChampion(champ);
 }
 
