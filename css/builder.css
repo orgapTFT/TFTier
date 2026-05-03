@@ -58,7 +58,7 @@ body {
     height: 110px;
     margin: 2px;
     /* 六角形自体の色を見えるように設定 */
-    background-color: #1a1a2e; 
+    background-color: #1b1b3d; 
     /* 縁取り（境界線）を見せるための clip-path */
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     /* 少し明るい縁取りを疑似要素で作る */
@@ -137,4 +137,4 @@ body {
     object-fit: cover; /* 縦横比を維持しつつ隙間なく表示 */
 }
 
-    .hex.dragover { background: #0a5 !important; }
+    .hex.dragover { background: rgb(170, 225, 200) !important; }
