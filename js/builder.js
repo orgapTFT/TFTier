@@ -100,49 +100,52 @@ function handleDrop(e, hex) {
         const data = JSON.parse(rawData);
 
         if (data.type === 'champ') {
-            const targetChamp = hex.querySelector('.champ');
             const source = window.currentDragSource;
+            if (!source || source === hex) return;
 
-            // 1. 移動が確定したので、まず元の場所(source)を真っさらな「ダミーマス」にする
-            if (source) {
-                source.innerHTML = '';[cite: 9]
-            }
+            // === ここを強化 ===
+            const targetChamp = hex.querySelector('.champ');
+            const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
+                                  .map(s => s.innerHTML);
 
+            // 移動元を一旦退避（clone的な処理）
+            const sourceData = {
+                type: 'champ',
+                icon: source.querySelector('.champ-icon')?.innerHTML || '',
+                stars: source.querySelector('.champ')?.dataset.stars || "1",
+                items: Array.from(source.querySelectorAll('.item-slot'))
+                           .map(s => s.innerHTML)
+            };
+
+            // 1. 移動元を空にする
+            source.innerHTML = '';
+
+            // 2. スワップ処理
             if (targetChamp) {
-                // 2. 入れ替え先の駒Bのデータを一時保存（退避）
-                const targetData = {
+                // ターゲットを移動元へ
+                placeChampion(source, {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,[cite: 9]
-                    stars: parseInt(targetChamp.dataset.stars) || 1,[cite: 9]
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)[cite: 9]
-                };
-                
-                // 3. 空になった元の場所に、退避しておいた駒Bを配置
-                placeChampion(source, targetData);[cite: 9]
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                    stars: targetChamp.dataset.stars || "1",
+                    items: targetItems
+                });
+            } else {
+                // 空きマスへの通常移動の場合、sourceDataは不要
             }
 
-            // 4. 新しい場所にドラッグ中の駒Aを配置
-            placeChampion(hex, data);[cite: 9]
+            // 3. ドラッグしてきた駒を移動先へ
+            placeChampion(hex, data);
 
-        } else if (data.type === 'item') {
-            // アイテムドロップ処理
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                if (!hex.querySelector('.items-container')) {
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                if (itemsDiv.children.length < 3) {
-                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                    if (typeof addItemSlot === 'function') addItemSlot(itemsDiv, data.icon);
-                }
-            }
+            // 念のためcurrentDragSourceをクリア
+            window.currentDragSource = null;
         }
+        // ... item処理
     } catch (err) {
-        // ベンチからの新規配置[cite: 9]
+        // benchからの新規配置
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });[cite: 9]
+        if (icon && icon.length < 10) {
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
