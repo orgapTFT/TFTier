@@ -149,9 +149,10 @@ body {
 .star {
     position: absolute;
     top: -2px; /* 六角形上側 */
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
     width: 100%;
+    display: flex;
+    justify-content: center;
     text-align: center;
     color: #ffd700;
     font-size: 16px;
@@ -162,7 +163,6 @@ body {
     white-space: nowrap;
     pointer-events: auto; /* クリックを有効に */
 }
-
 
 /* チャンピオン画像がある場合（imgタグなど） */
 .champ img {
