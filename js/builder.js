@@ -1,5 +1,3 @@
-/* builder.js - 表示・スワップ不具合修正版 */
-
 function createBoard() {
     const board = document.getElementById('board');
     if (!board) return;
