@@ -99,18 +99,19 @@ function handleDrop(e, hex) {
         if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
-        // --- チャンピオンの移動・スワップ ---
+        // --- チャンピオンのドラッグ時 ---
         if (data.type === 'champ') {
             const source = window.currentDragSource;
             const targetChamp = hex.querySelector('.champ');
 
-            if (source && source !== hex) {
-                // 移動が確定したので、まず「元の場所」を真っさらにする（これで分裂を防ぐ）
-                source.innerHTML = '';
+            // 1. 自分自身（元のマス）に落とした場合は何もしない
+            if (source === hex) return;
 
+            // 2. 移動先が「別のマス」である場合のみ処理開始
+            if (source) {
                 if (targetChamp) {
-                    // --- スワップ実行 ---
-                    // 1. 移動先にいる駒の情報をコピー
+                    // --- 【挙動：スワップ】 ---
+                    // 移動先にいたBの情報を一時保存
                     const targetData = {
                         type: 'champ',
                         icon: targetChamp.querySelector('.champ-icon').innerHTML,
@@ -118,42 +119,41 @@ function handleDrop(e, hex) {
                         items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                     };
 
-                    // 2. 移動先も一旦空にする
+                    // AとB、両方のマスを完全にクリアする
+                    source.innerHTML = '';
                     hex.innerHTML = '';
 
-                    // 3. 互いの場所に配置
-                    placeChampion(source, targetData);
-                    placeChampion(hex, data);
+                    // 入れ替えて配置
+                    placeChampion(source, targetData); // Aの場所にBを置く
+                    placeChampion(hex, data);          // Bの場所にAを置く
+                    console.log("スワップ完了");
                 } else {
-                    // --- 通常移動 ---
-                    placeChampion(hex, data);
+                    // --- 【挙動：空きマスへの移動】 ---
+                    source.innerHTML = ''; // 元のマスを削除
+                    placeChampion(hex, data); // 新しいマスに表示
+                    console.log("移動完了");
                 }
             }
         } 
-        // --- アイテムのドロップ ---
+        // --- アイテムのドラッグ時 ---
         else if (data.type === 'item') {
             const existingChamp = hex.querySelector('.champ');
             if (existingChamp) {
-                // containerのクラス名をCSSに合わせて 'items-container' に統一
                 let itemsDiv = hex.querySelector('.items-container');
                 if (!itemsDiv) {
                     itemsDiv = document.createElement('div');
                     itemsDiv.className = 'items-container';
                     hex.appendChild(itemsDiv);
                 }
-
                 if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                    // ドラッグ中の非表示要素を消して確定させる
+                    // 盤面からのアイテム移動なら元を消す（必要に応じて）
                     document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
                     addItemSlot(itemsDiv, data.icon);
-                } else {
-                    alert("アイテム枠がいっぱいです");
                 }
             }
-            // チャンピオンがいないマスに落とした場合は何もしない（元の場所に戻る）
         }
     } catch (err) {
-        // ベンチ（テキストデータ）からの新規配置
+        // ベンチからの新規配置（移動ではなくコピー）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 4) {
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
@@ -195,24 +195,29 @@ function init() {
         });
     }
 
-    // 全体ドロップ（場外削除）
     document.addEventListener('dragover', e => e.preventDefault());
     document.addEventListener('drop', (e) => {
-        const isOverBoard = e.target.closest('#board');
-        const isOverHex = e.target.closest('.hex');
+    const isOverBoard = e.target.closest('#board');
+    const isOverHex = e.target.closest('.hex');
 
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
+    // もし六角形（hex）の上でドロップされたなら、handleDrop側で処理するのでここでは無視
+    if (isOverHex) return;
 
-        if (!isOverBoard) {
-            // ボード外なら削除
-            if (window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                window.currentDragSource = null;
-            }
+    // 盤面(board)の外側にドロップした場合
+    if (!isOverBoard) {
+        if (window.currentDragSource) {
+            window.currentDragSource.innerHTML = ''; // チャンピオン・星・アイテムを全削除
+            window.currentDragSource = null;
+            console.log("ボード外ドロップ：削除しました");
         }
-    });
+    } 
+    // 盤面(board)の内側だが、マス(hex)ではない隙間の場合
+    else {
+        // 何もしない。
+        // dragendイベントにより、.dragging-hidden が自動的に解除されるため元の場所に表示される。
+        console.log("ボード内の隙間：移動をキャンセルしました");
+    }
+});
 }
 
 init();
