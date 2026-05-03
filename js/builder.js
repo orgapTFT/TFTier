@@ -96,69 +96,54 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        
-        // データがない場合は、ベンチからの簡易ドラッグとして処理
-        if (!rawData) {
-            const icon = e.dataTransfer.getData('text/plain');
-            if (icon && icon.length < 4) {
-                placeChampion(hex, { icon: icon, stars: 1, items: [] });[cite: 4]
-            }
-            return;
-        }
-
+        if (!rawData) throw new Error("Go to catch"); // JSONデータがない場合は新規配置へ
         const data = JSON.parse(rawData);
 
+        // --- チャンピオンの移動・スワップ ---
         if (data.type === 'champ') {
             const targetChamp = hex.querySelector('.champ');
-            const source = window.currentDragSource;
-
-            // 移動元がない、または自分自身に落とした場合は何もしない
-            if (!source || source === hex) return;[cite: 4]
-
-            if (targetChamp) {
-                // --- 【ダミー変数への退避】 ---
-                const dummyData = {
+            if (targetChamp && window.currentDragSource) {
+                const targetData = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,[cite: 4]
-                    stars: targetChamp.dataset.stars || 1,[cite: 4]
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)[cite: 4, 5]
+                    icon: targetChamp.querySelector('div:last-child').innerHTML,
+                    stars: targetChamp.dataset.stars,
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                 };
-
-                // --- 【両方のマスをクリア】 ---
-                source.innerHTML = '';[cite: 4]
-                hex.innerHTML = '';   [cite: 4]
-
-                // --- 【入れ替えて再配置】 ---
-                placeChampion(source, dummyData);[cite: 4]
-                placeChampion(hex, data);        [cite: 4]
+                placeChampion(window.currentDragSource, targetData);
+                placeChampion(hex, data);
             } else {
-                // 通常移動
-                source.innerHTML = '';[cite: 4]
-                placeChampion(hex, data);[cite: 4]
+                placeChampion(hex, data);
             }
-            window.currentDragSource = null;
-        } else if (data.type === 'item') {
-            // アイテムのドロップ処理
+        } 
+        // --- アイテムの移動・入れ替え ---
+        else if (data.type === 'item') {
             const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                itemsDiv.className = 'items-container';
-                if (!hex.contains(itemsDiv)) hex.appendChild(itemsDiv);
+            if (!existingChamp) {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
+                return;
+            }
 
-                if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                    // 盤面内移動なら元のアイテムを消す
-                    if (data.fromHexIndex !== undefined) {
-                        const allHexes = document.querySelectorAll('.hex');
-                        const fromHex = allHexes[data.fromHexIndex];
-                        const dragItem = fromHex?.querySelector('.item-slot.dragging-hidden');
-                        if (dragItem) dragItem.remove();
-                    }
-                    window.addItemSlot(itemsDiv, data.icon);[cite: 5]
-                }
+            let itemsDiv = hex.querySelector('.items') || document.createElement('div');
+            itemsDiv.className = 'items';
+            hex.appendChild(itemsDiv);
+
+            // 同じマス内か、3枠空いている場合のみ移動許可
+            if (itemsDiv.children.length < 3 || hex === document.querySelectorAll('.hex')[data.fromHexIndex]) {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                addItemSlot(itemsDiv, data.icon);
+            } else {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
+                alert("アイテム枠がいっぱいです");
             }
         }
     } catch (err) {
-        console.error("Drop Error:", err);
+        // ★ここが重要：ベンチからの新規配置処理
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon) {
+            // マスを掃除してから新しいチャンピオンを配置
+            hex.innerHTML = ''; 
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
