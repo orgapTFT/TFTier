@@ -168,30 +168,38 @@ function handleDrop(e, hex) {
 function init() {
     createBoard();
     
-// === アイテムエリア（横10個）===
+// ==================== アイテムエリア（全部表示） ====================
 const itemsArea = document.getElementById('items');
 if (itemsArea) {
     itemsArea.innerHTML = '';
+    
+    // グリッド設定（横10個）
     itemsArea.style.display = 'grid';
-    itemsArea.style.gridTemplateColumns = 'repeat(10, 62px)';  // 横10個
+    itemsArea.style.gridTemplateColumns = 'repeat(10, 62px)';
     itemsArea.style.gap = '8px';
     itemsArea.style.justifyContent = 'center';
     itemsArea.style.padding = '15px';
 
-    ITEM_LIST.forEach(icon => {   // または itemFiles 配列があればそっち使う
+    itemFiles.forEach(filename => {
+        const itemName = filename.replace('.avif', '');  // 拡張子を除去
+
         const item = document.createElement('div');
         item.className = 'item';
         item.draggable = true;
         
         item.innerHTML = `
-            <img src="./img/item/${icon}.avif" 
-                 alt="${icon}" 
+            <img src="./img/item/${filename}" 
+                 alt="${itemName}" 
                  style="width:100%; height:100%; object-fit:contain;"
-                 onerror="this.style.display='none'; this.parentElement.textContent='${icon}';">
+                 onerror="this.style.display='none'; this.parentElement.textContent='?'">
         `;
         
+        // ドラッグ時のデータ
         item.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'item', 
+                icon: itemName        // 拡張子なしで渡す
+            }));
         });
         
         itemsArea.appendChild(item);
