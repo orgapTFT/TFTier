@@ -1,3 +1,6 @@
+/* builder */
+const ITEM_LIST = ['⚔️','🛡️','🏹','🔥','❄️','🌩️','💎','🧪','👑'];
+let draggedChampionData = null; // スワップ用に一時保存する変数など
 const rows = [7, 7, 7, 7];
 const builderState = [];
 let champions = [];
