@@ -58,8 +58,13 @@ champ.innerHTML = `
     <img src="./img/champ/17/${champName}.avif" 
          alt="${champName}" 
          class="champ-icon"
-         style="width:100%; height:100%; object-fit:contain;"
+         style="width:88%; height:88%; object-fit:contain;"
          onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
+
+    <!-- 盤面上のチャンピオン名 -->
+    <div class="champ-name-onboard">
+        ${champName}
+    </div>
 `;
 
     // 星の要素（そのまま）
@@ -108,30 +113,38 @@ function handleDrop(e, hex) {
         if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
-        if (data.type === 'champ') {
-            // ==================== チャンピオンスワップ ====================
-            const source = window.currentDragSource;
-            if (!source || source === hex) return;
+if (data.type === 'champ') {
+    const source = window.currentDragSource;
+    if (!source || source === hex) return;
 
-            const targetChamp = hex.querySelector('.champ');
-            const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
-                                  .map(s => s.innerHTML);
+    const targetChamp = hex.querySelector('.champ');
+    const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
+                          .map(s => s.innerHTML);
 
-            source.innerHTML = '';
+    // 元の場所のデータを確実に保存
+    const sourceData = {
+        type: 'champ',
+        icon: source.querySelector('.champ')?.dataset.name || 
+              source.querySelector('img')?.alt || '',
+        stars: source.querySelector('.champ')?.dataset.stars || "1",
+        items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+    };
 
-            if (targetChamp) {
-                placeChampion(source, {
-                    type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: targetChamp.dataset.stars || "1",
-                    items: targetItems
-                });
-            }
+    source.innerHTML = '';
 
-            placeChampion(hex, data);
-            window.currentDragSource = null;
+    if (targetChamp) {
+        placeChampion(source, {
+            type: 'champ',
+            icon: targetChamp.dataset.name || targetChamp.querySelector('img')?.alt || '',
+            stars: targetChamp.dataset.stars || "1",
+            items: targetItems
+        });
+    }
 
-        } 
+    placeChampion(hex, data);   // ドラッグしてきた方を置く
+
+    window.currentDragSource = null;
+}
         else if (data.type === 'item') {
             // ==================== アイテム装備処理 ====================
             const champ = hex.querySelector('.champ');
