@@ -16,34 +16,78 @@ function createBoard() {
 
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
-        window.currentDragSource = champ.parentElement;
+        const parent = champ.parentElement;
+        window.currentDragSource = parent;
+
+        // 【重要】星の数は champ.dataset.stars から確実に取得
+        const currentStars = champ.dataset.stars || "1";
 
         const data = {
             type: 'champ',
-            icon: champ.querySelector('div:last-child').innerHTML,
-            stars: champ.dataset.stars,
-            items: Array.from(window.currentDragSource.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+            icon: champ.querySelector('.champ-icon').innerHTML,
+            stars: currentStars,
+            items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        setTimeout(() => { if(champ.parentElement) champ.parentElement.innerHTML = ''; }, 10);
+        setTimeout(() => {
+            if(champ) champ.classList.add('dragging-hidden');
+        }, 10);
+    });
+
+    champ.addEventListener('dragend', () => {
+        champ.classList.remove('dragging-hidden');
     });
 }
 
 function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
-    const newChamp = createChampion(data.icon);
-    newChamp.dataset.stars = data.stars;
-    newChamp.querySelector('.star').textContent = '★'.repeat(data.stars);
+
+    let currentStars = parseInt(data.stars) || 1;
+
+    const champ = document.createElement('div');
+    champ.className = 'champ';
+    champ.draggable = true;
+    champ.dataset.stars = currentStars; 
+    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
+
+    // 星の要素
+    const starLabel = document.createElement('div');
+    starLabel.className = 'star';
+    starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
+
+    let startX, startY;
+    starLabel.addEventListener('mousedown', (e) => {
+        startX = e.screenX;
+        startY = e.screenY;
+    });
+
+    starLabel.addEventListener('mouseup', (e) => {
+        e.stopPropagation();
+        const diffX = Math.abs(e.screenX - startX);
+        const diffY = Math.abs(e.screenY - startY);
+        if (diffX > 5 || diffY > 5) return;
+
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
+        champ.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    });
 
     const itemsDiv = document.createElement('div');
-    itemsDiv.className = 'items';
+    itemsDiv.className = 'items-container';
     if (data.items) {
-        data.items.forEach(icon => addItemSlot(itemsDiv, icon));
+        data.items.forEach(icon => {
+            if (typeof addItemSlot === 'function') addItemSlot(itemsDiv, icon);
+        });
     }
-    container.appendChild(newChamp);
+
+    // 重なり順：下から チャンピョン -> アイテム -> 星
+    container.appendChild(champ);
     container.appendChild(itemsDiv);
+    container.appendChild(starLabel); 
+
+    addDragToChampion(champ);
 }
 
 function handleDrop(e, hex) {
@@ -157,19 +201,26 @@ function init() {
         });
     }
 
-document.body.addEventListener('dragover', e => e.preventDefault());
-document.body.addEventListener('drop', e => {
-    // もしドロップ先が .hex 以外なら
-    if (!e.target.closest('.hex')) {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
-        
-        if (data.type === 'item') {
-            // ドラッグ中のアイテム（元の場所のやつ）を削除して解除成立
-            document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-            console.log("枠外ドロップでアイテム解除");
+   // 盤面外ドロップ（削除）の判定
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', (e) => {
+    const isOverBoard = e.target.closest('#board'); // 盤面エリア全体
+    const isOverHex = e.target.closest('.hex');     // 六角形のマス
+
+    const rawData = e.dataTransfer.getData('application/json');
+    if (!rawData) return;
+    const data = JSON.parse(rawData);
+
+    if (!isOverBoard) {
+        // 1. 盤面の完全外側なら「削除」
+        if (window.currentDragSource) {
+            window.currentDragSource.innerHTML = '';
+            window.currentDragSource = null;
         }
+    } else if (isOverBoard && !isOverHex) {
+        // 2. 盤面エリア内だが、マスの上ではない（隙間）なら「元の場所に戻す」
+        // 何もしないことで、dragend後のhidden解除により元の場所に見えるようになる
+        console.log("盤面内の隙間なのでキャンセル");
     }
 });
 
