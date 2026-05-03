@@ -95,46 +95,40 @@ function handleDrop(e, hex) {
         if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
+        // --- チャンピオンの移動・スワップ ---
         if (data.type === 'champ') {
-            const source = window.currentDragSource;
             const targetChamp = hex.querySelector('.champ');
-
-            if (source && source !== hex) {
-                if (targetChamp) {
-                    // スワップ実行
-                    const targetData = {
-                        type: 'champ',
-                        icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                        stars: targetChamp.dataset.stars || 1,
-                        items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-                    };
-                    source.innerHTML = '';
-                    hex.innerHTML = '';
-                    placeChampion(source, targetData);
-                    placeChampion(hex, data);
-                } else {
-                    // 通常移動
-                    source.innerHTML = '';
-                    placeChampion(hex, data);
-                }
+            if (targetChamp && window.currentDragSource) {
+                const targetData = {
+                    type: 'champ',
+                    icon: targetChamp.querySelector('div:last-child').innerHTML,
+                    stars: targetChamp.dataset.stars,
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+                };
+                placeChampion(window.currentDragSource, targetData);
+                placeChampion(hex, data);
+            } else {
+                placeChampion(hex, data);
             }
-        } else if (data.type === 'item') {
+        } 
+       // --- アイテムの移動・入れ替え ---
+        else if (data.type === 'item') {
             const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container');
-                if (!itemsDiv) {
-                    itemsDiv = document.createElement('div');
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                
-                if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                    // 元の場所からアイテムを消す処理（移動の場合）
-                    if (window.currentDragSource && window.currentDragSource.contains(document.querySelector('.dragging-hidden'))) {
-                         // アイテム移動ロジックが必要な場合はここに追加
-                    }
-                    addItemSlot(itemsDiv, data.icon);
-                }
+            if (!existingChamp) {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
+                return;
+            }
+              let itemsDiv = hex.querySelector('.items') || document.createElement('div');
+            itemsDiv.className = 'items';
+            hex.appendChild(itemsDiv);
+
+            // 同じマス内か、3枠空いている場合のみ移動許可
+            if (itemsDiv.children.length < 3 || hex === document.querySelectorAll('.hex')[data.fromHexIndex]) {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                addItemSlot(itemsDiv, data.icon);
+            } else {
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
+                alert("アイテム枠がいっぱいです");
             }
         }
     } catch (err) {
