@@ -110,12 +110,12 @@ body {
 /* アイテムコンテナ（土台の外側へ出す） */
 .items-container {
     position: absolute;
-    bottom: -15px; /* ここを調整して好きなだけはみ出させる */
+    bottom: -17px; 
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     gap: 4px;
-    z-index: 10; /* 最前面へ */
+    z-index: 10;
 }
 
 /* 六角形が重なって見えるようにホバー効果を追加 */
@@ -158,9 +158,11 @@ body {
     font-weight: bold;
     text-shadow: 0 0 4px #000;
     cursor: pointer;
-    z-index: 15; /* アイコンやアイテムより手前 */
+    z-index: 20; /* アイコンやアイテムより手前 */
     white-space: nowrap;
+    pointer-events: auto; /* クリックを有効に */
 }
+
 
 /* チャンピオン画像がある場合（imgタグなど） */
 .champ img {

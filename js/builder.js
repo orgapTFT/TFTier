@@ -19,14 +19,13 @@ function addDragToChampion(champ) {
         const parent = champ.parentElement;
         window.currentDragSource = parent;
 
-        // 【修正】同じマス内にある .star 要素を探して、現在の星の数を取得する
-        const starEl = parent.querySelector('.star');
-        const currentStars = champ.dataset.stars; 
+        // 【重要】星の数は champ.dataset.stars から確実に取得
+        const currentStars = champ.dataset.stars || "1";
 
         const data = {
             type: 'champ',
             icon: champ.querySelector('.champ-icon').innerHTML,
-            stars: currentStars, // ここで最新の星の数を渡す
+            stars: currentStars,
             items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
@@ -45,18 +44,17 @@ function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
 
-    // data.stars が文字列で来ることがあるので数値に変換
     let currentStars = parseInt(data.stars) || 1;
 
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
-    champ.dataset.stars = currentStars; // ここに星の数を保持
+    champ.dataset.stars = currentStars; 
     champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
+    // 星の要素
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
-    // 初期表示の星をセット
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
     let startX, startY;
@@ -71,7 +69,6 @@ function placeChampion(container, data) {
         const diffY = Math.abs(e.screenY - startY);
         if (diffX > 5 || diffY > 5) return;
 
-        // 星の数を更新（1〜5ループ）
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
@@ -85,7 +82,7 @@ function placeChampion(container, data) {
         });
     }
 
-    // 順番に注意：星を一番手前にするために最後の方に追加
+    // 重なり順：下から チャンピョン -> アイテム -> 星
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel); 
@@ -99,48 +96,48 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) throw new Error("Go to catch"); 
+        if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
         if (data.type === 'champ') {
             const targetChamp = hex.querySelector('.champ');
-            
-            // 移動が確定したので元の場所をクリア
-            if (window.currentDragSource) window.currentDragSource.innerHTML = '';
+            const source = window.currentDragSource;
 
             if (targetChamp) {
-                // スワップ処理
+                // --- スワップ機能：移動先のデータを保存 ---
                 const targetData = {
                     type: 'champ',
                     icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: parseInt(targetChamp.dataset.stars) || 1,
+                    stars: targetChamp.dataset.stars,
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                 };
-                placeChampion(window.currentDragSource, targetData);
+
+                // 元の場所にターゲットを置く
+                placeChampion(source, targetData);
+                // 新しい場所にドラッグした駒を置く
+                placeChampion(hex, data);
+            } else {
+                // 通常移動：元の場所を空にする
+                if (source) source.innerHTML = '';
+                placeChampion(hex, data);
             }
-            placeChampion(hex, data);
-        } 
-        else if (data.type === 'item') {
+        } else if (data.type === 'item') {
             const existingChamp = hex.querySelector('.champ');
-            if (!existingChamp) return;
-
-            let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-            if (!hex.querySelector('.items-container')) {
-                itemsDiv.className = 'items-container';
-                hex.appendChild(itemsDiv);
-            }
-
-            if (itemsDiv.children.length < 3) {
-                // 移動成功時のみ元のアイテムを消す
-                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                addItemSlot(itemsDiv, data.icon);
+            if (existingChamp) {
+                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
+                if (!hex.querySelector('.items-container')) {
+                    itemsDiv.className = 'items-container';
+                    hex.appendChild(itemsDiv);
+                }
+                if (itemsDiv.children.length < 3) {
+                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                    addItemSlot(itemsDiv, data.icon);
+                }
             }
         }
     } catch (err) {
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon) {
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
 }
 
