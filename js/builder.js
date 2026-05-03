@@ -96,15 +96,17 @@ function handleDrop(e, hex) {
                 alert("アイテム枠がいっぱいです");
             }
         }
-    } catch (err) {
-        // ★ここが重要：ベンチからの新規配置処理
-        const icon = e.dataTransfer.getData('text/plain');
-        if (icon) {
-            // マスを掃除してから新しいチャンピオンを配置
-            hex.innerHTML = ''; 
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+} catch (err) {
+    const icon = e.dataTransfer.getData('text/plain');
+    if (icon) {
+        // 直接 innerHTML をいじらず、必ず placeChampion を通す
+        placeChampion(hex, { 
+            icon: icon, 
+            stars: 1, 
+            items: [] 
+        });
     }
+}
 }
 
 function createChampion(icon) {
