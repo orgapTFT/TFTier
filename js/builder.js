@@ -97,47 +97,46 @@ function handleDrop(e, hex) {
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) throw new Error();
-        const data = JSON.parse(rawData);
+        const data = JSON.parse(rawData); // これがドラッグ中の「駒A」のデータ
 
         if (data.type === 'champ') {
-            const targetChamp = hex.querySelector('.champ');
-            const source = window.currentDragSource;
+            const targetChamp = hex.querySelector('.champ'); // 今そこにいる「駒B」
+            const source = window.currentDragSource; // 駒Aが元いた場所
 
-            if (targetChamp) {
-                // --- スワップ機能：移動先のデータを保存 ---
-                const targetData = {
+            if (!source) return; // ソースがない場合は中断
+
+            if (targetChamp && source !== hex) {
+                // --- 【STEP 1: 駒Bのデータをダミー変数に退避】 ---
+                const dummyData = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: targetChamp.dataset.stars,
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML, // アイコンHTMLを保持[cite: 4]
+                    stars: targetChamp.dataset.stars || 1, // 星の数を保持[cite: 4]
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent) // アイテムの文字だけ抽出
                 };
 
-                // 元の場所にターゲットを置く
-                placeChampion(source, targetData);
-                // 新しい場所にドラッグした駒を置く
-                placeChampion(hex, data);
-            } else {
-                // 通常移動：元の場所を空にする
-                if (source) source.innerHTML = '';
+                // --- 【STEP 2: 両方のマスを一旦クリア（ダミーマス化）】 ---
+                source.innerHTML = ''; // 駒Aの場所を更地にする[cite: 4]
+                hex.innerHTML = '';    // 駒Bの場所を更地にする[cite: 4]
+
+                // --- 【STEP 3: データを入れ替えて再配置】 ---
+                placeChampion(source, dummyData); // 元のAの場所に、退避したBを配置[cite: 4]
+                placeChampion(hex, data);         // 新しいBの場所に、ドラッグしたAを配置[cite: 4]
+
+            } else if (source !== hex) {
+                // 通常移動：移動元を空にしてから配置[cite: 4]
+                source.innerHTML = '';
                 placeChampion(hex, data);
             }
         } else if (data.type === 'item') {
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                if (!hex.querySelector('.items-container')) {
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                if (itemsDiv.children.length < 3) {
-                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                    addItemSlot(itemsDiv, data.icon);
-                }
-            }
+            // アイテムのドロップ処理
+            handleItemDropLogic(hex, data);
         }
     } catch (err) {
+        // ベンチからの新規ドロップ
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        if (icon && icon.length < 4) {
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });[cite: 4]
+        }
     }
 }
 
