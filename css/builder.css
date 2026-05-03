@@ -54,15 +54,15 @@ body {
 /* 六角形（マス）の設定 */
 .hex {
     position: relative;
-    width: 100px;
-    height: 110px;
-    margin: 2px;
+    width: 88px;
+    height: 102px;
+    margin: 4px;
     /* 六角形自体の色を見えるように設定 */
-    background-color: var(--panel); 
+    background-color: #64748b; 
     /* 縁取り（境界線）を見せるための clip-path */
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
     /* 少し明るい縁取りを疑似要素で作る */
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid #fff;
     display: inline-block;
     vertical-align: top;
     overflow: hidden;
