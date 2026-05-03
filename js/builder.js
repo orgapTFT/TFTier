@@ -102,28 +102,40 @@ function createChampion(icon) {
     return champ;
 }
 
-// ★ここから修正：カッコの閉じ忘れを補完
 function init() {
-    console.log("Builder Init..."); // ログを出して動いているか確認
+    console.log("Builder Init...");
     createBoard();
     
+    // アイテムパレットのロード
     const itemsArea = document.getElementById('items');
     if (itemsArea) {
         itemsArea.innerHTML = '';
-        if (typeof ITEM_LIST !== 'undefined') {
-            ITEM_LIST.forEach(icon => {
-                const item = document.createElement('div');
-                item.className = 'item';
-                item.textContent = icon;
-                item.draggable = true;
-                item.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
-                });
-                itemsArea.appendChild(item);
+        ITEM_LIST.forEach(icon => {
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.textContent = icon;
+            item.draggable = true;
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
             });
-        } else {
-            console.error("ITEM_LIST が定義されていません！ core.js を確認してください。");
-        }
+            itemsArea.appendChild(item);
+        });
+    }
+
+    // ★ここを追加：チャンピオン（ベンチ）のロード
+    const bench = document.getElementById('bench'); // HTML側のIDに合わせてください
+    if (bench) {
+        bench.innerHTML = '';
+        const champIcons = ['🐻','🐺','🐉','🦅','🐍','🦁']; // 表示したいキャラ
+        champIcons.forEach(icon => {
+            const p = document.createElement('div');
+            p.className = 'piece'; // CSSで .piece の見た目を整えておいてください
+            p.draggable = true;
+            p.textContent = icon;
+            // ベンチからのドラッグはシンプルにアイコン文字列を送るだけ
+            p.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', icon));
+            bench.appendChild(p);
+        });
     }
 }
 
