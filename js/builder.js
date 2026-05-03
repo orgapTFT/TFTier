@@ -1,5 +1,8 @@
+/* builder.js */
+
 function createBoard() {
     const board = document.getElementById('board');
+    if (!board) return;
     board.innerHTML = '';
     for (let i = 0; i < 28; i++) {
         const hex = document.createElement('div');
@@ -13,7 +16,7 @@ function createBoard() {
 
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
-        window.currentDragSource = champ.parentElement; // 元の場所を記録
+        window.currentDragSource = champ.parentElement;
 
         const data = {
             type: 'champ',
@@ -23,14 +26,13 @@ function addDragToChampion(champ) {
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        // ドラッグ中は元の場所を空にする（スワップに失敗した場合はあとで戻る）
         setTimeout(() => { if(champ.parentElement) champ.parentElement.innerHTML = ''; }, 10);
     });
 }
 
 function placeChampion(container, data) {
     if (!container) return;
-    container.innerHTML = ''; // マスを掃除
+    container.innerHTML = ''; 
     const newChamp = createChampion(data.icon);
     newChamp.dataset.stars = data.stars;
     newChamp.querySelector('.star').textContent = '★'.repeat(data.stars);
@@ -54,22 +56,17 @@ function handleDrop(e, hex) {
         const data = JSON.parse(rawData);
 
         if (data.type === 'champ') {
-            // 移動先に既に駒がいるか確認
             const targetChamp = hex.querySelector('.champ');
             if (targetChamp && window.currentDragSource) {
-                // スワップ：移動先の駒データを取得
                 const targetData = {
                     type: 'champ',
                     icon: targetChamp.querySelector('div:last-child').innerHTML,
                     stars: targetChamp.dataset.stars,
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                 };
-                // 1. 元の場所にターゲットを配置
                 placeChampion(window.currentDragSource, targetData);
-                // 2. 現在の場所にドラッグしてきた駒を配置
                 placeChampion(hex, data);
             } else {
-                // 通常移動
                 placeChampion(hex, data);
             }
         } else if (data.type === 'item') {
@@ -82,7 +79,6 @@ function handleDrop(e, hex) {
             }
         }
     } catch (err) {
-        // ベンチからの新規配置など
         const icon = e.dataTransfer.getData('text/plain') || '🐻';
         placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
@@ -106,23 +102,30 @@ function createChampion(icon) {
     return champ;
 }
 
+// ★ここから修正：カッコの閉じ忘れを補完
 function init() {
+    console.log("Builder Init..."); // ログを出して動いているか確認
     createBoard();
     
-    // アイテムパレットのロード（ITEM_LISTを使用）
     const itemsArea = document.getElementById('items');
     if (itemsArea) {
         itemsArea.innerHTML = '';
-        ITEM_LIST.forEach(icon => {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.textContent = icon;
-            item.draggable = true;
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
+        if (typeof ITEM_LIST !== 'undefined') {
+            ITEM_LIST.forEach(icon => {
+                const item = document.createElement('div');
+                item.className = 'item';
+                item.textContent = icon;
+                item.draggable = true;
+                item.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
+                });
+                itemsArea.appendChild(item);
             });
-            itemsArea.appendChild(item);
-        });
-  }
+        } else {
+            console.error("ITEM_LIST が定義されていません！ core.js を確認してください。");
+        }
+    }
+}
 
-  init();
+// 実行
+init();
