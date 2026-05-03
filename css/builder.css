@@ -37,7 +37,25 @@
   margin: 0 auto;
 }
 
+#board-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    gap: 0; /* 行同士の隙間をゼロにする */
+}
 
+.row {
+    display: flex;
+    justify-content: center;
+    /* 2行目以降を上に25pxずらして噛み合わせる */
+    margin-top: -25px; 
+}
+
+/* 最初の行だけは上にずらさない */
+.row:first-child {
+    margin-top: 0;
+}
 
 /* 2段目と4段目をすべて半分ずらす */
 .hex:nth-child(n+8):nth-child(-n+14),
@@ -55,27 +73,21 @@ body {
 .hex {
     position: relative;
     width: 88px;
-    height: 102px;
+    height: 100px;
     margin: 4px;
     
     /* 塗りつぶしの色 */
     background-color: #333c48; 
 
     /* 角を丸く切り抜く設定（maskを使用） */
-    -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 2 L93 25 C98 28 100 33 100 39 L100 61 C100 67 98 72 93 75 L50 98 L7 75 C2 72 0 67 0 61 L0 39 C0 33 2 28 7 25 Z" fill="black"/></svg>');
-    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 2 L93 25 C98 28 100 33 100 39 L100 61 C100 67 98 72 93 75 L50 98 L7 75 C2 72 0 67 0 61 L0 39 C0 33 2 28 7 25 Z" fill="black"/></svg>');
+    -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
+    mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
 
-    /* 枠線の設定：maskを使うとborderが効かないため、filterで白い縁を作ります */
     filter: drop-shadow(0px 0px 1px #ffffff);
-
-    display: inline-block;
-    vertical-align: top;
-    /* overflow: hidden; はmaskに含まれるため不要ですが、あっても問題ありません */
-}
+    transition: background 0.2s;
+ }
 
 /* 六角形が重なって見えるようにホバー効果を追加 */
 .hex:hover {
