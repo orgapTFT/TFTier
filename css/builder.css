@@ -62,50 +62,60 @@ body {
 }
 
 /* 六角形（マス）の設定 */
-
-
 .hex {
     position: relative;
     width: 88px;
     height: 100px;
     margin: 4px;
-    background-color: #333c48;
-    /* アイテムをはみ出させるために visible にする */
+    display: inline-block;
+    vertical-align: top;
+    /* overflow: visible にして、はみ出しを許可する */
     overflow: visible; 
+}
+
+/* 六角形の「土台」を疑似要素で作る */
+.hex::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #333c48; /* 六角形の色 */
     
-    /* 六角形の形自体は mask で作る（背景色用） */
+    /* ここで六角形に切り抜く */
     -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
     mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
     
-    display: inline-block;
+    /* 白いフチ（ドロップシャドウ）も土台にかける */
     filter: drop-shadow(0px 0px 1px #ffffff);
+    z-index: 0;
 }
 
-/* チャンピオンを表示する箱：ここで「はみ出し」をガードする */
+/* チャンピオンの箱（キャラのはみ出しをガードしたい場合） */
 .champ {
     position: absolute;
     top: 0; left: 0;
     width: 100%; height: 100%;
-    
-    /* ★重要：チャンピオン画像が六角形からはみ出さないように切り抜く */
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    
-    display: flex;
-    justify-content: center;
-    align-items: center;
     z-index: 1;
+    /* キャラだけは枠内に収めたいならここにも clip-path を入れる */
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-/* アイテムコンテナ：clip-pathの影響を受けないように .champ の外に配置 */
+/* アイテムコンテナ（土台の外側へ出す） */
 .items-container {
     position: absolute;
-    bottom: -12px; /* 六角形の底辺よりさらに下へ配置 */
+    bottom: -15px; /* ここを調整して好きなだけはみ出させる */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 2px;
+    gap: 4px;
     z-index: 10; /* 最前面へ */
 }
 
