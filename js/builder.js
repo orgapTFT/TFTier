@@ -61,7 +61,7 @@ champ.innerHTML = `
          style="width:88%; height:88%; object-fit:contain;"
          onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
 
-    <!-- 盤面上のチャンピオン名 -->
+    <!-- 盤面チャンピオン名 -->
     <div class="champ-name-onboard">
         ${champName}
     </div>
