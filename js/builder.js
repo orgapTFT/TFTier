@@ -98,71 +98,49 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        
-        // チャンピオンまたはアイテムのドロップ（JSON形式）[cite: 4]
-        if (rawData) {
-            const dragData = JSON.parse(rawData);
+        if (!rawData) return;
+        const dragData = JSON.parse(rawData); // これが移動させたい「A」のデータ
 
-            if (dragData.type === 'champ') {
-                const source = window.currentDragSource;
-                const targetChamp = hex.querySelector('.champ');
+        if (dragData.type === 'champ') {
+            const source = window.currentDragSource; // Aが元いたマス
+            const targetChamp = hex.querySelector('.champ'); // 今ドロップ先にいる「B」
 
-                if (source && source !== hex) {
-                    if (targetChamp) {
-                        // --- 【スワップ実行】 ---
-                        // ドロップ先(B)の情報を退避[cite: 4]
-                        const targetData = {
-                            type: 'champ',
-                            icon: targetChamp.querySelector('.champ-icon').textContent,
-                            stars: targetChamp.dataset.stars || 1,
-                            items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)
-                        };
+            // 自分自身へのドロップは何もしない
+            if (!source || source === hex) return;
 
-                        // 双方のマスを空にしてから再配置（上書き・消滅バグ防止）[cite: 4]
-                        source.innerHTML = '';
-                        hex.innerHTML = '';
+            if (targetChamp) {
+                // --- 【STEP 1: Bの情報をダミーマス（変数）に避難】 ---
+                const dummyBox = {
+                    type: 'champ',
+                    icon: targetChamp.querySelector('.champ-icon').textContent, // HTMLではなく文字を保存
+                    stars: targetChamp.dataset.stars || 1,[cite: 4]
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent) // アイテム文字を配列化
+                };
 
-                        placeChampion(source, targetData); // Aの場所にBを復元
-                        placeChampion(hex, dragData);      // Bの場所にAを配置
-                    } else {
-                        // --- 【通常移動】 ---
-                        source.innerHTML = ''; 
-                        placeChampion(hex, dragData);
-                    }
-                }
-                return;
-            } else if (dragData.type === 'item') {
-                // アイテムのドロップ処理[cite: 4, 5]
-                const existingChamp = hex.querySelector('.champ');
-                if (existingChamp) {
-                    let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                    itemsDiv.className = 'items-container';
-                    if (!hex.contains(itemsDiv)) hex.appendChild(itemsDiv);
+                // --- 【STEP 2: 両方のマスを完全にリセット】 ---
+                source.innerHTML = ''; // Aのいた場所を空にする[cite: 4]
+                hex.innerHTML = '';    // Bのいた場所を空にする[cite: 4]
 
-                    if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                        // 盤面内移動の場合は元アイテムを削除
-                        if (dragData.fromHexIndex !== undefined) {
-                            const fromHex = document.querySelectorAll('.hex')[dragData.fromHexIndex];
-                            if (fromHex) {
-                                const dragItem = fromHex.querySelector('.item-slot.dragging-hidden');
-                                if (dragItem) dragItem.remove();
-                            }
-                        }
-                        window.addItemSlot(itemsDiv, dragData.icon);
-                    }
-                }
-                return;
+                // --- 【STEP 3: 情報を入れ替えて再配置】 ---
+                placeChampion(source, dummyBox); // Aの元いた場所に「ダミー（B）」を配置[cite: 4]
+                placeChampion(hex, dragData);    // Bの元いた場所に「ドラッグ中のA」を配置[cite: 4]
+                
+                console.log("ダミー経由のスワップ完了");
+            } else {
+                // 通常移動（ドロップ先が空の場合）
+                source.innerHTML = '';[cite: 4]
+                placeChampion(hex, dragData);[cite: 4]
             }
+        } else if (dragData.type === 'item') {
+            // アイテムのドロップ処理（既存の処理を継続）
+            handleItemDrop(hex, dragData);
         }
-
-        // ベンチからの新規ドロップ（テキスト形式）[cite: 4]
+    } catch (err) {
+        // ベンチからの新規ドロップ対応
         const plainIcon = e.dataTransfer.getData('text/plain');
         if (plainIcon && plainIcon.length < 4) {
-            placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });
+            placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });[cite: 4]
         }
-
-    } catch (err) {
-        console.error("Drop error:", err);
     }
 }
 
