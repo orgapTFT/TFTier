@@ -1,12 +1,12 @@
 // Default image asset file lists
 const championFiles = [
-    "Dummy.avif", "Golem.avif", "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
+    "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
     "briar.avif", "cait.avif", "cho.avif", "corki.avif", "diana.avif", "ez.avif", "fiora.avif", "fizz.avif", "gnar.avif", "grag.avif",
     "gv.avif", "gwen.avif", "illaoi.avif", "jax.avif", "jhin.avif", "jinx.avif", "kaisa.avif", "karma.avif", "kind.avif", "lb.avif",
     "leona.avif", "liss.avif", "lulu.avif", "maokai.avif", "mech.avif", "meep.avif", "mf.avif", "milio.avif", "morde.avif", "morg.avif",
     "nami.avif", "nasus.avif", "nunu.avif", "ornn.avif", "pant.avif", "poppy.avif", "pyke.avif", "rammus.avif", "reksai.avif", "rhaast.avif",
     "riven.avif", "samira.avif", "shen.avif", "sona.avif", "talon.avif", "teemo.avif", "tf.avif", "tk.avif", "urgot.avif", "veig.avif",
-    "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif"
+    "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif", "Dummy.avif", "Golem.avif"
 ];
 
 const itemFiles = [

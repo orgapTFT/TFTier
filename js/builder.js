@@ -22,12 +22,12 @@ function addDragToChampion(champ) {
         // 【重要】星の数は champ.dataset.stars から確実に取得
         const currentStars = champ.dataset.stars || "1";
 
-        const data = {
-            type: 'champ',
-            icon: champ.querySelector('.champ-icon').innerHTML,
-            stars: currentStars,
-            items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-        };
+const data = {
+    type: 'champ',
+    icon: champ.dataset.name || champ.querySelector('img')?.alt || champName,  // 名前を渡す
+    stars: currentStars,
+    items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+};
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
         setTimeout(() => {
@@ -44,25 +44,31 @@ function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
 
-    let currentStars = parseInt(data.stars) || 1;
+    const currentStars = parseInt(data.stars) || 1;
+    const champName = data.icon;   // ← ここが名前になっているはず
 
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     champ.dataset.stars = currentStars; 
-    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
+    champ.dataset.name = champName;    // 念のため保存
 
-    // 星の要素
+    // 画像表示
+    champ.innerHTML = `
+        <img src="img/champ/17/${champName}.avif" 
+             alt="${champName}" 
+             class="champ-icon"
+             onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:40px\">${champName}</span>';">
+    `;
+
+    // 星の要素（そのまま）
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
+    // 星クリック処理（省略せず残す）
     let startX, startY;
-    starLabel.addEventListener('mousedown', (e) => {
-        startX = e.screenX;
-        startY = e.screenY;
-    });
-
+    starLabel.addEventListener('mousedown', (e) => { startX = e.screenX; startY = e.screenY; });
     starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
         const diffX = Math.abs(e.screenX - startX);
@@ -74,10 +80,9 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // === アイテム部分 ===
+    // items-container
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
-
     if (data.items && Array.isArray(data.items) && typeof addItemSlot === 'function') {
         data.items.forEach(iconHTML => {
             if (iconHTML && iconHTML.trim() !== '') {
@@ -86,7 +91,6 @@ function placeChampion(container, data) {
         });
     }
 
-    // 重なり順：下から チャンピョン -> アイテム -> 星
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel); 
@@ -178,19 +182,41 @@ function init() {
         });
     }
 
-    const bench = document.getElementById('bench');
-    if (bench) {
-        bench.innerHTML = '';
-        const champIcons = ['🐻','🐺','🐉','🦅','🐍','🦁'];
-        champIcons.forEach(icon => {
-            const p = document.createElement('div');
-            p.className = 'piece';
-            p.draggable = true;
-            p.textContent = icon;
-            p.addEventListener('dragstart', e => e.dataTransfer.setData('text/plain', icon));
-            bench.appendChild(p);
+// init()内のbench部分を以下に置き換え
+const bench = document.getElementById('bench');
+if (bench) {
+    bench.innerHTML = '';
+    
+    // 使うチャンピオン（ここに好きな順番で入れる）
+    const benchChampions = [
+    "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
+    "briar.avif", "cait.avif", "cho.avif", "corki.avif", "diana.avif", "ez.avif", "fiora.avif", "fizz.avif", "gnar.avif", "grag.avif",
+    "gv.avif", "gwen.avif", "illaoi.avif", "jax.avif", "jhin.avif", "jinx.avif", "kaisa.avif", "karma.avif", "kind.avif", "lb.avif",
+    "leona.avif", "liss.avif", "lulu.avif", "maokai.avif", "mech.avif", "meep.avif", "mf.avif", "milio.avif", "morde.avif", "morg.avif",
+    "nami.avif", "nasus.avif", "nunu.avif", "ornn.avif", "pant.avif", "poppy.avif", "pyke.avif", "rammus.avif", "reksai.avif", "rhaast.avif",
+    "riven.avif", "samira.avif", "shen.avif", "sona.avif", "talon.avif", "teemo.avif", "tf.avif", "tk.avif", "urgot.avif", "veig.avif",
+    "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif", "Dummy.avif", "Golem.avif"
+    ];
+
+    benchChampions.forEach(name => {
+        const p = document.createElement('div');
+        p.className = 'piece';
+        p.draggable = true;
+        
+        // 画像を入れる
+        p.innerHTML = `
+            <img src="img/champ/17/${name}.avif" 
+                 alt="${name}" 
+                 onerror="this.style.display='none'; this.parentElement.textContent='❓';">
+        `;
+        
+        p.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', name);  // 名前を渡す
         });
-    }
+        
+        bench.appendChild(p);
+    });
+}
 
     
     // 盤面外ドロップ（削除）の判定
