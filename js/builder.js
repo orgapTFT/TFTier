@@ -103,29 +103,29 @@ function handleDrop(e, hex) {
             const targetChamp = hex.querySelector('.champ');
             const source = window.currentDragSource;
 
-            // 1. 自分自身にドロップした場合は何もしない
-            if (!source || source === hex) return;
-
-            // 2. 移動元の場所を一旦空にする（これがスワップ成功の鍵）
-            source.innerHTML = '';
-
-            if (targetChamp) {
-                // 3. 【スワップ】移動先の情報を保存して、元の場所(source)に配置
-                const targetData = {
-                    type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: targetChamp.dataset.stars || "1",
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-                };
-                // 元の場所にターゲットを置く
-                placeChampion(source, targetData);
+            // 1. 移動が確定したので、まず元の場所(source)を真っさらな「ダミーマス」にする
+            if (source) {
+                source.innerHTML = '';[cite: 9]
             }
 
-            // 4. 新しい場所(hex)にドラッグした駒を置く
-            placeChampion(hex, data);
+            if (targetChamp) {
+                // 2. 入れ替え先の駒Bのデータを一時保存（退避）
+                const targetData = {
+                    type: 'champ',
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML,[cite: 9]
+                    stars: parseInt(targetChamp.dataset.stars) || 1,[cite: 9]
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)[cite: 9]
+                };
+                
+                // 3. 空になった元の場所に、退避しておいた駒Bを配置
+                placeChampion(source, targetData);[cite: 9]
+            }
+
+            // 4. 新しい場所にドラッグ中の駒Aを配置
+            placeChampion(hex, data);[cite: 9]
 
         } else if (data.type === 'item') {
-            // アイテムのドロップ処理（既存通り）[cite: 8, 9]
+            // アイテムドロップ処理
             const existingChamp = hex.querySelector('.champ');
             if (existingChamp) {
                 let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
@@ -140,11 +140,9 @@ function handleDrop(e, hex) {
             }
         }
     } catch (err) {
-        // ベンチからの新規ドロップ対応[cite: 8, 9]
+        // ベンチからの新規配置[cite: 9]
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 4) {
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });[cite: 9]
     }
 }
 
