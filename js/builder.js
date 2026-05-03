@@ -193,8 +193,8 @@ function init() {
             bench.appendChild(p);
         });
     }
-}
-    
+
+
     // 盤面外ドロップ（削除）の判定
 document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', (e) => {
@@ -217,5 +217,9 @@ document.addEventListener('drop', (e) => {
         console.log("盤面内の隙間なのでキャンセル");
     }
 });
+
+}
+    
+
 
 init();
