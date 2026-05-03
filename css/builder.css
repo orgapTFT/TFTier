@@ -62,43 +62,59 @@ body {
 }
 
 /* 六角形（マス）の設定 */
+
+
 .hex {
     position: relative;
     width: 88px;
     height: 100px;
     margin: 4px;
+    background-color: #333c48;
+    /* アイテムをはみ出させるために visible にする */
+    overflow: visible; 
     
-    /* 塗りつぶしの色 */
-    background-color: #333c48; 
-
-    /* 角を丸く切り抜く設定（maskを使用） */
+    /* 六角形の形自体は mask で作る（背景色用） */
     -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
     mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 5 L92 28 Q95 30 95 35 L95 65 Q95 70 92 72 L50 95 L8 72 Q5 70 5 65 L5 35 Q5 30 8 28 Z" fill="black"/></svg>');
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
-
+    
+    display: inline-block;
     filter: drop-shadow(0px 0px 1px #ffffff);
-    transition: background 0.2s;
- }
+}
+
+/* チャンピオンを表示する箱：ここで「はみ出し」をガードする */
+.champ {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    
+    /* ★重要：チャンピオン画像が六角形からはみ出さないように切り抜く */
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+/* アイテムコンテナ：clip-pathの影響を受けないように .champ の外に配置 */
+.items-container {
+    position: absolute;
+    bottom: -12px; /* 六角形の底辺よりさらに下へ配置 */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    z-index: 10; /* 最前面へ */
+}
 
 /* 六角形が重なって見えるようにホバー効果を追加 */
 .hex:hover {
     background-color: #252545;
 }
 
-/* チャンピオン（アイコン）の設定 */
-.champ {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-}
+
 
 .champ-icon {
     font-size: 55px; /* サイズ調整 */
@@ -106,17 +122,7 @@ body {
     margin-top: 5px;
 }
 
-/* アイテムコンテナ：ここを width 100% にして中央寄せ */
-.items-container {
-    position: absolute;
-    bottom: 12px; /* 六角形の底に当たらない高さ */
-    left: 0;
-    width: 100%; /* これで横幅いっぱいにする */
-    display: flex;
-    justify-content: center; /* 中身を中央へ */
-    gap: 2px;
-    z-index: 10;
-}
+
 
 /* アイテムスロット */
 .item-slot {
