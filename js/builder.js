@@ -20,13 +20,22 @@ function addDragToChampion(champ) {
 
         const data = {
             type: 'champ',
-            icon: champ.querySelector('div:last-child').innerHTML,
+            icon: champ.querySelector('.champ-icon').innerHTML,
             stars: champ.dataset.stars,
             items: Array.from(window.currentDragSource.querySelectorAll('.item-slot')).map(s => s.innerHTML)
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        setTimeout(() => { if(champ.parentElement) champ.parentElement.innerHTML = ''; }, 10);
+        // 元の場所を「透明」にするだけで、要素自体は残しておく（ドラッグ失敗対策）
+        setTimeout(() => {
+            if(champ) champ.classList.add('dragging-hidden');
+        }, 10);
+    });
+
+    champ.addEventListener('dragend', () => {
+        // ドラッグが終わったら（成功・失敗問わず）一旦非表示を解除
+        // 成功していれば、handleDrop側で元の場所は innerHTML='' にされているはず
+        champ.classList.remove('dragging-hidden');
     });
 }
 
@@ -223,23 +232,35 @@ function init() {
         });
     }
 
-document.body.addEventListener('dragover', e => e.preventDefault());
-document.body.addEventListener('drop', e => {
-    // もしドロップ先が .hex 以外なら
-    if (!e.target.closest('.hex')) {
+
+
+
+// 1. ブラウザのデフォルト挙動（ファイルが開く等）を防止
+document.addEventListener('dragover', e => e.preventDefault());
+
+// 2. 画面のどこかにドロップされた時の処理
+document.addEventListener('drop', (e) => {
+    // ドロップされた先が「六角形のマス（.hex）」の中かどうかを判定
+    const isOverHex = e.target.closest('.hex');
+
+    if (!isOverHex) {
+        // マスの外にドロップされた場合
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
-        
-        if (data.type === 'item') {
-            // ドラッグ中のアイテム（元の場所のやつ）を削除して解除成立
-            document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-            console.log("枠外ドロップでアイテム解除");
+        if (rawData) {
+            const data = JSON.parse(rawData);
+            
+            // チャンピオンを盤面外に捨てた場合のみ削除
+            if (data.type === 'champ' || data.type === 'item') {
+                // ドラッグ元（残像）を完全に消去する
+                if (window.currentDragSource) {
+                    window.currentDragSource.innerHTML = '';
+                    console.log("盤面外にドロップされたため、要素を削除しました");
+                }
+            }
         }
     }
+    // マス（.hex）の上だった場合は、各マスに設定した handleDrop が動くのでここでは何もしない
 });
-
-}
 
 // 実行
 init();
