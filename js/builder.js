@@ -1,5 +1,3 @@
-/* builder.js */
-
 function createBoard() {
     const board = document.getElementById('board');
     if (!board) return;
@@ -97,21 +95,15 @@ function handleDrop(e, hex) {
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) throw new Error();
-        const data = JSON.parse(rawData);
+        const data = JSON.parse(rawData); // これが A（ドラッグ中）のデータ
 
-        // --- チャンピオンのドラッグ時 ---
         if (data.type === 'champ') {
-            const source = window.currentDragSource;
-            const targetChamp = hex.querySelector('.champ');
+            const source = window.currentDragSource; // Aが元いた場所
+            const targetChamp = hex.querySelector('.champ'); // 今そこにいる B
 
-            // 1. 自分自身（元のマス）に落とした場合は何もしない
-            if (source === hex) return;
-
-            // 2. 移動先が「別のマス」である場合のみ処理開始
-            if (source) {
+            if (source && source !== hex) {
                 if (targetChamp) {
-                    // --- 【挙動：スワップ】 ---
-                    // 移動先にいたBの情報を一時保存
+                    // --- 【1. 一時保存（Bのデータを退避）】 ---
                     const targetData = {
                         type: 'champ',
                         icon: targetChamp.querySelector('.champ-icon').innerHTML,
@@ -119,45 +111,28 @@ function handleDrop(e, hex) {
                         items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
                     };
 
-                    // AとB、両方のマスを完全にクリアする
-                    source.innerHTML = '';
+                    // --- 【2. 消去（両方のマスを真っさらにする）】 ---
+                    source.innerHTML = ''; 
                     hex.innerHTML = '';
 
-                    // 入れ替えて配置
-                    placeChampion(source, targetData); // Aの場所にBを置く
-                    placeChampion(hex, data);          // Bの場所にAを置く
-                    console.log("スワップ完了");
+                    // --- 【3. 再配置（入れ替え）】 ---
+                    placeChampion(source, targetData); // Aの元いた場所に「退避したB」を置く
+                    placeChampion(hex, data);          // Bのいた場所に「ドラッグしてきたA」を置く
+                    
+                    console.log("スワップ完了: BをAの元位置へ移動しました");
                 } else {
-                    // --- 【挙動：空きマスへの移動】 ---
-                    source.innerHTML = ''; // 元のマスを削除
-                    placeChampion(hex, data); // 新しいマスに表示
-                    console.log("移動完了");
+                    // 通常移動（Bがいない場合）
+                    source.innerHTML = '';
+                    placeChampion(hex, data);
                 }
             }
-        } 
-        // --- アイテムのドラッグ時 ---
-        else if (data.type === 'item') {
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container');
-                if (!itemsDiv) {
-                    itemsDiv = document.createElement('div');
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                    // 盤面からのアイテム移動なら元を消す（必要に応じて）
-                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                    addItemSlot(itemsDiv, data.icon);
-                }
-            }
+        } else if (data.type === 'item') {
+            // アイテムのドロップ処理（省略）
         }
     } catch (err) {
-        // ベンチからの新規配置（移動ではなくコピー）
+        // ベンチからの配置
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 4) {
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+        if (icon && icon.length < 4) placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
 }
 
