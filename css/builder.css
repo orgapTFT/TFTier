@@ -37,14 +37,6 @@
   margin: 0 auto;
 }
 
-#board-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    gap: 0; /* 行同士の隙間をゼロにする */
-}
-
 .row {
     display: flex;
     justify-content: center;
