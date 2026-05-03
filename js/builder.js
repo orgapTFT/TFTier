@@ -178,6 +178,21 @@ if (data.type === 'champ') {
     }
 }
 
+function addItemSlot(container, iconName) {
+    const slot = document.createElement('div');
+    slot.className = 'item-slot';
+    
+    slot.innerHTML = `
+        <img src="./img/item/${iconName}.avif" 
+             alt="${iconName}" 
+             style="width:100%; height:100%; object-fit:contain;">
+    `;
+
+    slot.dataset.name = iconName;   // ツールチップ用
+
+    container.appendChild(slot);
+}
+
 function init() {
     createBoard();
     
