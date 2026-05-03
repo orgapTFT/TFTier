@@ -154,7 +154,6 @@ function handleDrop(e, hex) {
                 addItemSlot(itemsDiv, data.icon);
             } else {
                 document.querySelectorAll('.dragging-hidden').forEach(el => el.classList.remove('dragging-hidden'));
-                alert("アイテム枠がいっぱいです");
             }
         }
     } catch (err) {
@@ -179,9 +178,9 @@ function createChampion(icon) {
     
     champ.querySelector('.star').addEventListener('click', (e) => {
         e.stopPropagation();
-        let s = (parseInt(champ.dataset.stars) % 3) + 1;
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
-        champ.querySelector('.star').textContent = '★'.repeat(s);
+        champ.querySelector('.star').textContent = '★'.repeat(s-1);
     });
 
     addDragToChampion(champ);
