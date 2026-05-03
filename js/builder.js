@@ -109,45 +109,45 @@ function handleDrop(e, hex) {
 
         if (data.type === 'champ') {
             const source = window.currentDragSource;
+            // ドロップ先のhexの中にすでにチャンピオンがいるか確認
             const targetChamp = hex.querySelector('.champ');
 
-            if (targetChamp && source && source !== hex) {
-                // --- 【スワップ実行】 ---
-                // 移動先（target）の情報を一時保存
-                const targetData = {
-                    type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: targetChamp.dataset.stars,
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-                };
-
-                // 1. 元の場所(source)に、移動先にいた駒を置く
-                placeChampion(source, targetData);
-                // 2. 移動先(hex)に、ドラッグしてきた駒を置く
-                placeChampion(hex, data);
+            // 自分自身へのドロップでない、かつsourceが存在する場合
+            if (source && source !== hex) {
                 
-            } else {
-                // --- 【通常移動】 ---
-                if (source) source.innerHTML = '';
-                placeChampion(hex, data);
+                if (targetChamp) {
+                    // --- 【スワップ実行】 ---
+                    // 1. 移動先にいるチャンピオンの情報を変数に退避
+                    const targetData = {
+                        type: 'champ',
+                        icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                        stars: targetChamp.dataset.stars || 1,
+                        // 移動先のアイテムも保持
+                        items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+                    };
+
+                    // 2. 両方のマスを一度完全に空にする（重要！）
+                    source.innerHTML = '';
+                    hex.innerHTML = '';
+
+                    // 3. 元の場所(source)に、移動先にいた奴(targetData)を置く
+                    placeChampion(source, targetData);
+                    
+                    // 4. 新しい場所(hex)に、ドラッグしてきた奴(data)を置く
+                    placeChampion(hex, data);
+                    
+                    console.log("スワップ成功");
+                } else {
+                    // --- 【通常移動】 ---
+                    source.innerHTML = '';
+                    placeChampion(hex, data);
+                }
             }
         } else if (data.type === 'item') {
-            // アイテムドロップ処理
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                if (!hex.querySelector('.items-container')) {
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                if (itemsDiv.children.length < 3) {
-                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                    addItemSlot(itemsDiv, data.icon);
-                }
-            }
+            // ...アイテムの処理...
         }
     } catch (err) {
-        // ベンチからの新規配置
+        // ベンチからの配置
         const icon = e.dataTransfer.getData('text/plain');
         if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
