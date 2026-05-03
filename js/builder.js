@@ -162,6 +162,24 @@ function handleDrop(e, hex) {
     }
 }
 
+function createChampion(icon) {
+    const champ = document.createElement('div');
+    champ.className = 'champ';
+    champ.draggable = true;
+    champ.dataset.stars = 1;
+    champ.innerHTML = `<div class="star">★</div><div>${icon}</div>`;
+    
+    champ.querySelector('.star').addEventListener('click', (e) => {
+        e.stopPropagation();
+        let s = (parseInt(champ.dataset.stars) % 3) + 1;
+        champ.dataset.stars = s;
+        champ.querySelector('.star').textContent = '★'.repeat(s);
+    });
+
+    addDragToChampion(champ);
+    return champ;
+}
+
 function init() {
     createBoard();
     
