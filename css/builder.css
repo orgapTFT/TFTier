@@ -22,8 +22,9 @@ html, body {
 /* ===================== メイン横並び ===================== */
 .main-wrapper {
     display: flex;
+    align-items: flex-start;     /* 上揃え */
     justify-content: center;
-    gap: 40px;
+    gap: 20px;  
     flex-wrap: wrap;           /* スマホで折りたたむ */
     max-width: 1400px;
     margin: 0 auto;
@@ -35,16 +36,12 @@ html, body {
 
 /* サイドベンチもスクロール範囲に入れる */
 .side-bench {
-    position: absolute;
-    right: -90px;
-    top: 80px;
-    
+    position: static;    
     background: #1f1f2e;
     padding: 15px;
     border-radius: 12px;
     border: 2px solid #444;
-    max-height: 80vh;            /* 画面の80%までしか伸ばさない */
-    overflow-y: auto;            /* ベンチ自体もスクロール可能に */
+    align-self: flex-start;
 }
 
 
@@ -109,7 +106,7 @@ html, body {
   width: fit-content;      /* 中身に合わせて枠を広げる */
   gap: 2px 2px;
   /* 上下左右の余白設定 */
-  padding: 15px 70px 15px 15px; 
+  padding: 15px 40px 15px 15px; 
   box-sizing: border-box;
   background:  var(--bg);
   border: 4px solid #444;
@@ -137,10 +134,7 @@ html, body {
 }
 
 
-/* 盤面全体の背景（これより明るい色をhexに付ける） */
-body {
-    background-color: #0a0a1a;
-}
+
 
 /* 六角形（マス）の設定 */
 .hex {
@@ -174,10 +168,12 @@ body {
     z-index: 0;
 }
 
-/* チャンピオンの箱（キャラのはみ出しをガードしたい場合） */
+/* チャンピオンの箱 */
 .champ {
     position: absolute;
-    top: 0; left: 0;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%; height: 100%;
     z-index: 2;
     /* キャラだけは枠内に収めたいならここにも clip-path を入れる */
@@ -197,7 +193,7 @@ body {
     transform: translateX(-50%);
     display: flex;
     gap: 4px;
-    z-index: 10;
+    z-index: 15;
 }
 
 /* 六角形が重なって見えるようにホバー効果を追加 */
@@ -205,15 +201,11 @@ body {
     background-color: #252545;
 }
 
-
-
 .champ-icon {
     font-size: 55px; /* サイズ調整 */
     line-height: 1;
     margin-top: 5px;
 }
-
-
 
 /* 装備済みアイテムスロット */
 .item-slot {
@@ -293,8 +285,8 @@ body {
 
 /* チャンピオン画像がある場合（imgタグなど） */
 .champ img {
-    width: 100%;
-    height: 100%;
+    width: 90%;
+    height: 90%;
     object-fit: contain;     /* cover → contain に変更 */
     border-radius: 8px;
     z-index: 3;
