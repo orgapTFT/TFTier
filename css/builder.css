@@ -110,7 +110,7 @@ body {
 /* アイテムコンテナ（土台の外側へ出す） */
 .items-container {
     position: absolute;
-    bottom: -20px; 
+    bottom: 0px; 
     left: 50%;
     transform: translateX(-50%);
     display: flex;
