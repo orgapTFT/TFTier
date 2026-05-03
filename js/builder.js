@@ -103,14 +103,6 @@ function placeChampion(container, data) {
     addDragToChampion(champ);
 }
 
-    // 3. 配置
-    container.appendChild(champ);
-    container.appendChild(itemsDiv);
-
-    // 4. ドラッグイベント付与
-    addDragToChampion(champ);
-}
-
 function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
