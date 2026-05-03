@@ -16,18 +16,21 @@ function createBoard() {
 
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
-        window.currentDragSource = champ.parentElement;
+        const parent = champ.parentElement;
+        window.currentDragSource = parent;
+
+        // 【修正】同じマス内にある .star 要素を探して、現在の星の数を取得する
+        const starEl = parent.querySelector('.star');
+        const currentStars = champ.dataset.stars; 
 
         const data = {
             type: 'champ',
             icon: champ.querySelector('.champ-icon').innerHTML,
-            stars: champ.dataset.stars,
-            items: Array.from(window.currentDragSource.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+            stars: currentStars, // ここで最新の星の数を渡す
+            items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
         };
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        // ドラッグ開始時に元の場所を消すと、場外ドロップの判定ができないため
-        // クラス付与のみ行い、削除は drop イベント側で行う
         setTimeout(() => {
             if(champ) champ.classList.add('dragging-hidden');
         }, 10);
@@ -42,21 +45,20 @@ function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
 
+    // data.stars が文字列で来ることがあるので数値に変換
     let currentStars = parseInt(data.stars) || 1;
 
-    // 1. チャンピオンアイコン（ここだけ切り抜かれる）
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
-    champ.dataset.stars = currentStars; 
+    champ.dataset.stars = currentStars; // ここに星の数を保持
     champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
-    // 2. 星の要素（.champの外側に置くことで、はみ出しを可能にする）
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
+    // 初期表示の星をセット
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // --- 星のクリックバグ対策 ---
     let startX, startY;
     starLabel.addEventListener('mousedown', (e) => {
         startX = e.screenX;
@@ -65,18 +67,16 @@ function placeChampion(container, data) {
 
     starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
-        // ドラッグ移動（5px以上）していたら星は増やさない
         const diffX = Math.abs(e.screenX - startX);
         const diffY = Math.abs(e.screenY - startY);
         if (diffX > 5 || diffY > 5) return;
 
-        // 星1(非表示)〜星5(★★★★)のループ
+        // 星の数を更新（1〜5ループ）
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // 3. アイテムコンテナ
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     if (data.items) {
@@ -85,10 +85,10 @@ function placeChampion(container, data) {
         });
     }
 
-    // すべてを .hex に追加
+    // 順番に注意：星を一番手前にするために最後の方に追加
     container.appendChild(champ);
-    container.appendChild(starLabel); // 星を外側に追加
     container.appendChild(itemsDiv);
+    container.appendChild(starLabel); 
 
     addDragToChampion(champ);
 }
