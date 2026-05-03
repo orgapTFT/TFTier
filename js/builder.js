@@ -44,21 +44,20 @@ function placeChampion(container, data) {
 
     let currentStars = parseInt(data.stars) || 1;
 
+    // 1. チャンピオンアイコン（ここだけ切り抜かれる）
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     champ.dataset.stars = currentStars; 
-    
-    const starText = currentStars > 1 ? '★'.repeat(currentStars) : '';
-    
-    champ.innerHTML = `
-        <div class="star">${starText}</div>
-        <div class="champ-icon">${data.icon}</div>
-    `;
+    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
-    const starLabel = champ.querySelector('.star');
+    // 2. 星の要素（.champの外側に置くことで、はみ出しを可能にする）
+    const starLabel = document.createElement('div');
+    starLabel.className = 'star';
+    starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
+
+    // --- 星のクリックバグ対策 ---
     let startX, startY;
-
     starLabel.addEventListener('mousedown', (e) => {
         startX = e.screenX;
         startY = e.screenY;
@@ -66,29 +65,31 @@ function placeChampion(container, data) {
 
     starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
+        // ドラッグ移動（5px以上）していたら星は増やさない
         const diffX = Math.abs(e.screenX - startX);
         const diffY = Math.abs(e.screenY - startY);
         if (diffX > 5 || diffY > 5) return;
 
-        // 星1(非表示)→2(★)→3(★★)→4(★★★)→5(★★★★)→1(非表示)
+        // 星1(非表示)〜星5(★★★★)のループ
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    starLabel.addEventListener('click', (e) => e.stopPropagation());
-
+    // 3. アイテムコンテナ
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
-    
-    if (data.items && data.items.length > 0) {
+    if (data.items) {
         data.items.forEach(icon => {
             if (typeof addItemSlot === 'function') addItemSlot(itemsDiv, icon);
         });
     }
 
+    // すべてを .hex に追加
     container.appendChild(champ);
+    container.appendChild(starLabel); // 星を外側に追加
     container.appendChild(itemsDiv);
+
     addDragToChampion(champ);
 }
 
@@ -175,24 +176,79 @@ function init() {
         });
     }
 
-    // 盤面外ドロップ判定
-    document.addEventListener('dragover', e => e.preventDefault());
-    document.addEventListener('drop', (e) => {
-        // ドロップ先が「ボード（#board）」そのものか、その外側なら削除とみなす
-        const isOnBoardContent = e.target.closest('.hex');
-        
-        if (!isOnBoardContent) {
-            const rawData = e.dataTransfer.getData('application/json');
-            if (rawData) {
-                const data = JSON.parse(rawData);
-                // 盤面外（マスの隙間含む）に落としたら元の場所を空にする
-                if (window.currentDragSource) {
-                    window.currentDragSource.innerHTML = '';
-                    window.currentDragSource = null;
+    
+    // 盤面外ドロップ（削除）の判定
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', (e) => {
+    const isOverBoard = e.target.closest('#board'); // 盤面エリア全体
+    const isOverHex = e.target.closest('.hex');     // 六角形のマス
+
+    const rawData = e.dataTransfer.getData('application/json');
+    if (!rawData) return;
+    const data = JSON.parse(rawData);
+
+    if (!isOverBoard) {
+        // 1. 盤面の完全外側なら「削除」
+        if (window.currentDragSource) {
+            window.currentDragSource.innerHTML = '';
+            window.currentDragSource = null;
+        }
+    } else if (isOverBoard && !isOverHex) {
+        // 2. 盤面エリア内だが、マスの上ではない（隙間）なら「元の場所に戻す」
+        // 何もしないことで、dragend後のhidden解除により元の場所に見えるようになる
+        console.log("盤面内の隙間なのでキャンセル");
+    }
+});
+
+function handleDrop(e, hex) {
+    e.preventDefault();
+    hex.classList.remove('dragover');
+
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) throw new Error();
+        const data = JSON.parse(rawData);
+
+        if (data.type === 'champ') {
+            const targetChamp = hex.querySelector('.champ');
+            
+            // 移動が確定したので元の場所をクリア
+            const source = window.currentDragSource;
+            if (source) source.innerHTML = '';
+
+            if (targetChamp) {
+                // 入れ替え先のデータ作成
+                const targetData = {
+                    type: 'champ',
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                    stars: parseInt(targetChamp.dataset.stars) || 1,
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+                };
+                placeChampion(source, targetData);
+            }
+            placeChampion(hex, data);
+        } else if (data.type === 'item') {
+            // アイテムドロップ処理（既存通り）
+            const existingChamp = hex.querySelector('.champ');
+            if (existingChamp) {
+                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
+                if (!hex.querySelector('.items-container')) {
+                    itemsDiv.className = 'items-container';
+                    hex.appendChild(itemsDiv);
+                }
+                if (itemsDiv.children.length < 3) {
+                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                    addItemSlot(itemsDiv, data.icon);
                 }
             }
         }
-    });
+    } catch (err) {
+        // ベンチからの新規配置
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
+    }
+
+    };
 }
 
 init();

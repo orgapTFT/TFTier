@@ -148,17 +148,18 @@ body {
 
 .star {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: -2px; /* 六角形上側 */
+    left: 50%;
+    transform: translateX(-50%);
     width: 100%;
-    height: 30px; /* 上部30px分をクリック範囲にする */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
     color: #ffd700;
     font-size: 16px;
-    cursor: pointer; /* マウスを乗せたとき指マークになる */
-    z-index: 10;    /* アイコンより手前に置く */
+    font-weight: bold;
+    text-shadow: 0 0 4px #000;
+    cursor: pointer;
+    z-index: 15; /* アイコンやアイテムより手前 */
+    white-space: nowrap;
 }
 
 /* チャンピオン画像がある場合（imgタグなど） */
