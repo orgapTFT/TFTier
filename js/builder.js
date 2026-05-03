@@ -54,12 +54,13 @@ function placeChampion(container, data) {
     champ.dataset.name = champName;    // 念のため保存
 
     // 画像表示
-    champ.innerHTML = `
-        <img src="img/champ/17/${champName}.avif" 
-             alt="${champName}" 
-             class="champ-icon"
-             onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:40px\">${champName}</span>';">
-    `;
+champ.innerHTML = `
+    <img src="./img/champ/17/${champName}.avif" 
+         alt="${champName}" 
+         class="champ-icon"
+         style="width:100%; height:100%; object-fit:contain;"
+         onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
+`;
 
     // 星の要素（そのまま）
     const starLabel = document.createElement('div');
@@ -167,29 +168,48 @@ function handleDrop(e, hex) {
 function init() {
     createBoard();
     
-    const itemsArea = document.getElementById('items');
-    if (itemsArea) {
-        itemsArea.innerHTML = '';
-        ITEM_LIST.forEach(icon => {
-            const item = document.createElement('div');
-            item.className = 'item';
-            item.textContent = icon;
-            item.draggable = true;
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
-            });
-            itemsArea.appendChild(item);
+// === アイテムエリア（横10個）===
+const itemsArea = document.getElementById('items');
+if (itemsArea) {
+    itemsArea.innerHTML = '';
+    itemsArea.style.display = 'grid';
+    itemsArea.style.gridTemplateColumns = 'repeat(10, 62px)';  // 横10個
+    itemsArea.style.gap = '8px';
+    itemsArea.style.justifyContent = 'center';
+    itemsArea.style.padding = '15px';
+
+    ITEM_LIST.forEach(icon => {   // または itemFiles 配列があればそっち使う
+        const item = document.createElement('div');
+        item.className = 'item';
+        item.draggable = true;
+        
+        item.innerHTML = `
+            <img src="./img/item/${icon}.avif" 
+                 alt="${icon}" 
+                 style="width:100%; height:100%; object-fit:contain;"
+                 onerror="this.style.display='none'; this.parentElement.textContent='${icon}';">
+        `;
+        
+        item.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('application/json', JSON.stringify({type:'item', icon:icon}));
         });
-    }
+        
+        itemsArea.appendChild(item);
+    });
+}
 
 
 // === ベンチに全チャンピオンを表示 ===
+// === ベンチ（右側・5列）===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
-    
+    bench.style.display = 'grid';
+    bench.style.gridTemplateColumns = 'repeat(5, 72px)';  // 横5体
+    bench.style.gap = '8px';
+    bench.style.justifyContent = 'center';
+
     championFiles.forEach(filename => {
-        // 拡張子を除いた名前を取得（aatrox.avif → aatrox）
         const name = filename.replace('.avif', '');
         
         const p = document.createElement('div');
@@ -197,13 +217,18 @@ if (bench) {
         p.draggable = true;
         
         p.innerHTML = `
-            <img src="./img/champ/17/${filename}" 
-                 alt="${name}" 
-                 style="width:100%; height:100%; object-fit:contain; border-radius:8px;"
-                 onerror="this.style.display='none'; this.parentElement.textContent='❌';">
+            <div style="position:relative; width:100%; height:100%;">
+                <img src="./img/champ/17/${filename}" 
+                     alt="${name}" 
+                     style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                <div style="position:absolute; bottom:4px; left:0; right:0; 
+                            text-align:center; color:white; font-size:11px; 
+                            text-shadow: 0 0 4px black; pointer-events:none;">
+                    ${name}
+                </div>
+            </div>
         `;
         
-        // ドラッグするときはファイル名から拡張子を除いた名前を渡す
         p.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', name);
         });
