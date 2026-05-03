@@ -97,44 +97,46 @@ function handleDrop(e, hex) {
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) return;
-        const dragData = JSON.parse(rawData); // これが移動させたい「A」のデータ
+        const dragData = JSON.parse(rawData); // 移動させたいAのデータ[cite: 4]
 
         if (dragData.type === 'champ') {
-            const source = window.currentDragSource; // Aが元いたマス
-            const targetChamp = hex.querySelector('.champ'); // 今ドロップ先にいる「B」
+            const source = window.currentDragSource;
+            const targetChamp = hex.querySelector('.champ');
 
-            // 自分自身へのドロップは何もしない
             if (!source || source === hex) return;
 
             if (targetChamp) {
-                // --- 【STEP 1: Bの情報をダミーマス（変数）に避難】 ---
+                // --- 【STEP 1: ダミーに退避】 ---
+                // iconはtextContentではなくinnerHTMLで「中身丸ごと」保存する[cite: 4]
                 const dummyBox = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').textContent, // HTMLではなく文字を保存
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML, 
                     stars: targetChamp.dataset.stars || 1,[cite: 4]
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent) // アイテム文字を配列化
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)[cite: 4, 5]
                 };
 
-                // --- 【STEP 2: 両方のマスを完全にリセット】 ---
-                source.innerHTML = ''; // Aのいた場所を空にする[cite: 4]
-                hex.innerHTML = '';    // Bのいた場所を空にする[cite: 4]
+                // --- 【STEP 2: 同時リセット】 ---
+                source.innerHTML = ''; // 元の場所をクリア[cite: 4]
+                hex.innerHTML = '';    // 移動先をクリア[cite: 4]
 
-                // --- 【STEP 3: 情報を入れ替えて再配置】 ---
-                placeChampion(source, dummyBox); // Aの元いた場所に「ダミー（B）」を配置[cite: 4]
-                placeChampion(hex, dragData);    // Bの元いた場所に「ドラッグ中のA」を配置[cite: 4]
+                // --- 【STEP 3: 再配置】 ---
+                // placeChampion内で再度HTMLが組み立てられる[cite: 4]
+                placeChampion(source, dummyBox); 
+                placeChampion(hex, dragData);
                 
-                console.log("ダミー経由のスワップ完了");
             } else {
-                // 通常移動（ドロップ先が空の場合）
+                // 通常移動
                 source.innerHTML = '';[cite: 4]
                 placeChampion(hex, dragData);[cite: 4]
             }
         } else if (dragData.type === 'item') {
-            // アイテムのドロップ処理（既存の処理を継続）
-            handleItemDrop(hex, dragData);
+            // アイテムドロップ用（関数が定義されている場合）
+            if (typeof handleItemDrop === 'function') {
+                handleItemDrop(hex, dragData);
+            }
         }
     } catch (err) {
-        // ベンチからの新規ドロップ対応
+        // ベンチからの新規ドロップ
         const plainIcon = e.dataTransfer.getData('text/plain');
         if (plainIcon && plainIcon.length < 4) {
             placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });[cite: 4]
