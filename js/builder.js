@@ -50,24 +50,29 @@ function placeChampion(container, data) {
 
     const starLabel = champ.querySelector('.star');
 
-    // --- ★ここから修正：ドラッグとクリックの競合防止策 ---
-    let isMoving = false;
+    // --- ★競合防止：マウス押し下げ位置を記録する方式 ---
+    let startX, startY;
 
-    // ドラッグが開始されたらフラグを立てる
-    champ.addEventListener('dragstart', () => {
-        isMoving = true;
+    // 1. マウスが押された時の位置を記録
+    starLabel.addEventListener('mousedown', (e) => {
+        startX = e.screenX;
+        startY = e.screenY;
     });
 
-    starLabel.addEventListener('click', (e) => {
+    // 2. マウスが離された時に、位置が動いていなければクリックとみなす
+    starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
 
-        // もしドラッグ中（移動中）だったら星を増やさない
-        if (isMoving) {
-            isMoving = false; // フラグをリセット
+        // 動いた距離を計算（ドラッグした場合はここが大きくなる）
+        const diffX = Math.abs(e.screenX - startX);
+        const diffY = Math.abs(e.screenY - startY);
+
+        // 5ピクセル以上動いていたら「移動」とみなして星は変えない
+        if (diffX > 5 || diffY > 5) {
             return;
         }
 
-        // 純粋なクリックの時だけ星を切り替える
+        // --- 星の切り替えロジック ---
         let s = (parseInt(champ.dataset.stars) || 1);
         s = (s % 3) + 1; // 1→2→3→1のループ
         
@@ -77,10 +82,8 @@ function placeChampion(container, data) {
         console.log("星を切り替えました:", s);
     });
 
-    // ドロップが終わったらフラグをリセット（念のため）
-    champ.addEventListener('dragend', () => {
-        setTimeout(() => { isMoving = false; }, 10);
-    });
+    // clickイベント自体は何もしないように止めておく
+    starLabel.addEventListener('click', (e) => e.stopPropagation());
     // --- ★ここまで ---
 
     const itemsDiv = document.createElement('div');
