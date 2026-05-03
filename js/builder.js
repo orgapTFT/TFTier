@@ -1,5 +1,3 @@
-/* builder.js - 表示・スワップ不具合修正版 */
-
 function createBoard() {
     const board = document.getElementById('board');
     if (!board) return;
@@ -98,57 +96,49 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) {
-            // ベンチからの直接ドラッグ（テキスト形式）の場合[cite: 4]
-            const plainIcon = e.dataTransfer.getData('text/plain');
-            if (plainIcon && plainIcon.length < 4) {
-                placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });
-            }
-            return;
-        };
-
-        const dragData = JSON.parse(rawData);
+        if (!rawData) return;
+        const dragData = JSON.parse(rawData); // これが移動させたい「A」のデータ
 
         if (dragData.type === 'champ') {
-            const source = window.currentDragSource;
-            const targetChamp = hex.querySelector('.champ');
+            const source = window.currentDragSource; // Aが元いたマス
+            const targetChamp = hex.querySelector('.champ'); // 今ドロップ先にいる「B」
 
+            // 自分自身へのドロップは何もしない
             if (!source || source === hex) return;
 
             if (targetChamp) {
-                // 【スワップ】ダミー変数にBを退避させて入れ替える[cite: 4]
+                // --- 【STEP 1: Bの情報をダミーマス（変数）に避難】 ---
                 const dummyBox = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').textContent,
-                    stars: targetChamp.dataset.stars || 1,
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)
+                    icon: targetChamp.querySelector('.champ-icon').textContent, // HTMLではなく文字を保存
+                    stars: targetChamp.dataset.stars || 1,[cite: 4]
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent) // アイテム文字を配列化
                 };
 
-                source.innerHTML = '';
-                hex.innerHTML = '';
+                // --- 【STEP 2: 両方のマスを完全にリセット】 ---
+                source.innerHTML = ''; // Aのいた場所を空にする[cite: 4]
+                hex.innerHTML = '';    // Bのいた場所を空にする[cite: 4]
 
-                placeChampion(source, dummyBox); // 元いた場所にBを配置
-                placeChampion(hex, dragData);    // 新しい場所にAを配置
+                // --- 【STEP 3: 情報を入れ替えて再配置】 ---
+                placeChampion(source, dummyBox); // Aの元いた場所に「ダミー（B）」を配置[cite: 4]
+                placeChampion(hex, dragData);    // Bの元いた場所に「ドラッグ中のA」を配置[cite: 4]
+                
+                console.log("ダミー経由のスワップ完了");
             } else {
-                // 通常移動
-                source.innerHTML = '';
-                placeChampion(hex, dragData);
+                // 通常移動（ドロップ先が空の場合）
+                source.innerHTML = '';[cite: 4]
+                placeChampion(hex, dragData);[cite: 4]
             }
         } else if (dragData.type === 'item') {
-            // アイテムのドロップ処理
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let container = hex.querySelector('.items-container') || document.createElement('div');
-                container.className = 'items-container';
-                if (!hex.contains(container)) hex.appendChild(container);
-                
-                if (container.querySelectorAll('.item-slot').length < 3) {
-                    window.addItemSlot(container, dragData.icon);
-                }
-            }
+            // アイテムのドロップ処理（既存の処理を継続）
+            handleItemDrop(hex, dragData);
         }
     } catch (err) {
-        console.error("Drop error:", err);
+        // ベンチからの新規ドロップ対応
+        const plainIcon = e.dataTransfer.getData('text/plain');
+        if (plainIcon && plainIcon.length < 4) {
+            placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });[cite: 4]
+        }
     }
 }
 
