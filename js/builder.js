@@ -1,4 +1,4 @@
-/* builder.js */
+/* builder.js - 表示・スワップ不具合修正版 */
 
 function createBoard() {
     const board = document.getElementById('board');
@@ -7,11 +7,7 @@ function createBoard() {
     for (let i = 0; i < 28; i++) {
         const hex = document.createElement('div');
         hex.classList.add('hex');
-        // ドラッグオーバー時の視覚効果[cite: 4, 8]
-        hex.addEventListener('dragover', e => { 
-            e.preventDefault(); 
-            hex.classList.add('dragover'); 
-        });
+        hex.addEventListener('dragover', e => { e.preventDefault(); hex.classList.add('dragover'); });
         hex.addEventListener('dragleave', () => hex.classList.remove('dragover'));
         hex.addEventListener('drop', e => handleDrop(e, hex));
         board.appendChild(hex);
@@ -21,21 +17,21 @@ function createBoard() {
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
         const parentHex = champ.parentElement;
-        window.currentDragSource = parentHex; // 移動元のマスを保持
+        window.currentDragSource = parentHex;
         
-        // アイテムと星の情報を抽出[cite: 4, 5]
+        // アイコンは innerHTML ではなく、中のテキスト(絵文字)だけを抽出する
+        const iconText = champ.querySelector('.champ-icon').textContent;
         const itemIcons = Array.from(parentHex.querySelectorAll('.item-slot')).map(s => s.textContent);
 
         const data = {
             type: 'champ',
-            icon: champ.querySelector('.champ-icon').innerHTML,
+            icon: iconText, // HTMLタグを含まない純粋な文字
             stars: champ.dataset.stars || "1",
             items: itemIcons
         };
         
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        // ドラッグ中に元の表示を隠す
         setTimeout(() => {
             if(champ) champ.classList.add('dragging-hidden');
         }, 10);
@@ -47,33 +43,39 @@ function addDragToChampion(champ) {
 }
 
 function placeChampion(container, data) {
-    if (!container || !data) return;
-    container.innerHTML = ''; // マスをリセット
+    if (!container || !data || !data.icon) return;
+    
+    // 1. マスを一旦クリア
+    container.innerHTML = ''; 
 
+    // 2. チャンピオン要素の作成
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     const sCount = parseInt(data.stars) || 1;
     champ.dataset.stars = sCount; 
-    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`; // アイコン設定[cite: 4]
+    
+    // アイコン表示を統一（常に同じ構造で作る）[cite: 4, 8]
+    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
 
+    // 3. アイテムコンテナの作成[cite: 4, 8]
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     
-    // アイテムスロットの復元[cite: 4, 5]
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(iconText => {
             if (typeof window.addItemSlot === 'function') {
-                window.addItemSlot(itemsDiv, iconText);
+                window.addItemSlot(itemsDiv, iconText); // core.jsの関数を使用[cite: 5]
             }
         });
     }
 
+    // 4. 星ラベルの作成[cite: 4, 8]
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = sCount > 1 ? '★'.repeat(sCount - 1) : '';
 
-    // 星の数変更[cite: 4]
+    // クリック（mouseup）で星を切り替え
     starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
@@ -81,11 +83,13 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
+    // 5. 要素をマスに追加
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel); 
 
-    addDragToChampion(champ); // ドラッグ機能再付与[cite: 4]
+    // 6. ドラッグ機能を付与
+    addDragToChampion(champ);
 }
 
 function handleDrop(e, hex) {
@@ -95,73 +99,63 @@ function handleDrop(e, hex) {
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) {
-            // ベンチからのテキストドロップ対応[cite: 4]
+            // ベンチからの直接ドラッグ（テキスト形式）の場合[cite: 4]
             const plainIcon = e.dataTransfer.getData('text/plain');
             if (plainIcon && plainIcon.length < 4) {
                 placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });
             }
             return;
-        }
+        };
 
         const dragData = JSON.parse(rawData);
 
-        // チャンピオンの移動・スワップ[cite: 4]
         if (dragData.type === 'champ') {
             const source = window.currentDragSource;
-            if (!source || source === hex) return;
-
             const targetChamp = hex.querySelector('.champ');
 
+            if (!source || source === hex) return;
+
             if (targetChamp) {
-                // 【スワップ】ダミー変数にBを退避[cite: 4]
-                const dummyB = {
+                // 【スワップ】ダミー変数にBを退避させて入れ替える[cite: 4]
+                const dummyBox = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                    icon: targetChamp.querySelector('.champ-icon').textContent,
                     stars: targetChamp.dataset.stars || 1,
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)
                 };
 
-                // 両方のマスを一度クリアして衝突を防ぐ[cite: 4]
                 source.innerHTML = '';
                 hex.innerHTML = '';
 
-                placeChampion(source, dummyB); // 元の場所にBを置く[cite: 4]
-                placeChampion(hex, dragData);  // 新しい場所にAを置く[cite: 4]
+                placeChampion(source, dummyBox); // 元いた場所にBを配置
+                placeChampion(hex, dragData);    // 新しい場所にAを配置
             } else {
-                // 【通常移動】
+                // 通常移動
                 source.innerHTML = '';
                 placeChampion(hex, dragData);
             }
-            window.currentDragSource = null;
-        } 
-        // アイテムのドロップ[cite: 4, 5]
-        else if (dragData.type === 'item') {
+        } else if (dragData.type === 'item') {
+            // アイテムのドロップ処理
             const existingChamp = hex.querySelector('.champ');
             if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                itemsDiv.className = 'items-container';
-                if (!hex.contains(itemsDiv)) hex.appendChild(itemsDiv);
-
-                if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
-                    // 盤面内移動なら元のアイテムを消す[cite: 5]
-                    if (dragData.fromHexIndex !== undefined) {
-                        const fromHex = document.querySelectorAll('.hex')[dragData.fromHexIndex];
-                        const dragItem = fromHex?.querySelector('.item-slot.dragging-hidden');
-                        if (dragItem) dragItem.remove();
-                    }
-                    window.addItemSlot(itemsDiv, dragData.icon);
+                let container = hex.querySelector('.items-container') || document.createElement('div');
+                container.className = 'items-container';
+                if (!hex.contains(container)) hex.appendChild(container);
+                
+                if (container.querySelectorAll('.item-slot').length < 3) {
+                    window.addItemSlot(container, dragData.icon);
                 }
             }
         }
     } catch (err) {
-        console.error("Drop Error:", err);
+        console.error("Drop error:", err);
     }
 }
 
 function init() {
-    createBoard(); // ボード作成[cite: 4]
+    createBoard(); //[cite: 4]
     
-    // アイテムパレット初期化[cite: 4, 5]
+    // アイテムパレット初期化[cite: 4]
     const itemsArea = document.getElementById('items');
     if (itemsArea && typeof ITEM_LIST !== 'undefined') {
         itemsArea.innerHTML = '';
@@ -192,18 +186,18 @@ function init() {
         });
     }
 
-    // ボード外ドロップでの削除[cite: 4]
+    // 全体ドロップ（場外削除）[cite: 4]
     document.addEventListener('dragover', e => e.preventDefault());
     document.addEventListener('drop', (e) => {
         const isOverBoard = e.target.closest('#board');
         const isOverHex = e.target.closest('.hex');
-        
-        if (!isOverHex && !isOverBoard && window.currentDragSource) {
+        if (isOverHex) return;
+
+        if (!isOverBoard && window.currentDragSource) {
             window.currentDragSource.innerHTML = '';
             window.currentDragSource = null;
         }
     });
 }
 
-// 起動
 init();
