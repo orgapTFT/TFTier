@@ -1,3 +1,5 @@
+/* builder.js */
+
 function createBoard() {
     const board = document.getElementById('board');
     if (!board) return;
@@ -5,7 +7,11 @@ function createBoard() {
     for (let i = 0; i < 28; i++) {
         const hex = document.createElement('div');
         hex.classList.add('hex');
-        hex.addEventListener('dragover', e => { e.preventDefault(); hex.classList.add('dragover'); });
+        // ドラッグオーバー時の視覚効果[cite: 4, 8]
+        hex.addEventListener('dragover', e => { 
+            e.preventDefault(); 
+            hex.classList.add('dragover'); 
+        });
         hex.addEventListener('dragleave', () => hex.classList.remove('dragover'));
         hex.addEventListener('drop', e => handleDrop(e, hex));
         board.appendChild(hex);
@@ -15,21 +21,21 @@ function createBoard() {
 function addDragToChampion(champ) {
     champ.addEventListener('dragstart', e => {
         const parentHex = champ.parentElement;
-        window.currentDragSource = parentHex;
+        window.currentDragSource = parentHex; // 移動元のマスを保持
         
-        // アイコンは innerHTML ではなく、中のテキスト(絵文字)だけを抽出する
-        const iconText = champ.querySelector('.champ-icon').textContent;
+        // アイテムと星の情報を抽出[cite: 4, 5]
         const itemIcons = Array.from(parentHex.querySelectorAll('.item-slot')).map(s => s.textContent);
 
         const data = {
             type: 'champ',
-            icon: iconText, // HTMLタグを含まない純粋な文字
+            icon: champ.querySelector('.champ-icon').innerHTML,
             stars: champ.dataset.stars || "1",
             items: itemIcons
         };
         
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
+        // ドラッグ中に元の表示を隠す
         setTimeout(() => {
             if(champ) champ.classList.add('dragging-hidden');
         }, 10);
@@ -41,39 +47,33 @@ function addDragToChampion(champ) {
 }
 
 function placeChampion(container, data) {
-    if (!container || !data || !data.icon) return;
-    
-    // 1. マスを一旦クリア
-    container.innerHTML = ''; 
+    if (!container || !data) return;
+    container.innerHTML = ''; // マスをリセット
 
-    // 2. チャンピオン要素の作成
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
     const sCount = parseInt(data.stars) || 1;
     champ.dataset.stars = sCount; 
-    
-    // アイコン表示を統一（常に同じ構造で作る）[cite: 4, 8]
-    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`;
+    champ.innerHTML = `<div class="champ-icon">${data.icon}</div>`; // アイコン設定[cite: 4]
 
-    // 3. アイテムコンテナの作成[cite: 4, 8]
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     
+    // アイテムスロットの復元[cite: 4, 5]
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(iconText => {
             if (typeof window.addItemSlot === 'function') {
-                window.addItemSlot(itemsDiv, iconText); // core.jsの関数を使用[cite: 5]
+                window.addItemSlot(itemsDiv, iconText);
             }
         });
     }
 
-    // 4. 星ラベルの作成[cite: 4, 8]
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = sCount > 1 ? '★'.repeat(sCount - 1) : '';
 
-    // クリック（mouseup）で星を切り替え
+    // 星の数変更[cite: 4]
     starLabel.addEventListener('mouseup', (e) => {
         e.stopPropagation();
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
@@ -81,13 +81,11 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // 5. 要素をマスに追加
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel); 
 
-    // 6. ドラッグ機能を付与
-    addDragToChampion(champ);
+    addDragToChampion(champ); // ドラッグ機能再付与[cite: 4]
 }
 
 function handleDrop(e, hex) {
@@ -96,58 +94,74 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const dragData = JSON.parse(rawData); // 移動させたいAのデータ[cite: 4]
+        if (!rawData) {
+            // ベンチからのテキストドロップ対応[cite: 4]
+            const plainIcon = e.dataTransfer.getData('text/plain');
+            if (plainIcon && plainIcon.length < 4) {
+                placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });
+            }
+            return;
+        }
 
+        const dragData = JSON.parse(rawData);
+
+        // チャンピオンの移動・スワップ[cite: 4]
         if (dragData.type === 'champ') {
             const source = window.currentDragSource;
-            const targetChamp = hex.querySelector('.champ');
-
             if (!source || source === hex) return;
 
+            const targetChamp = hex.querySelector('.champ');
+
             if (targetChamp) {
-                // --- 【STEP 1: ダミーに退避】 ---
-                // iconはtextContentではなくinnerHTMLで「中身丸ごと」保存する[cite: 4]
-                const dummyBox = {
+                // 【スワップ】ダミー変数にBを退避[cite: 4]
+                const dummyB = {
                     type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML, 
-                    stars: targetChamp.dataset.stars || 1,[cite: 4]
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)[cite: 4, 5]
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                    stars: targetChamp.dataset.stars || 1,
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.textContent)
                 };
 
-                // --- 【STEP 2: 同時リセット】 ---
-                source.innerHTML = ''; // 元の場所をクリア[cite: 4]
-                hex.innerHTML = '';    // 移動先をクリア[cite: 4]
+                // 両方のマスを一度クリアして衝突を防ぐ[cite: 4]
+                source.innerHTML = '';
+                hex.innerHTML = '';
 
-                // --- 【STEP 3: 再配置】 ---
-                // placeChampion内で再度HTMLが組み立てられる[cite: 4]
-                placeChampion(source, dummyBox); 
-                placeChampion(hex, dragData);
-                
+                placeChampion(source, dummyB); // 元の場所にBを置く[cite: 4]
+                placeChampion(hex, dragData);  // 新しい場所にAを置く[cite: 4]
             } else {
-                // 通常移動
-                source.innerHTML = '';[cite: 4]
-                placeChampion(hex, dragData);[cite: 4]
+                // 【通常移動】
+                source.innerHTML = '';
+                placeChampion(hex, dragData);
             }
-        } else if (dragData.type === 'item') {
-            // アイテムドロップ用（関数が定義されている場合）
-            if (typeof handleItemDrop === 'function') {
-                handleItemDrop(hex, dragData);
+            window.currentDragSource = null;
+        } 
+        // アイテムのドロップ[cite: 4, 5]
+        else if (dragData.type === 'item') {
+            const existingChamp = hex.querySelector('.champ');
+            if (existingChamp) {
+                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
+                itemsDiv.className = 'items-container';
+                if (!hex.contains(itemsDiv)) hex.appendChild(itemsDiv);
+
+                if (itemsDiv.querySelectorAll('.item-slot').length < 3) {
+                    // 盤面内移動なら元のアイテムを消す[cite: 5]
+                    if (dragData.fromHexIndex !== undefined) {
+                        const fromHex = document.querySelectorAll('.hex')[dragData.fromHexIndex];
+                        const dragItem = fromHex?.querySelector('.item-slot.dragging-hidden');
+                        if (dragItem) dragItem.remove();
+                    }
+                    window.addItemSlot(itemsDiv, dragData.icon);
+                }
             }
         }
     } catch (err) {
-        // ベンチからの新規ドロップ
-        const plainIcon = e.dataTransfer.getData('text/plain');
-        if (plainIcon && plainIcon.length < 4) {
-            placeChampion(hex, { icon: plainIcon, stars: 1, items: [] });[cite: 4]
-        }
+        console.error("Drop Error:", err);
     }
 }
 
 function init() {
-    createBoard(); //[cite: 4]
+    createBoard(); // ボード作成[cite: 4]
     
-    // アイテムパレット初期化[cite: 4]
+    // アイテムパレット初期化[cite: 4, 5]
     const itemsArea = document.getElementById('items');
     if (itemsArea && typeof ITEM_LIST !== 'undefined') {
         itemsArea.innerHTML = '';
@@ -178,18 +192,18 @@ function init() {
         });
     }
 
-    // 全体ドロップ（場外削除）[cite: 4]
+    // ボード外ドロップでの削除[cite: 4]
     document.addEventListener('dragover', e => e.preventDefault());
     document.addEventListener('drop', (e) => {
         const isOverBoard = e.target.closest('#board');
         const isOverHex = e.target.closest('.hex');
-        if (isOverHex) return;
-
-        if (!isOverBoard && window.currentDragSource) {
+        
+        if (!isOverHex && !isOverBoard && window.currentDragSource) {
             window.currentDragSource.innerHTML = '';
             window.currentDragSource = null;
         }
     });
 }
 
+// 起動
 init();
