@@ -53,7 +53,7 @@ function placeChampion(container, data) {
 
     // ★星をクリックした時の進化処理を追加
     const starLabel = champ.querySelector('.star');
-    starLabel.addEventListener('click', (e) => {
+    starLabel.addEventListener('click', (e) => {      
         e.stopPropagation(); // ドラッグ発動を防ぐ
         let s = (parseInt(champ.dataset.stars) % 5) + 1; // 0→1→2→3→0...
         champ.dataset.stars = s;

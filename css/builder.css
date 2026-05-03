@@ -146,18 +146,19 @@ body {
     justify-content: center;
 }
 
-/* 星（レベル） */
 .star {
     position: absolute;
-    top: 5px;
+    top: 0;
+    left: 0;
     width: 100%;
-    text-align: center;
-    color: #ffd700; /* ゴールド */
-    font-size: 14px;
-    text-shadow: 0 0 3px #000;
-    cursor: pointer;
-    z-index: 5;
-    min-height: 1em; /* 非表示時もクリック判定を維持したいならこれ */
+    height: 30px; /* 上部30px分をクリック範囲にする */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffd700;
+    font-size: 16px;
+    cursor: pointer; /* マウスを乗せたとき指マークになる */
+    z-index: 10;    /* アイコンより手前に置く */
 }
 
 /* チャンピオン画像がある場合（imgタグなど） */
