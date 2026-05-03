@@ -182,25 +182,28 @@ function init() {
         });
     }
 
-// init()内のbench部分を以下に置き換え
+
+// === ベンチに全チャンピオンを表示 ===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     
-    const benchChampions = ["leona", "aatrox", "akali", "asol"];
-
-    benchChampions.forEach(name => {
+    championFiles.forEach(filename => {
+        // 拡張子を除いた名前を取得（aatrox.avif → aatrox）
+        const name = filename.replace('.avif', '');
+        
         const p = document.createElement('div');
         p.className = 'piece';
         p.draggable = true;
         
         p.innerHTML = `
-            <img src="./img/champ/17/${name}.avif" 
+            <img src="./img/champ/17/${filename}" 
                  alt="${name}" 
-                 style="width:100%; height:100%; object-fit:contain;"
-                 onerror="console.error('画像ロード失敗: ${name}'); this.parentElement.innerHTML = '❌${name}';">
+                 style="width:100%; height:100%; object-fit:contain; border-radius:8px;"
+                 onerror="this.style.display='none'; this.parentElement.textContent='❌';">
         `;
         
+        // ドラッグするときはファイル名から拡張子を除いた名前を渡す
         p.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', name);
         });
