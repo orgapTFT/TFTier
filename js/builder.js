@@ -187,31 +187,22 @@ const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     
-    // 使うチャンピオン（ここに好きな順番で入れる）
-    const benchChampions = [
-    "aatrox.avif", "akali.avif", "asol.avif", "aurora.avif", "bard.avif", "bel.avif", "bia.avif", "blitz.avif",
-    "briar.avif", "cait.avif", "cho.avif", "corki.avif", "diana.avif", "ez.avif", "fiora.avif", "fizz.avif", "gnar.avif", "grag.avif",
-    "gv.avif", "gwen.avif", "illaoi.avif", "jax.avif", "jhin.avif", "jinx.avif", "kaisa.avif", "karma.avif", "kind.avif", "lb.avif",
-    "leona.avif", "liss.avif", "lulu.avif", "maokai.avif", "mech.avif", "meep.avif", "mf.avif", "milio.avif", "morde.avif", "morg.avif",
-    "nami.avif", "nasus.avif", "nunu.avif", "ornn.avif", "pant.avif", "poppy.avif", "pyke.avif", "rammus.avif", "reksai.avif", "rhaast.avif",
-    "riven.avif", "samira.avif", "shen.avif", "sona.avif", "talon.avif", "teemo.avif", "tf.avif", "tk.avif", "urgot.avif", "veig.avif",
-    "vex.avif", "viktor.avif", "xayah.avif", "yi.avif", "zed.avif", "zoe.avif", "Dummy.avif", "Golem.avif"
-    ];
+    const benchChampions = ["leona", "aatrox", "akali", "asol"];
 
     benchChampions.forEach(name => {
         const p = document.createElement('div');
         p.className = 'piece';
         p.draggable = true;
         
-        // 画像を入れる
         p.innerHTML = `
-            <img src="img/champ/17/${name}.avif" 
+            <img src="./img/champ/17/${name}.avif" 
                  alt="${name}" 
-                 onerror="this.style.display='none'; this.parentElement.textContent='❓';">
+                 style="width:100%; height:100%; object-fit:contain;"
+                 onerror="console.error('画像ロード失敗: ${name}'); this.parentElement.innerHTML = '❌${name}';">
         `;
         
         p.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('text/plain', name);  // 名前を渡す
+            e.dataTransfer.setData('text/plain', name);
         });
         
         bench.appendChild(p);
