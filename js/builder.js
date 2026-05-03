@@ -33,17 +33,21 @@ function addDragToChampion(champ) {
 function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = ''; 
+
+    // チャンピオン本体（背景画像的な扱い）
     const newChamp = createChampion(data.icon);
     newChamp.dataset.stars = data.stars;
     newChamp.querySelector('.star').textContent = '★'.repeat(data.stars);
 
+    // アイテムコンテナ（チャンピオンの上に重ねる）
     const itemsDiv = document.createElement('div');
-    itemsDiv.className = 'items';
+    itemsDiv.className = 'items-container'; // クラス名を変更
     if (data.items) {
         data.items.forEach(icon => addItemSlot(itemsDiv, icon));
     }
+    
     container.appendChild(newChamp);
-    container.appendChild(itemsDiv);
+    container.appendChild(itemsDiv); // あとから追加して上に重ねる
 }
 
 function handleDrop(e, hex) {
