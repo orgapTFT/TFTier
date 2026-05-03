@@ -90,56 +90,7 @@ function placeChampion(container, data) {
     addDragToChampion(champ);
 }
 
-function handleDrop(e, hex) {
-    e.preventDefault();
-    hex.classList.remove('dragover');
 
-    try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) throw new Error();
-        const data = JSON.parse(rawData);
-
-        if (data.type === 'champ') {
-            const targetChamp = hex.querySelector('.champ');
-            const source = window.currentDragSource;
-
-            if (targetChamp) {
-                // --- スワップ機能：移動先のデータを保存 ---
-                const targetData = {
-                    type: 'champ',
-                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
-                    stars: targetChamp.dataset.stars,
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-                };
-
-                // 元の場所にターゲットを置く
-                placeChampion(source, targetData);
-                // 新しい場所にドラッグした駒を置く
-                placeChampion(hex, data);
-            } else {
-                // 通常移動：元の場所を空にする
-                if (source) source.innerHTML = '';
-                placeChampion(hex, data);
-            }
-        } else if (data.type === 'item') {
-            const existingChamp = hex.querySelector('.champ');
-            if (existingChamp) {
-                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
-                if (!hex.querySelector('.items-container')) {
-                    itemsDiv.className = 'items-container';
-                    hex.appendChild(itemsDiv);
-                }
-                if (itemsDiv.children.length < 3) {
-                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                    addItemSlot(itemsDiv, data.icon);
-                }
-            }
-        }
-    } catch (err) {
-        const icon = e.dataTransfer.getData('text/plain');
-        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
-    }
-}
 
 function init() {
     createBoard();
@@ -196,6 +147,56 @@ document.addEventListener('drop', (e) => {
         console.log("盤面内の隙間なのでキャンセル");
     }
 });
+
+function handleDrop(e, hex) {
+    e.preventDefault();
+    hex.classList.remove('dragover');
+
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) throw new Error();
+        const data = JSON.parse(rawData);
+
+        if (data.type === 'champ') {
+            const targetChamp = hex.querySelector('.champ');
+            
+            // 移動が確定したので元の場所をクリア
+            const source = window.currentDragSource;
+            if (source) source.innerHTML = '';
+
+            if (targetChamp) {
+                // 入れ替え先のデータ作成
+                const targetData = {
+                    type: 'champ',
+                    icon: targetChamp.querySelector('.champ-icon').innerHTML,
+                    stars: parseInt(targetChamp.dataset.stars) || 1,
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.innerHTML)
+                };
+                placeChampion(source, targetData);
+            }
+            placeChampion(hex, data);
+        } else if (data.type === 'item') {
+            // アイテムドロップ処理（既存通り）
+            const existingChamp = hex.querySelector('.champ');
+            if (existingChamp) {
+                let itemsDiv = hex.querySelector('.items-container') || document.createElement('div');
+                if (!hex.querySelector('.items-container')) {
+                    itemsDiv.className = 'items-container';
+                    hex.appendChild(itemsDiv);
+                }
+                if (itemsDiv.children.length < 3) {
+                    document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                    addItemSlot(itemsDiv, data.icon);
+                }
+            }
+        }
+    } catch (err) {
+        // ベンチからの新規配置
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon) placeChampion(hex, { icon: icon, stars: 1, items: [] });
+    }
+
+    };
 }
 
 init();
