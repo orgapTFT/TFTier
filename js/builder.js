@@ -244,41 +244,120 @@ function init() {
     createBoard();
     
 // ==================== アイテムエリア（全部表示） ====================
+// ==================== アイテムエリア ====================
 const itemsArea = document.getElementById('items');
 if (itemsArea) {
     itemsArea.innerHTML = '';
-    
-    // グリッド設定（横10個）
     itemsArea.style.display = 'grid';
-    itemsArea.style.gridTemplateColumns = 'repeat(10, 62px)';
-    itemsArea.style.gap = '8px';
+    itemsArea.style.gridTemplateColumns = 'repeat(12, 50px)';
+    itemsArea.style.gap = '2px';
     itemsArea.style.justifyContent = 'center';
     itemsArea.style.padding = '15px';
 
     itemFiles.forEach(filename => {
-        const itemName = filename.replace('.avif', '');  // 拡張子を除去
-
+        const itemName = filename.replace('.avif', '');
         const item = document.createElement('div');
         item.className = 'item';
         item.draggable = true;
         
-item.innerHTML = `
-    <img src="./img/item/${filename}" 
-         alt="${itemName}" 
-         style="width:100%; height:100%; object-fit:contain;"
-         onerror="this.style.display='none'; 
-                  this.parentElement.textContent='?'">
-`;
+        item.innerHTML = `
+            <img src="./img/item/${filename}" 
+                 alt="${itemName}" 
+                 style="width:100%; height:100%; object-fit:contain;"
+                 onerror="this.style.display='none'; this.parentElement.textContent='?'">
+        `;
         
-        // ドラッグ時のデータ
         item.addEventListener('dragstart', e => {
             e.dataTransfer.setData('application/json', JSON.stringify({
                 type: 'item', 
-                icon: itemName        // 拡張子なしで渡す
+                icon: itemName
             }));
         });
         
         itemsArea.appendChild(item);
+    });
+
+    // アイテム空白追加（10個）
+    for (let i = 0; i < 10; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'item empty-slot';
+        empty.style.width = '50px';
+        empty.style.height = '50px';
+        itemsArea.appendChild(empty);
+    }
+
+    // アイテム並び替え（スワップ）
+    setupSortable(itemsArea);
+}
+
+// === ベンチ ===
+const bench = document.getElementById('bench');
+if (bench) {
+    bench.innerHTML = '';
+    bench.style.display = 'grid';
+    bench.style.gridTemplateColumns = 'repeat(7, 54px)';
+    bench.style.gap = '2px';
+    bench.style.justifyContent = 'center';
+    bench.style.padding = '20px 30px';
+
+    championFiles.forEach(filename => {
+        const name = filename.replace('.avif', '');
+        const p = document.createElement('div');
+        p.className = 'piece';
+        p.draggable = true;
+        p.style.width = '50px';
+        p.style.height = '50px';
+
+        p.innerHTML = `...（省略・前回と同じ）...`;
+
+        p.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', name);
+            p.classList.add('dragging-hidden');
+            window.currentDragSourceBench = p;
+        });
+
+        p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
+        bench.appendChild(p);
+    });
+
+    // ベンチ空欄追加
+    for (let i = 0; i < 28; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'piece empty-slot';
+        empty.draggable = true;                    // 空欄もドラッグ可能に
+        empty.style.width = '50px';
+        empty.style.height = '50px';
+        bench.appendChild(empty);
+    }
+
+    // ベンチ並び替え（スワップ）
+    setupSortable(bench);
+}
+
+// 共通の並び替え関数（スワップ対応）
+function setupSortable(container) {
+    container.addEventListener('dragover', e => e.preventDefault());
+    container.addEventListener('drop', e => {
+        e.preventDefault();
+        
+        const dragged = window.currentDragSourceBench || 
+                       Array.from(container.querySelectorAll('.piece, .item'))
+                            .find(el => el.classList.contains('dragging-hidden'));
+
+        if (!dragged) return;
+
+        const target = e.target.closest('.piece, .item');
+        if (target && target !== dragged && target.parentElement === container) {
+            // スワップ処理
+            const temp = document.createElement('div');
+            dragged.parentNode.insertBefore(temp, dragged);
+            target.parentNode.insertBefore(dragged, target);
+            temp.parentNode.insertBefore(target, temp);
+            temp.remove();
+        }
+        
+        window.currentDragSourceBench = null;
+        dragged.classList.remove('dragging-hidden');
     });
 }
 
