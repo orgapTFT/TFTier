@@ -355,3 +355,17 @@ html, body {
     pointer-events: auto; /* クリックを有効に */
     min-height: 1em; /* 非表示時もクリック判定を維持 */
 }
+
+.empty-text {
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px #000000 !important;
+    font-weight: bold !important;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    padding: 4px !important;
+    z-index: 5 !important;
+}
