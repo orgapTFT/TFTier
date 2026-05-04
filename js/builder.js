@@ -546,13 +546,20 @@ function setupBenchSortable(bench) {
         const dragged = Array.from(bench.children).find(el => 
             el.classList.contains('dragging-hidden')
         );
-        if (!dragged) return;
+        if (!dragged) {
+            console.log("❌ draggedが見つかりません");
+            return;
+        }
         dragged.classList.remove('dragging-hidden');
 
+        // 空マス同士も確実に拾う
         const target = e.target.closest('.piece');
-        if (!target || target === dragged) return;
+        if (!target || target === dragged) {
+            console.log("❌ targetが見つからない or 同じ");
+            return;
+        }
 
-        console.log("✅ ベンチ専用スワップ実行");
+        console.log(`✅ スワップ実行: ${dragged.className} → ${target.className}`);
 
         // 完全スワップ
         const tempHTML = dragged.innerHTML;
