@@ -120,13 +120,12 @@ function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
 
-    // JSONデータ処理
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (rawData) {
             const data = JSON.parse(rawData);
 
-            // チャンピオン移動
+            // ====================== チャンピオン移動 ======================
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
@@ -149,26 +148,33 @@ function handleDrop(e, hex) {
                 return;
             }
 
-            // アイテム装備
+            // ====================== アイテム装備 ======================
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
 
                 const currentItems = Array.from(itemsContainer.children);
-                if (currentItems.length >= 3 || currentItems.some(s => s.dataset.name === data.icon)) return;
+
+                // ★★★ ここを変更 ★★★
+                // 同じアイテムも装備可能に（最大3個のみ制限）
+                if (currentItems.length >= 3) {
+                    return;                    // 個数だけ制限
+                }
+
+                // 重複チェックは削除（同じアイテムOK）
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
                 return;
             }
         }
-    } catch (err) {}
-
-    // フォールバック（text/plain）
-    const icon = e.dataTransfer.getData('text/plain');
-    if (icon && icon.length < 30) {
-        hex.innerHTML = '';
-        placeChampion(hex, { icon: icon, stars: 1, items: [] });
+    } catch (err) {
+        // ベンチから直接置く
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon && icon.length < 30) {
+            hex.innerHTML = '';
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
