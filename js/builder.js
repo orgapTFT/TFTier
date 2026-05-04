@@ -61,14 +61,10 @@ function placeChampion(container, data) {
 
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
-    const currentLv = data.lv || container.dataset.lv || '0';
+    const currentLv = parseInt(data.lv) || 0;
 
-    // 共通データ
     container.dataset.type = 'champ';
     container.dataset.name = champName;
-    container.dataset.text = champName;
-    container.dataset.color = data.color || '#222';
-    container.dataset.size = data.size || 'M';
     container.dataset.lv = currentLv;
 
     const champ = document.createElement('div');
@@ -84,7 +80,7 @@ function placeChampion(container, data) {
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
-        <div class="lv-display" style="${currentLv !== '0' ? 'display:block' : 'display:none'}">Lv${currentLv}</div>
+        <div class="lv-display" style="display:${currentLv >= 3 ? 'block' : 'none'}">Lv${currentLv}</div>
     `;
 
     // 星
@@ -92,7 +88,7 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // 星クリック
+    // 星クリック（右クリック）
     let startX, startY;
     starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
     starLabel.addEventListener('mouseup', e => {
@@ -103,25 +99,23 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // ====================== Lv切り替え（左ダブルクリック） ======================
+    // Lv切り替え（左ダブルクリック）
     const lvDisplay = champ.querySelector('.lv-display');
-    let currentLvNum = parseInt(currentLv) || 3;
+    let currentLvNum = currentLv || 3;
 
     champ.addEventListener('dblclick', (e) => {
         e.preventDefault();
-        e.stopImmediatePropagation();   // 他のイベントを止める
+        e.stopImmediatePropagation();
 
-        currentLvNum = (currentLvNum % 8) + 3;   // 3〜10までループ
-
-        if (currentLvNum > 10 || currentLvNum === 3 && lvDisplay.style.display === 'block') {
+        currentLvNum = (currentLvNum % 8) + 3;
+        if (currentLvNum > 10) {
             currentLvNum = 0;
             lvDisplay.style.display = 'none';
         } else {
             lvDisplay.textContent = `Lv${currentLvNum}`;
             lvDisplay.style.display = 'block';
         }
-
-        container.dataset.lv = currentLvNum;   // データも更新
+        container.dataset.lv = currentLvNum;
     });
 
     // アイテム
@@ -137,7 +131,7 @@ function placeChampion(container, data) {
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
-    addDragToChampion(champ);   // 重要：イベント再付与
+    addDragToChampion(champ);
 }
 
 function handleDrop(e, hex) {
