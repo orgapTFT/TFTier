@@ -19,22 +19,23 @@ function addDragToChampion(champ) {
         const parent = champ.parentElement;
         window.currentDragSource = parent;
 
-        // 【重要】星の数は champ.dataset.stars から確実に取得
         const currentStars = champ.dataset.stars || "1";
+        
+        const items = Array.from(parent.querySelectorAll('.item-slot'))
+                          .map(slot => slot.dataset.name);  // ← ここを変更！（名前だけ保存）
 
-const data = {
-    type: 'champ',
-    icon: champ.dataset.name || champ.querySelector('img')?.alt || champName,  // 名前を渡す
-    stars: currentStars,
-    items: Array.from(parent.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-};
+        const data = {
+            type: 'champ',
+            icon: champ.dataset.name,
+            stars: currentStars,
+            items: items  // ["GiantSlayer", "InfinityEdge", ...]
+        };
+
         e.dataTransfer.setData('application/json', JSON.stringify(data));
 
-        setTimeout(() => {
-            if(champ) champ.classList.add('dragging-hidden');
-        }, 10);
+        setTimeout(() => champ.classList.add('dragging-hidden'), 10);
     });
-
+ 
     champ.addEventListener('dragend', () => {
         champ.classList.remove('dragging-hidden');
     });
@@ -42,61 +43,47 @@ const data = {
 
 function placeChampion(container, data) {
     if (!container) return;
-    container.innerHTML = ''; 
+    container.innerHTML = '';
 
     const currentStars = parseInt(data.stars) || 1;
-    const champName = data.icon;   // ← ここが名前になっているはず
+    const champName = data.icon;
 
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
-    champ.dataset.stars = currentStars; 
-    champ.dataset.name = champName;    // 念のため保存
+    champ.dataset.stars = currentStars;
+    champ.dataset.name = champName;
 
-    // 画像表示
     champ.innerHTML = `
         <img src="./img/champ/17/${champName}.avif" 
              alt="${champName}" 
              class="champ-icon"
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
-
-
     `;
 
-    // 星の要素（そのまま）
+    // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // 星クリック処理（省略せず残す）
-    let startX, startY;
-    starLabel.addEventListener('mousedown', (e) => { startX = e.screenX; startY = e.screenY; });
-    starLabel.addEventListener('mouseup', (e) => {
-        e.stopPropagation();
-        const diffX = Math.abs(e.screenX - startX);
-        const diffY = Math.abs(e.screenY - startY);
-        if (diffX > 5 || diffY > 5) return;
+    // 星クリック処理（省略可）
 
-        let s = (parseInt(champ.dataset.stars) % 5) + 1;
-        champ.dataset.stars = s;
-        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
-    });
-
-    // items-container
+    // Items
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
-    if (data.items && Array.isArray(data.items) && typeof addItemSlot === 'function') {
-        data.items.forEach(iconHTML => {
-            if (iconHTML && iconHTML.trim() !== '') {
-                addItemSlot(itemsDiv, iconHTML);
+
+    if (data.items && Array.isArray(data.items)) {
+        data.items.forEach(itemName => {
+            if (itemName && typeof itemName === 'string' && itemName.trim() !== '') {
+                addItemSlot(itemsDiv, itemName.trim());  // 名前だけ渡す
             }
         });
     }
 
     container.appendChild(champ);
     container.appendChild(itemsDiv);
-    container.appendChild(starLabel); 
+    container.appendChild(starLabel);
 
     addDragToChampion(champ);
 }
@@ -216,7 +203,12 @@ if (itemsArea) {
             <img src="./img/item/${filename}" 
                  alt="${itemName}" 
                  style="width:100%; height:100%; object-fit:contain;"
-                 onerror="this.style.display='none'; this.parentElement.textContent='?'">
+                 onerror="this.style.display='none'; 
+                          this.parentElement.style.display='flex'; 
+                          this.parentElement.style.alignItems='center'; 
+                          this.parentElement.style.justifyContent='center'; 
+                          this.parentElement.innerHTML += '<span style=\"font-size:38px; opacity:0.75; color:#ccc\">${champName}</span>';"
+                            this.parentElement.textContent='?'">
         `;
         
         // ドラッグ時のデータ
