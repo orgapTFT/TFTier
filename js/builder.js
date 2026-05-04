@@ -144,13 +144,12 @@ function handleDrop(e, hex) {
 
                 const isFromBench = source.closest && source.closest('#bench');
 
-                // ★★★ 最新のデータを確実に取得 ★★★
-                const sourceChampElement = source.querySelector('.champ');
-                
+                // ★★★ 最新の状態からデータを確実に取得 ★★★
+                const sourceChamp = source.querySelector('.champ');
                 const sourceData = {
                     type: 'champ',
-                    icon: sourceChampElement ? sourceChampElement.dataset.name : (data.icon || ''),
-                    stars: sourceChampElement ? (sourceChampElement.dataset.stars || "1") : (data.stars || "1"),
+                    icon: sourceChamp ? sourceChamp.dataset.name : data.icon,
+                    stars: sourceChamp ? (sourceChamp.dataset.stars || "1") : (data.stars || "1"),
                     items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
                     lv: source.dataset.lv || data.lv || '0'
                 };
@@ -163,11 +162,13 @@ function handleDrop(e, hex) {
                     lv: hex.dataset.lv || '0'
                 } : null;
 
+                // クリア
                 source.innerHTML = '';
                 hex.innerHTML = '';
 
+                // 正しい順序で配置
                 if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, sourceData);   // ← ここをsourceDataに変更
+                placeChampion(hex, sourceData);   // ← ここが重要：スワップ後の最新データを使う
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
