@@ -288,19 +288,20 @@ const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(7, 68px)';  // 横7列固定
+    bench.style.gridTemplateColumns = 'repeat(7, 54px)';
     bench.style.gap = '6px';
     bench.style.justifyContent = 'center';
-    bench.style.padding = '15px';
+    bench.style.padding = '20px 40px';   // 左右スペース
 
+    // 実際のチャンピオン
     championFiles.forEach(filename => {
         const name = filename.replace('.avif', '');
         
         const p = document.createElement('div');
         p.className = 'piece';
         p.draggable = true;
-        p.style.width = '68px';
-        p.style.height = '68px';
+        p.style.width = '50px';
+        p.style.height = '50px';
         
         p.innerHTML = `
             <div style="position:relative; width:100%; height:100%;">
@@ -317,43 +318,30 @@ if (bench) {
             </div>
         `;
 
+        // ドラッグ設定
         p.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', name);
             p.classList.add('dragging-hidden');
             window.currentDragSourceBench = p;
         });
 
-        p.addEventListener('dragend', () => {
-            p.classList.remove('dragging-hidden');
-        });
+        p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
 
         bench.appendChild(p);
     });
 
-    // 並び替え機能
-    bench.addEventListener('dragover', e => e.preventDefault());
-    bench.addEventListener('drop', e => {
-        e.preventDefault();
-        const name = e.dataTransfer.getData('text/plain');
-        if (!name) return;
-
-        const dragged = window.currentDragSourceBench;
-        if (!dragged || dragged.parentElement !== bench) return;
-
-        const target = e.target.closest('.piece');
-        if (target && target !== dragged) {
-            const children = Array.from(bench.children);
-            const fromIdx = children.indexOf(dragged);
-            const toIdx = children.indexOf(target);
-
-            if (fromIdx < toIdx) {
-                bench.insertBefore(dragged, target.nextSibling);
-            } else {
-                bench.insertBefore(dragged, target);
-            }
-        }
-        window.currentDragSourceBench = null;
-    });
+    // ====================== 空欄追加 ======================
+    for (let i = 0; i < 28; i++) {        // 28個の空欄（4行分くらい）
+        const empty = document.createElement('div');
+        empty.className = 'piece empty-slot';
+        empty.style.width = '50px';
+        empty.style.height = '50px';
+        empty.style.background = '#1a1a2a';
+        empty.style.border = '2px dashed #555';
+        empty.style.opacity = '0.5';
+        
+        bench.appendChild(empty);
+    }
 }
 
 // アイテムエリアの並び替え（強化版）

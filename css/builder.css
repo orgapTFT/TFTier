@@ -62,10 +62,10 @@ html, body {
 /* ベンチ内部のグリッド */
 #bench {
     display: grid;
-    grid-template-columns: repeat(7, 68px);
+    grid-template-columns: repeat(7, 54px);
     gap: 6px;
     justify-content: center;
-    padding: 15px;
+    padding: 10px 20px; 
     background: #1f1f2e;
     border-radius: 12px;
     border: 2px solid #444;
@@ -110,8 +110,8 @@ html, body {
 }
 
 .item {
-    width: 62px;
-    height: 62px;
+    width: 50px;
+    height: 50px;
 }
 
 /* ベンチのチャンピオン名 */
