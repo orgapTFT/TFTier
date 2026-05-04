@@ -59,11 +59,17 @@ html, body {
     margin: 20px auto;
 }
 
-/* ベンチ内部のグリッド */
+/* ベンチ内部のグリッド - レスポンシブ対応 */
 #bench {
     display: grid;
-    grid-template-columns: repeat(8, 40px);
-    gap: 2px;
+    grid-template-columns: repeat(auto-fit, minmax(72px, 1fr));  /* 自動調整 */
+    gap: 12px;
+    justify-content: center;
+    padding: 15px;
+    background: #1f1f2e;
+    border-radius: 12px;
+    border: 2px solid #444;
+    max-width: 100%;
 }
 
 

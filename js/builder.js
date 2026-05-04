@@ -284,18 +284,16 @@ item.innerHTML = `
 
 
 // === ベンチに全チャンピオンを表示 ===
-// === ベンチ（横10列 + 空白スロット追加）===
+// === ベンチ（レスポンシブ + 並び替え対応）===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(10, 72px)';
+    bench.style.gridTemplateColumns = 'repeat(auto-fit, minmax(72px, 1fr))';
     bench.style.gap = '12px';
     bench.style.justifyContent = 'center';
     bench.style.padding = '15px';
-    bench.style.minHeight = '180px';   // 最低2行分確保
 
-    // 1. 実際のチャンピオンを表示
     championFiles.forEach(filename => {
         const name = filename.replace('.avif', '');
         
@@ -331,55 +329,63 @@ if (bench) {
         bench.appendChild(p);
     });
 
-    // 2. 空白スロットを追加（20個追加で合計かなり余裕が出る）
-    for (let i = 0; i < 25; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'piece empty-slot';
-        empty.style.background = '#1a1a2a';
-        empty.style.border = '2px dashed #555';
-        empty.style.opacity = '0.6';
-        // ドラッグオーバー対応
-        empty.addEventListener('dragover', e => {
-            e.preventDefault();
-            empty.style.borderColor = '#ffd700';
-            empty.style.opacity = '0.9';
-        });
-        empty.addEventListener('dragleave', () => {
-            empty.style.borderColor = '#555';
-            empty.style.opacity = '0.6';
-        });
-        empty.addEventListener('drop', e => {
-            e.preventDefault();
-            // 必要ならここにベンチ内並び替えロジック追加可能
-        });
-        bench.appendChild(empty);
-    }
+    // ベンチ内並び替え
+    bench.addEventListener('dragover', e => e.preventDefault());
+    bench.addEventListener('drop', e => {
+        e.preventDefault();
+        const name = e.dataTransfer.getData('text/plain');
+        if (!name) return;
+
+        const dragged = window.currentDragSourceBench;
+        if (!dragged || dragged.parentElement !== bench) return;
+
+        const target = e.target.closest('.piece');
+        if (target && target !== dragged) {
+            const children = Array.from(bench.children);
+            const fromIdx = children.indexOf(dragged);
+            const toIdx = children.indexOf(target);
+
+            if (fromIdx < toIdx) {
+                bench.insertBefore(dragged, target.nextSibling);
+            } else {
+                bench.insertBefore(dragged, target);
+            }
+        }
+        window.currentDragSourceBench = null;
+    });
 }
 
     
-// アイテムエリアにドロップイベントを追加（並び替え用）
+// アイテムエリアの並び替え（強化版）
 itemsArea.addEventListener('dragover', e => e.preventDefault());
-// 盤面外ドロップ（削除・解除）
-document.addEventListener('drop', (e) => {
-    const isOverBoard = e.target.closest('#board');
+itemsArea.addEventListener('drop', e => {
+    e.preventDefault();
+    const rawData = e.dataTransfer.getData('application/json');
+    if (!rawData) return;
     
     try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (rawData) {
-            const data = JSON.parse(rawData);
+        const data = JSON.parse(rawData);
+        if (data.type !== 'item') return;
 
-            // アイテムを盤面外にドラッグ → 解除
-            if (data.type === 'item' && data.sourceSlot && !isOverBoard) {
-                data.sourceSlot.remove();
-            }
+        const draggedItem = Array.from(itemsArea.querySelectorAll('.item'))
+            .find(item => item.querySelector('img')?.alt === data.icon);
 
-            // チャンピオンを盤面外にドラッグ → 削除
-            else if (!isOverBoard && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                window.currentDragSource = null;
+        const targetItem = e.target.closest('.item');
+
+        if (draggedItem && targetItem && draggedItem !== targetItem) {
+            const children = Array.from(itemsArea.children);
+            const fromIdx = children.indexOf(draggedItem);
+            const toIdx = children.indexOf(targetItem);
+
+            if (fromIdx < toIdx) {
+                itemsArea.insertBefore(draggedItem, targetItem.nextSibling);
+            } else {
+                itemsArea.insertBefore(draggedItem, targetItem);
             }
         }
-    } catch (err) {}
+    } catch (err) {
+        console.log("アイテム並び替えエラー", err);
+    }
 });
 
 window.currentDragSource = null;
