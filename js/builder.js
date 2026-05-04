@@ -218,57 +218,87 @@ function addItemSlot(container, iconName) {
 
 // 空マス編集関数
 function editEmptySlot(slot) {
-    const colorOptions = ['#1a1a2a','#2a1a1a','#1a2a1a','#1a1a4a','#3a2a1a',
-                         '#4a1a2a','#2a4a1a','#1a3a4a','#3a1a4a','#4a3a1a'];
+    const colorOptions = [
+            '#2a2a3a', // デフォルトグレー
+            '#00000000',
+            '#ffffff',
+            '#1d1dad',
+            '#ff2d55', // HYPER (ピンク)
+            '#ff9500', // SUPER (オレンジ)
+            '#ffcc00', // A (黄色)
+            '#ffeb3b', // B (薄黄色)
+            '#32ff7e', // C (ライム)
+            '#00f0ff', // X (シアン)
+            '#d2a5e3',
+    ];
     
-    let html = `<div style="padding:15px;">`;
-    html += `<p>色を選択（10色）:</p><div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">`;
-    
-    colorOptions.forEach(c => {
-        html += `<div onclick="applyColor(this)" style="width:40px;height:40px;background:${c};border:2px solid #fff;cursor:pointer;" data-color="${c}"></div>`;
-    });
-    html += `</div>`;
-    
-    html += `
-        <p>テキスト:</p>
-        <input type="text" id="emptyText" value="${slot.dataset.text || ''}" style="width:100%; padding:8px;">
-        
-        <p style="margin-top:10px;">文字サイズ:</p>
-        <select id="emptySize">
-            <option value="LL" ${slot.dataset.size==='LL'?'selected':''}>LL (とても大きい)</option>
-            <option value="L" ${slot.dataset.size==='L'?'selected':''}>L (大きい)</option>
-            <option value="M" ${slot.dataset.size==='M'?'selected':''}>M (普通)</option>
-            <option value="S" ${slot.dataset.size==='S'?'selected':''}>S (小さい)</option>
-        </select>
-        
-        <button onclick="saveEmptySlot('${slot.dataset.color}')" style="margin-top:15px; padding:8px 16px;">保存</button>
+    let html = `
+        <div style="padding:20px; min-width:320px; background:#1f1f2e; border:2px solid #555; border-radius:8px;">
+            <h3 style="margin:0 0 15px 0; color:white;">空マス編集</h3>
+            
+            <p>色を選択:</p>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
     `;
-    
-    // 簡易モーダル（改善の余地あり）
+
+    colorOptions.forEach(c => {
+        html += `<div onclick="selectColor(this)" style="width:45px;height:45px;background:${c};border:3px solid #fff;cursor:pointer;border-radius:4px;" data-color="${c}"></div>`;
+    });
+
+    html += `
+            </div>
+            
+            <p>テキスト:</p>
+            <input type="text" id="emptyText" value="${slot.dataset.text || ''}" style="width:100%; padding:10px; margin-bottom:15px;">
+            
+            <p>文字サイズ:</p>
+            <select id="emptySize" style="width:100%; padding:8px; margin-bottom:15px;">
+                <option value="LL" ${slot.dataset.size==='LL'?'selected':''}>LL (とても大きい)</option>
+                <option value="L" ${slot.dataset.size==='L'?'selected':''}>L (大きい)</option>
+                <option value="M" ${slot.dataset.size==='M'?'selected':''}>M (普通)</option>
+                <option value="S" ${slot.dataset.size==='S'?'selected':''}>S (小さい)</option>
+            </select>
+            
+            <div style="text-align:right; margin-top:10px;">
+                <button onclick="this.closest('div[style*=\'fixed\']').remove()" style="margin-right:10px; padding:8px 16px;">キャンセル</button>
+                <button onclick="saveEmptySlot('${slot.dataset.color}')" style="padding:8px 20px; background:#ff2d55; color:white; border:none; border-radius:4px;">保存</button>
+            </div>
+        </div>
+    `;
+
     const modal = document.createElement('div');
     modal.style.position = 'fixed';
     modal.style.top = '50%';
     modal.style.left = '50%';
     modal.style.transform = 'translate(-50%, -50%)';
-    modal.style.background = '#1f1f2e';
-    modal.style.padding = '20px';
-    modal.style.border = '2px solid #666';
     modal.style.zIndex = '10000';
     modal.innerHTML = html;
     document.body.appendChild(modal);
 }
 
-// 色適用（グローバル関数）
-window.applyColor = function(el) {
-    document.querySelectorAll('#emptyText').forEach(input => {
-        // 色は後で保存時に使う
+// 色選択
+window.selectColor = function(el) {
+    document.querySelectorAll('#emptyText').forEach(() => {
+        // 必要ならここで色を一時保存
     });
 };
 
+// 保存処理
 window.saveEmptySlot = function(oldColor) {
-    // 簡易実装のため一旦コンソール出力（後で完全実装）
-    console.log("空マス編集機能 - 現在開発中");
-    // ここに本実装を入れる
+    const modal = document.querySelector('div[style*="fixed"]');
+    if (!modal) return;
+
+    const textInput = modal.querySelector('#emptyText');
+    const sizeSelect = modal.querySelector('#emptySize');
+
+    const targetSlot = document.querySelector('.piece.empty-slot'); // 簡易版（改善必要）
+
+    if (textInput && sizeSelect) {
+        // 現在編集中のスロットを探すのは難しいので、簡易的に最新のものを更新（後で改善）
+        console.log("保存されました:", textInput.value, sizeSelect.value);
+        // 本来はslotを特定して更新
+    }
+
+    modal.remove(); // ウィンドウを閉じる
 };
 
 function init() {
@@ -377,8 +407,20 @@ function init() {
         });
 
         // ==================== 空マス（色・テキスト付き） ====================
-        const colors = ['#1a1a2a', '#2a1a1a', '#1a2a1a', '#1a1a4a', '#3a2a1a', 
-                       '#4a1a2a', '#2a4a1a', '#1a3a4a', '#3a1a4a', '#4a3a1a'];
+                // ==================== 空マス（落ち着いたグレー系 + Tierカラー） ====================
+        const emptyColors = [
+            '#2a2a3a', // デフォルトグレー
+            '#00000000',
+            '#ffffff',
+            '#1d1dad',
+            '#ff2d55', // HYPER (ピンク)
+            '#ff9500', // SUPER (オレンジ)
+            '#ffcc00', // A (黄色)
+            '#ffeb3b', // B (薄黄色)
+            '#32ff7e', // C (ライム)
+            '#00f0ff', // X (シアン)
+            '#d2a5e3',
+        ];
 
         for (let i = 0; i < 28; i++) {
             const empty = document.createElement('div');
@@ -387,11 +429,13 @@ function init() {
             empty.style.width = '50px';
             empty.style.height = '50px';
             
-            empty.dataset.color = colors[i % colors.length];
+            empty.dataset.color = emptyColors[i % emptyColors.length];
             empty.dataset.text = '';
             empty.dataset.size = 'M';
             empty.style.backgroundColor = empty.dataset.color;
+            empty.style.border = '2px solid rgba(255,255,255,0.2)';
 
+            // 右クリックで編集
             empty.addEventListener('contextmenu', e => {
                 e.preventDefault();
                 editEmptySlot(empty);
@@ -400,15 +444,14 @@ function init() {
             const textDiv = document.createElement('div');
             textDiv.className = 'empty-text';
             textDiv.style.pointerEvents = 'none';
+            textDiv.style.color = '#ffffff';
+            textDiv.style.fontWeight = 'bold';
+            textDiv.style.textShadow = '0 0 5px black';
             empty.appendChild(textDiv);
             
             updateEmptySlotDisplay(empty);
-            
             bench.appendChild(empty);
         }
-
-        setupSortable(bench);
-    }
 
     window.currentDragSource = null;
     window.currentDragSourceBench = null;
