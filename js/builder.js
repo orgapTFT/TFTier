@@ -452,6 +452,7 @@ function init() {
             updateEmptySlotDisplay(empty);
             bench.appendChild(empty);
         }
+    }
 
     window.currentDragSource = null;
     window.currentDragSourceBench = null;
