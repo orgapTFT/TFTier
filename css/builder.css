@@ -385,8 +385,8 @@ html, body {
 /* Lv表示（六角形より手前・星より後ろ） */
 .lv-display {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 15px;
+    right: 1px;
     background: rgba(0, 0, 0, 0.8);
     color: #ffffff;
     font-size: 18px;
@@ -395,7 +395,7 @@ html, body {
     border-radius: 3px;
     text-shadow: 0 0 5px black;
     pointer-events: none;
-    z-index: 15;
+    z-index: 19;
     white-space: nowrap;
 }
 
