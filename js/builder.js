@@ -244,7 +244,6 @@ function init() {
     createBoard();
     
 // ==================== アイテムエリア（全部表示） ====================
-// ==================== アイテムエリア ====================
 const itemsArea = document.getElementById('items');
 if (itemsArea) {
     itemsArea.innerHTML = '';
@@ -254,6 +253,7 @@ if (itemsArea) {
     itemsArea.style.justifyContent = 'center';
     itemsArea.style.padding = '15px';
 
+    // 実際のアイテム
     itemFiles.forEach(filename => {
         const itemName = filename.replace('.avif', '');
         const item = document.createElement('div');
@@ -272,6 +272,11 @@ if (itemsArea) {
                 type: 'item', 
                 icon: itemName
             }));
+            item.classList.add('dragging-hidden');
+        });
+
+        item.addEventListener('dragend', () => {
+            item.classList.remove('dragging-hidden');
         });
         
         itemsArea.appendChild(item);
@@ -281,6 +286,7 @@ if (itemsArea) {
     for (let i = 0; i < 10; i++) {
         const empty = document.createElement('div');
         empty.className = 'item empty-slot';
+        empty.draggable = true;                    // ← 重要：空欄もドラッグ可能に
         empty.style.width = '50px';
         empty.style.height = '50px';
         itemsArea.appendChild(empty);
@@ -334,21 +340,22 @@ if (bench) {
     setupSortable(bench);
 }
 
-// 共通の並び替え関数（スワップ対応）
+// 共通並び替え関数（ベンチとアイテム両方対応）
 function setupSortable(container) {
     container.addEventListener('dragover', e => e.preventDefault());
+    
     container.addEventListener('drop', e => {
         e.preventDefault();
         
-        const dragged = window.currentDragSourceBench || 
-                       Array.from(container.querySelectorAll('.piece, .item'))
-                            .find(el => el.classList.contains('dragging-hidden'));
+        const dragged = e.dataTransfer.getData('text/plain') ? 
+                        window.currentDragSourceBench : 
+                        Array.from(container.children).find(el => el.classList.contains('dragging-hidden'));
 
         if (!dragged) return;
 
         const target = e.target.closest('.piece, .item');
         if (target && target !== dragged && target.parentElement === container) {
-            // スワップ処理
+            // スワップ
             const temp = document.createElement('div');
             dragged.parentNode.insertBefore(temp, dragged);
             target.parentNode.insertBefore(dragged, target);
@@ -356,8 +363,8 @@ function setupSortable(container) {
             temp.remove();
         }
         
+        if (dragged) dragged.classList.remove('dragging-hidden');
         window.currentDragSourceBench = null;
-        dragged.classList.remove('dragging-hidden');
     });
 }
 
