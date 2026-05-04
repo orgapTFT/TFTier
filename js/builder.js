@@ -62,14 +62,14 @@ function placeChampion(container, data) {
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
 
-    // 共通データ構造（空マスと同期）
+    // 共通データ構造
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
+    container.dataset.lv = '0';        // 0 = 非表示
 
-    // ====================== チャンピオン本体 ======================
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
@@ -83,6 +83,9 @@ function placeChampion(container, data) {
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
+        
+        <!-- Lv表示（右上） -->
+        <div class="lv-display" style="display:none;">Lv3</div>
     `;
 
     // 星
@@ -90,14 +93,24 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    let startX, startY;
-    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
-    starLabel.addEventListener('mouseup', e => {
-        e.stopPropagation();
-        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        let s = (parseInt(champ.dataset.stars) % 5) + 1;
-        champ.dataset.stars = s;
-        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    // ====================== Lv切り替え（ホイールクリック） ======================
+    const lvDisplay = champ.querySelector('.lv-display');
+    let currentLv = 0;
+
+    champ.addEventListener('auxclick', (e) => {
+        if (e.button === 1) {  // 中クリック（ホイールクリック）
+            e.preventDefault();
+            e.stopPropagation();
+
+            currentLv = (currentLv % 9) + 3;   // 3〜11まで（11は非表示扱い）
+            if (currentLv > 10) {
+                currentLv = 0;
+                lvDisplay.style.display = 'none';
+            } else {
+                lvDisplay.textContent = `Lv${currentLv}`;
+                lvDisplay.style.display = 'block';
+            }
+        }
     });
 
     // アイテムコンテナ
