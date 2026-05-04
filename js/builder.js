@@ -243,113 +243,132 @@ slot.addEventListener('dragstart', e => {
 function init() {
     createBoard();
     
-// ==================== アイテムエリア（全部表示） ====================
-const itemsArea = document.getElementById('items');
-if (itemsArea) {
-    itemsArea.innerHTML = '';
-    itemsArea.style.display = 'grid';
-    itemsArea.style.gridTemplateColumns = 'repeat(12, 50px)';
-    itemsArea.style.gap = '2px';
-    itemsArea.style.justifyContent = 'center';
-    itemsArea.style.padding = '15px';
+    // ==================== アイテムエリア ====================
+    const itemsArea = document.getElementById('items');
+    if (itemsArea) {
+        itemsArea.innerHTML = '';
+        itemsArea.style.display = 'grid';
+        itemsArea.style.gridTemplateColumns = 'repeat(12, 50px)';
+        itemsArea.style.gap = '2px';
+        itemsArea.style.justifyContent = 'center';
+        itemsArea.style.padding = '15px';
 
-    // 実際のアイテム
-    itemFiles.forEach(filename => {
-        const itemName = filename.replace('.avif', '');
-        const item = document.createElement('div');
-        item.className = 'item';
-        item.draggable = true;
-        
-        item.innerHTML = `
-            <img src="./img/item/${filename}" 
-                 alt="${itemName}" 
-                 style="width:100%; height:100%; object-fit:contain;"
-                 onerror="this.style.display='none'; this.parentElement.textContent='?'">
-        `;
-        
-        item.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('application/json', JSON.stringify({
-                type: 'item', 
-                icon: itemName
-            }));
-            item.classList.add('dragging-hidden');
+        // 実際のアイテム
+        itemFiles.forEach(filename => {
+            const itemName = filename.replace('.avif', '');
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.draggable = true;
+            
+            item.innerHTML = `
+                <img src="./img/item/${filename}" 
+                     alt="${itemName}" 
+                     style="width:100%; height:100%; object-fit:contain;"
+                     onerror="this.style.display='none'; this.parentElement.textContent='?'">
+            `;
+            
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'item', 
+                    icon: itemName
+                }));
+                item.classList.add('dragging-hidden');
+            });
+
+            item.addEventListener('dragend', () => {
+                item.classList.remove('dragging-hidden');
+            });
+            
+            itemsArea.appendChild(item);
         });
 
-        item.addEventListener('dragend', () => {
-            item.classList.remove('dragging-hidden');
-        });
-        
-        itemsArea.appendChild(item);
-    });
+        // 空白追加
+        for (let i = 0; i < 10; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'item empty-slot';
+            empty.draggable = true;
+            empty.style.width = '50px';
+            empty.style.height = '50px';
+            itemsArea.appendChild(empty);
+        }
 
-    // アイテム空白追加（10個）
-    for (let i = 0; i < 10; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'item empty-slot';
-        empty.draggable = true;                    // ← 重要：空欄もドラッグ可能に
-        empty.style.width = '50px';
-        empty.style.height = '50px';
-        itemsArea.appendChild(empty);
+        setupSortable(itemsArea);
     }
 
-    // アイテム並び替え（スワップ）
-    setupSortable(itemsArea);
-}
+    // ==================== ベンチ ====================
+    const bench = document.getElementById('bench');
+    if (bench) {
+        bench.innerHTML = '';
+        bench.style.display = 'grid';
+        bench.style.gridTemplateColumns = 'repeat(7, 54px)';
+        bench.style.gap = '2px';
+        bench.style.justifyContent = 'center';
+        bench.style.padding = '20px 30px';
 
-// === ベンチ ===
-const bench = document.getElementById('bench');
-if (bench) {
-    bench.innerHTML = '';
-    bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(7, 54px)';
-    bench.style.gap = '2px';
-    bench.style.justifyContent = 'center';
-    bench.style.padding = '20px 30px';
+        // 実際のチャンピオン
+        championFiles.forEach(filename => {
+            const name = filename.replace('.avif', '');
+            const p = document.createElement('div');
+            p.className = 'piece';
+            p.draggable = true;
+            p.style.width = '50px';
+            p.style.height = '50px';
 
-    championFiles.forEach(filename => {
-        const name = filename.replace('.avif', '');
-        const p = document.createElement('div');
-        p.className = 'piece';
-        p.draggable = true;
-        p.style.width = '50px';
-        p.style.height = '50px';
+            p.innerHTML = `
+                <div style="position:relative; width:100%; height:100%;">
+                    <img src="./img/champ/17/${filename}" 
+                         alt="${name}" 
+                         style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                    <div style="position:absolute; bottom:3px; left:0; right:0; 
+                        text-align:center; color:white; font-size:10.5px; 
+                        text-shadow: 0 0 4px black; pointer-events:none;
+                        white-space: nowrap; overflow: hidden; 
+                        text-overflow: ellipsis; padding: 0 1px;">
+                      ${name}
+                    </div>
+                </div>
+            `;
 
-        p.innerHTML = `...（省略・前回と同じ）...`;
+            p.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', name);
+                p.classList.add('dragging-hidden');
+                window.currentDragSourceBench = p;
+            });
 
-        p.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('text/plain', name);
-            p.classList.add('dragging-hidden');
-            window.currentDragSourceBench = p;
+            p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
+
+            bench.appendChild(p);
         });
 
-        p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
-        bench.appendChild(p);
-    });
+        // 空欄追加
+        for (let i = 0; i < 28; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'piece empty-slot';
+            empty.draggable = true;
+            empty.style.width = '50px';
+            empty.style.height = '50px';
+            bench.appendChild(empty);
+        }
 
-    // ベンチ空欄追加
-    for (let i = 0; i < 28; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'piece empty-slot';
-        empty.draggable = true;                    // 空欄もドラッグ可能に
-        empty.style.width = '50px';
-        empty.style.height = '50px';
-        bench.appendChild(empty);
+        setupSortable(bench);
     }
 
-    // ベンチ並び替え（スワップ）
-    setupSortable(bench);
+    window.currentDragSource = null;
+    window.currentDragSourceBench = null;
 }
 
-// 共通並び替え関数（ベンチとアイテム両方対応）
+// 共通並び替え関数
 function setupSortable(container) {
     container.addEventListener('dragover', e => e.preventDefault());
     
     container.addEventListener('drop', e => {
         e.preventDefault();
         
-        const dragged = e.dataTransfer.getData('text/plain') ? 
-                        window.currentDragSourceBench : 
-                        Array.from(container.children).find(el => el.classList.contains('dragging-hidden'));
+        let dragged = window.currentDragSourceBench;
+        
+        if (!dragged) {
+            dragged = Array.from(container.children).find(el => el.classList.contains('dragging-hidden'));
+        }
 
         if (!dragged) return;
 
@@ -363,127 +382,9 @@ function setupSortable(container) {
             temp.remove();
         }
         
-        if (dragged) dragged.classList.remove('dragging-hidden');
+        dragged.classList.remove('dragging-hidden');
         window.currentDragSourceBench = null;
     });
-}
-
-
-// === ベンチ（7列 + 小さめアイコン）===
-const bench = document.getElementById('bench');
-if (bench) {
-    bench.innerHTML = '';
-    bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(7, 54px)';
-    bench.style.gap = '6px';
-    bench.style.justifyContent = 'center';
-    bench.style.padding = '20px 30px';
-
-    // 実際のチャンピオン
-    championFiles.forEach(filename => {
-        const name = filename.replace('.avif', '');
-        
-        const p = document.createElement('div');
-        p.className = 'piece';
-        p.draggable = true;
-        p.style.width = '50px';
-        p.style.height = '50px';
-        
-        p.innerHTML = `
-            <div style="position:relative; width:100%; height:100%;">
-                <img src="./img/champ/17/${filename}" 
-                     alt="${name}" 
-                     style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                <div style="position:absolute; bottom:3px; left:0; right:0; 
-                    text-align:center; color:white; font-size:10.5px; 
-                    text-shadow: 0 0 4px black; pointer-events:none;
-                    white-space: nowrap; overflow: hidden; 
-                    text-overflow: ellipsis; padding: 0 1px;">
-                  ${name}
-                </div>
-            </div>
-        `;
-
-        p.addEventListener('dragstart', e => {
-            e.dataTransfer.setData('text/plain', name);
-            p.classList.add('dragging-hidden');
-            window.currentDragSourceBench = p;
-        });
-
-        p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
-
-        bench.appendChild(p);
-    });
-
-    // 空欄追加
-    for (let i = 0; i < 28; i++) {
-        const empty = document.createElement('div');
-        empty.className = 'piece empty-slot';
-        empty.style.width = '50px';
-        empty.style.height = '50px';
-        bench.appendChild(empty);
-    }
-
-    // ベンチ内並び替え（空欄も含めて機能するように強化）
-    bench.addEventListener('dragover', e => e.preventDefault());
-    bench.addEventListener('drop', e => {
-        e.preventDefault();
-        const name = e.dataTransfer.getData('text/plain');
-        if (!name) return;
-
-        const dragged = window.currentDragSourceBench;
-        if (!dragged || dragged.parentElement !== bench) return;
-
-        const target = e.target.closest('.piece');
-        if (target && target !== dragged) {
-            const children = Array.from(bench.children);
-            const fromIdx = children.indexOf(dragged);
-            const toIdx = children.indexOf(target);
-
-            if (fromIdx < toIdx) {
-                bench.insertBefore(dragged, target.nextSibling);
-            } else {
-                bench.insertBefore(dragged, target);
-            }
-        }
-        window.currentDragSourceBench = null;
-    });
-}
-
-// アイテムエリアの並び替え（強化版）
-itemsArea.addEventListener('dragover', e => e.preventDefault());
-itemsArea.addEventListener('drop', e => {
-    e.preventDefault();
-    const rawData = e.dataTransfer.getData('application/json');
-    if (!rawData) return;
-    
-    try {
-        const data = JSON.parse(rawData);
-        if (data.type !== 'item') return;
-
-        const draggedItem = Array.from(itemsArea.querySelectorAll('.item'))
-            .find(item => item.querySelector('img')?.alt === data.icon);
-
-        const targetItem = e.target.closest('.item');
-
-        if (draggedItem && targetItem && draggedItem !== targetItem) {
-            const children = Array.from(itemsArea.children);
-            const fromIdx = children.indexOf(draggedItem);
-            const toIdx = children.indexOf(targetItem);
-
-            if (fromIdx < toIdx) {
-                itemsArea.insertBefore(draggedItem, targetItem.nextSibling);
-            } else {
-                itemsArea.insertBefore(draggedItem, targetItem);
-            }
-        }
-    } catch (err) {
-        console.log("アイテム並び替えエラー", err);
-    }
-});
-
-window.currentDragSource = null;
-window.currentDragSourceBench = null;
 }
 
 init();
