@@ -114,8 +114,7 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) throw new Error();
-        const data = JSON.parse(rawData);
+        const data = rawData ? JSON.parse(rawData) : {};
 
         // ====================== チャンピオン移動 ======================
         if (data.type === 'champ') {
@@ -148,33 +147,25 @@ function handleDrop(e, hex) {
 
         // ====================== アイテム移動 ======================
         if (data.type === 'item' && data.icon) {
-            const targetChamp = hex.querySelector('.champ');
-            if (!targetChamp) return;
-
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
-            const currentItems = Array.from(itemsContainer.children);
-            
-            // 同一アイテム重複防止
-            if (currentItems.some(slot => slot.dataset.name === data.icon)) return;
+            const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
+
+            if (currentItems.some(s => s.dataset.name === data.icon)) return;
             if (currentItems.length >= 3) return;
 
-            // 移動元から削除
-            if (data.sourceSlot && data.sourceContainer) {
-                data.sourceSlot.remove();
-            }
+            if (data.sourceSlot) data.sourceSlot.remove();
 
-            // 新しい場所に追加
             addItemSlot(itemsContainer, data.icon);
             return;
         }
 
     } catch (err) {
-        // ベンチからのチャンピオン配置
+        // ベンチから直接ドラッグした場合
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
-            hex.innerHTML = '';
+            hex.innerHTML = '';                    // ← 重要：空マス対策
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
@@ -385,7 +376,6 @@ function setupSortable(container) {
     container.addEventListener('drop', e => {
         e.preventDefault();
 
-        // ドラッグ中の要素を探す
         const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
         );
@@ -393,25 +383,26 @@ function setupSortable(container) {
 
         dragged.classList.remove('dragging-hidden');
 
-        // ドロップ先の対象要素を探す
         let target = e.target.closest('.piece, .item-slot');
         if (!target || target === dragged) return;
 
-        // ==================== ベンチ内のチャンピオン入れ替え ====================
+        // ==================== ベンチ内のチャンピオン入れ替え（空マス含む） ====================
         if (dragged.classList.contains('piece') && target.classList.contains('piece')) {
-            // HTMLとドラッグ可能状態をスワップ
             const tempHTML = dragged.innerHTML;
             const tempDraggable = dragged.draggable;
+            const tempClass = dragged.className;
 
             dragged.innerHTML = target.innerHTML;
             dragged.draggable = target.draggable;
+            dragged.className = target.className;
 
             target.innerHTML = tempHTML;
             target.draggable = tempDraggable;
+            target.className = tempClass;
             return;
         }
 
-        // ==================== アイテム同士のスワップ ====================
+        // ==================== アイテム同士の並び替え ====================
         if (dragged.classList.contains('item-slot') && target.classList.contains('item-slot')) {
             const tempHTML = dragged.innerHTML;
             const tempName = dragged.dataset.name;
