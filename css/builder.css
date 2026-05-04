@@ -62,20 +62,21 @@ html, body {
 /* ベンチ内部のグリッド */
 #bench {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(65px, 1fr));  /* 最低5列確保 */
-    gap: 2px;                    /* 隙間を2pxに */
+    grid-template-columns: repeat(7, 68px);   /* 横7列固定 */
+    gap: 6px;                                 /* 適度な隙間 */
     justify-content: center;
     padding: 15px;
     background: #1f1f2e;
     border-radius: 12px;
     border: 2px solid #444;
-    max-width: 100%;
+    max-width: fit-content;
+    margin: 0 auto;
 }
 
-/* ベンチのチャンピオンを少し小さく */
+/* ベンチのピースサイズ調整 */
 #bench .piece {
-    width: 62px;      /* -10px */
-    height: 62px;
+    width: 50px;
+    height: 50px;
 }
 
 #bench .piece img {

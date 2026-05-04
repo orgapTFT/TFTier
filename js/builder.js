@@ -283,13 +283,13 @@ item.innerHTML = `
 }
 
 
-// === ベンチ（最低5列 + 小さめアイコン）===
+// === ベンチ（7列 + 小さめアイコン）===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(auto-fit, minmax(65px, 1fr))';
-    bench.style.gap = '2px';
+    bench.style.gridTemplateColumns = 'repeat(7, 68px)';  // 横7列固定
+    bench.style.gap = '6px';
     bench.style.justifyContent = 'center';
     bench.style.padding = '15px';
 
@@ -299,16 +299,16 @@ if (bench) {
         const p = document.createElement('div');
         p.className = 'piece';
         p.draggable = true;
-        p.style.width = '62px';
-        p.style.height = '62px';
+        p.style.width = '68px';
+        p.style.height = '68px';
         
         p.innerHTML = `
             <div style="position:relative; width:100%; height:100%;">
                 <img src="./img/champ/17/${filename}" 
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                <div style="position:absolute; bottom:3px; left:0; right:0; 
-                    text-align:center; color:white; font-size:11px; 
+                <div style="position:absolute; bottom:4px; left:0; right:0; 
+                    text-align:center; color:white; font-size:11.5px; 
                     text-shadow: 0 0 4px black; pointer-events:none;
                     white-space: nowrap; overflow: hidden; 
                     text-overflow: ellipsis; padding: 0 2px;">
