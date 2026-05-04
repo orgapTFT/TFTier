@@ -61,10 +61,7 @@ function placeChampion(container, data) {
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
 
-        <!-- 盤面用チャンピオン名 -->
-        <div class="champ-name-onboard">
-            ${champName}
-        </div>
+
     `;
 
     // 星の要素（そのまま）
@@ -215,12 +212,12 @@ if (itemsArea) {
         item.className = 'item';
         item.draggable = true;
         
-        /*item.innerHTML = `
+        item.innerHTML = `
             <img src="./img/item/${filename}" 
                  alt="${itemName}" 
                  style="width:100%; height:100%; object-fit:contain;"
                  onerror="this.style.display='none'; this.parentElement.textContent='?'">
-        `;*/
+        `;
         
         // ドラッグ時のデータ
         item.addEventListener('dragstart', e => {
@@ -257,7 +254,7 @@ if (bench) {
                 <img src="./img/champ/17/${filename}" 
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                    <div style="position:absolute; bottom:15px; left:0; right:0; 
+                    <div style="position:absolute; bottom:5px; left:0; right:0; 
                         text-align:center; color:white; font-size:15px; 
                         text-shadow: 0 0 4px black; pointer-events:none;
                         white-space: nowrap;           /* 改行禁止 */
