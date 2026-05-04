@@ -227,27 +227,25 @@ function updateEmptySlotDisplay(slot) {
     if (!textDiv) return;
     
     const text = slot.dataset.text || '';
-    const bgColor = slot.dataset.color || '#2a2a3a';
     
-    // 改行対応（\n を <br> に変換）と文字色の自動判定
+    // 改行対応 + 真っ白文字
     textDiv.innerHTML = text.replace(/\n/g, '<br>');
-    
-    // 背景が白(#ffffff)の時は文字を黒、それ以外ははっきりした白
-    textDiv.style.color = (bgColor.toLowerCase() === '#ffffff') ? '#000000' : '#ffffff';
-    textDiv.style.textShadow = (bgColor.toLowerCase() === '#ffffff') ? 'none' : '0 0 4px rgba(0,0,0,0.8)';
-
-    // 中央揃えスタイル
-    slot.style.display = 'flex';
-    slot.style.alignItems = 'center';
-    slot.style.justifyContent = 'center';
-    slot.style.textAlign = 'center';
-    slot.style.lineHeight = '1.2';
-    slot.style.wordBreak = 'break-word';
-    slot.style.overflow = 'hidden';
+    textDiv.style.color = '#ffffff';
+    textDiv.style.textShadow = '0 0 6px #000, 0 0 3px #000';
+    textDiv.style.fontWeight = 'bold';
+    textDiv.style.textAlign = 'center';
+    textDiv.style.lineHeight = '1.1';
+    textDiv.style.padding = '2px';
+    textDiv.style.wordBreak = 'break-all';
 
     // サイズ調整
-    const sizeMap = { 'LL': '18px', 'L': '14px', 'M': '11px', 'S': '9px' };
-    textDiv.style.fontSize = sizeMap[slot.dataset.size] || '11px';
+    const sizeMap = { 
+        'LL': '19px', 
+        'L': '15px', 
+        'M': '12px', 
+        'S': '9px' 
+    };
+    textDiv.style.fontSize = sizeMap[slot.dataset.size] || '12px';
 }
 
 // 編集モーダル呼び出し
@@ -518,45 +516,38 @@ function setupSortable(container) {
         if (!dragged || !target || dragged === target) return;
         dragged.classList.remove('dragging-hidden');
 
-        // ==================== ベンチ内の完全スワップ ====================
+          // ==================== ベンチ内の完全スワップ ====================
         if (container.id === 'bench') {
-            // 一時保存
-            const tempHTML = dragged.innerHTML;
-            const tempClass = dragged.className;
-            const tempStyle = dragged.style.cssText;
-            const tempData = { ...dragged.dataset };
+            const target = e.target.closest('.piece');
+            if (target && target !== dragged) {
+                // 一時保存
+                const tempHTML = dragged.innerHTML;
+                const tempClass = dragged.className;
+                const tempStyle = dragged.style.cssText;
+                const tempDataColor = dragged.dataset.color;
+                const tempDataText = dragged.dataset.text;
+                const tempDataSize = dragged.dataset.size;
 
-            // ターゲットの情報をドラッグ要素へ
-            dragged.innerHTML = target.innerHTML;
-            dragged.className = target.className;
-            dragged.style.cssText = target.style.cssText;
-            Object.keys(dragged.dataset).forEach(k => delete dragged.dataset[k]);
-            Object.assign(dragged.dataset, target.dataset);
+                // スワップ実行
+                dragged.innerHTML = target.innerHTML;
+                dragged.className = target.className;
+                dragged.style.cssText = target.style.cssText;
+                dragged.dataset.color = target.dataset.color;
+                dragged.dataset.text = target.dataset.text;
+                dragged.dataset.size = target.dataset.size;
 
-            // ドラッグ情報をターゲットへ
-            target.innerHTML = tempHTML;
-            target.className = tempClass;
-            target.style.cssText = tempStyle;
-            Object.keys(target.dataset).forEach(k => delete target.dataset[k]);
-            Object.assign(target.dataset, tempData);
+                target.innerHTML = tempHTML;
+                target.className = tempClass;
+                target.style.cssText = tempStyle;
+                target.dataset.color = tempDataColor;
+                target.dataset.text = tempDataText;
+                target.dataset.size = tempDataSize;
 
-            // 表示更新
-            if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
-            if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
-            return;
-        }
-
-        // アイテムのスワップ（既存ロジックを維持）
-        if (dragged.classList.contains('item') || dragged.classList.contains('item-slot')) {
-            const t = e.target.closest('.item, .item-slot');
-            if (t && t !== dragged) {
-                const h = dragged.innerHTML;
-                const n = dragged.dataset.name;
-                dragged.innerHTML = t.innerHTML;
-                dragged.dataset.name = t.dataset.name;
-                t.innerHTML = h;
-                t.dataset.name = n;
+                // 表示更新
+                if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
+                if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
             }
+            return;
         }
     });
 }
