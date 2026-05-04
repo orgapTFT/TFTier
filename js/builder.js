@@ -126,19 +126,10 @@ function handleDrop(e, hex) {
         if (rawData) {
             const data = JSON.parse(rawData);
 
-            // ====================== チャンピオン ======================
+            // チャンピオン移動（移動）
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
-
-                // ベンチから盤面への場合は「コピー」（ベンチは消さない）
-                const isFromBench = source && source.closest('#bench');
-
-                if (!isFromBench) {
-                    // 盤面内移動やスワップの場合は移動
-                    if (source && source !== hex) {
-                        source.innerHTML = '';
-                    }
-                }
+                if (!source || source === hex) return;
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
@@ -147,9 +138,10 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
                 } : null;
 
+                source.innerHTML = '';
                 hex.innerHTML = '';
 
-                if (targetData) placeChampion(hex.parentElement || hex, targetData); // スワップ用
+                if (targetData) placeChampion(source, targetData);
                 placeChampion(hex, data);
 
                 window.currentDragSource = null;
@@ -157,21 +149,35 @@ function handleDrop(e, hex) {
                 return;
             }
 
-            // ====================== Box画像 ======================
+            // BOX移動（移動）
             if (data.type === 'box' && data.icon) {
                 hex.innerHTML = '';
 
                 const boxDiv = document.createElement('div');
                 boxDiv.className = 'piece box-slot';
+                boxDiv.draggable = true;
+                boxDiv.dataset.type = 'box';
+                boxDiv.dataset.name = data.icon;
+
                 boxDiv.innerHTML = `
                     <img src="./img/box/${data.icon}.avif" 
-                         style="width:85%; height:85%; object-fit:contain;">
+                         style="width:88%; height:88%; object-fit:contain;">
                 `;
+
+                // 右クリックで解除
+                boxDiv.addEventListener('contextmenu', e => {
+                    e.preventDefault();
+                    boxDiv.remove();
+                });
+
+                // ダブルクリックで文字入力（後で実装）
+                boxDiv.addEventListener('dblclick', () => editBoxText(boxDiv));
+
                 hex.appendChild(boxDiv);
                 return;
             }
 
-            // ====================== アイテム ======================
+            // アイテム装備
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
@@ -182,7 +188,6 @@ function handleDrop(e, hex) {
             }
         }
     } catch (err) {
-        // フォールバック（テキストのみ）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
@@ -480,6 +485,7 @@ function init() {
 
 
      // ========== 盤面外ドロップで解除 ==========
+     // 盤面外に落としたら消える
     document.addEventListener('drop', (e) => {
         if (e.target.closest('#board') || e.target.closest('#bench') || e.target.closest('#items')) {
             return;
@@ -490,15 +496,8 @@ function init() {
             if (!rawData) return;
             const data = JSON.parse(rawData);
 
-            // アイテム解除
-            if (data.type === 'item' && data.sourceSlot) {
+            if (data.sourceSlot) {
                 data.sourceSlot.remove();
-            }
-
-            // チャンピオン解除
-            if (data.type === 'champ' && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                window.currentDragSource = null;
             }
         } catch (err) {}
     });
