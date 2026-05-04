@@ -284,14 +284,14 @@ item.innerHTML = `
 
 
 // === ベンチに全チャンピオンを表示 ===
-// === ベンチに全チャンピオンを表示 ===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(5, 72px)';
-    bench.style.gap = '8px';
+    bench.style.gridTemplateColumns = 'repeat(10, 72px)';  // 横10列
+    bench.style.gap = '12px';
     bench.style.justifyContent = 'center';
+    bench.style.padding = '15px';
 
     championFiles.forEach(filename => {
         const name = filename.replace('.avif', '');
@@ -306,7 +306,7 @@ if (bench) {
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
                     <div style="position:absolute; bottom:5px; left:0; right:0; 
-                        text-align:center; color:white; font-size:15px; 
+                        text-align:center; color:white; font-size:13px; 
                         text-shadow: 0 0 4px black; pointer-events:none;
                         white-space: nowrap; overflow: hidden; 
                         text-overflow: ellipsis; padding: 0 4px;">
@@ -315,11 +315,10 @@ if (bench) {
             </div>
         `;
 
-        // ベンチ内並び替え + 盤面へ移動用のドラッグ
         p.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', name);
             p.classList.add('dragging-hidden');
-            window.currentDragSourceBench = p;   // ベンチ用ソース
+            window.currentDragSourceBench = p;
         });
 
         p.addEventListener('dragend', () => {
@@ -327,34 +326,6 @@ if (bench) {
         });
 
         bench.appendChild(p);
-    });
-
-    // ベンチ自体にドロップイベントを追加（並び替え用）
-    bench.addEventListener('dragover', e => e.preventDefault());
-    bench.addEventListener('drop', e => {
-        e.preventDefault();
-        const name = e.dataTransfer.getData('text/plain');
-        if (!name) return;
-
-        // ベンチ内の並び替え処理
-        const draggedPiece = window.currentDragSourceBench;
-        if (draggedPiece && draggedPiece.parentElement === bench) {
-            const targetPiece = e.target.closest('.piece');
-            
-            if (targetPiece && targetPiece !== draggedPiece) {
-                // 並び替え
-                const pieces = Array.from(bench.children);
-                const fromIndex = pieces.indexOf(draggedPiece);
-                const toIndex = pieces.indexOf(targetPiece);
-                
-                if (fromIndex < toIndex) {
-                    bench.insertBefore(draggedPiece, targetPiece.nextSibling);
-                } else {
-                    bench.insertBefore(draggedPiece, targetPiece);
-                }
-            }
-        }
-        window.currentDragSourceBench = null;
     });
 }
 

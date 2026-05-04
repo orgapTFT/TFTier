@@ -62,7 +62,7 @@ html, body {
 /* ベンチ内部のグリッド */
 #bench {
     display: grid;
-    grid-template-columns: repeat(5, 72px);
+    grid-template-columns: repeat(10, 50px);
     gap: 10px;
 }
 
