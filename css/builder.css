@@ -214,18 +214,20 @@ html, body {
 /* 盤面に配置したチャンピオンの名前 */
 .champ-name-onboard {
     position: absolute;
-    bottom: 4px;
-    left: 0;
-    right: 0;
-    text-align: center;
+    bottom: 8px;           /* 位置調整 */
+    left: 50%;
+    transform: translateX(-50%);
     color: #ffffff;
-    font-size: 10.5px;
-    text-shadow: 0 0 5px black;
+    font-size: 13px;       /* 大きめ */
+    font-weight: bold;
+    text-shadow: 0 0 6px black, 0 0 3px black;
     pointer-events: none;
-    z-index: 5;
+    z-index: 10;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 85%;        /* 長い名前は…で省略 */
+    text-align: center;
     padding: 0 4px;
 }
 
