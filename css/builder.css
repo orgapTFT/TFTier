@@ -47,7 +47,7 @@ html, body {
 }
 
 /* ===================== サイズ統一 ===================== */
-.piece, .empty-slot, .item {
+.piece, .item {
     width: 50px !important;
     height: 50px !important;
     border-radius: 12px;
@@ -58,20 +58,6 @@ html, body {
 #bench .piece {
     background: #222;
     border: 3px solid #666;
-}
-
-/* 空欄 */
-.empty-slot {
-    background: #1a1a2a;
-    border: 2px dashed #555;
-    opacity: 0.55;
-    cursor: grab;
-}
-
-.empty-slot:hover {
-    background: #25253a;
-    opacity: 0.85;
-    border-color: #777;
 }
 
 /* ベンチ内のチャンピオン名 */
@@ -356,16 +342,19 @@ html, body {
     min-height: 1em; /* 非表示時もクリック判定を維持 */
 }
 
-.empty-text {
-    color: #ffffff !important;
-    text-shadow: 2px 2px 4px #000000 !important;
-    font-weight: bold !important;
-    width: 100% !important;
-    height: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    text-align: center !important;
-    padding: 4px !important;
-    z-index: 5 !important;
+
+/* Box画像用 */
+.box-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #222;
+    border: 3px solid #666;
+    overflow: hidden;
+}
+
+.box-slot img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
 }

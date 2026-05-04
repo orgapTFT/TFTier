@@ -131,17 +131,10 @@ function handleDrop(e, hex) {
         if (rawData) {
             const data = JSON.parse(rawData);
 
+            // ====================== チャンピオン移動 ======================
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
-
-                // 移動元を一時保存
-                const sourceData = {
-                    type: 'champ',
-                    icon: source.querySelector('.champ')?.dataset.name || '',
-                    stars: source.querySelector('.champ')?.dataset.stars || "1",
-                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name)
-                };
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
@@ -150,19 +143,40 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
                 } : null;
 
-                // クリアしてから配置（消滅防止）
                 source.innerHTML = '';
                 hex.innerHTML = '';
 
                 if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, data);   // 移動元から来たデータを配置
+                placeChampion(hex, data);
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
                 return;
             }
 
-            // アイテム装備
+            // ====================== Box画像を盤面に置く ======================
+            if (data.type === 'box' && data.icon) {
+                hex.innerHTML = '';  // 既存をクリア
+
+                const boxDiv = document.createElement('div');
+                boxDiv.className = 'piece box-slot';
+                boxDiv.style.width = '100%';
+                boxDiv.style.height = '100%';
+                boxDiv.style.display = 'flex';
+                boxDiv.style.alignItems = 'center';
+                boxDiv.style.justifyContent = 'center';
+
+                boxDiv.innerHTML = `
+                    <img src="./img/box/${data.icon}.avif" 
+                         alt="${data.icon}" 
+                         style="width:85%; height:85%; object-fit:contain;">
+                `;
+
+                hex.appendChild(boxDiv);
+                return;
+            }
+
+            // ====================== アイテム装備 ======================
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
@@ -170,10 +184,11 @@ function handleDrop(e, hex) {
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
+                return;
             }
         }
     } catch (err) {
-        // ベンチからのシンプル移動
+        // ベンチからのシンプル移動（チャンピオン）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
@@ -370,6 +385,7 @@ function init() {
     }
 
     // ==================== ベンチ ====================
+        // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -379,7 +395,7 @@ function init() {
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
-        // 実際のチャンピオン（省略せずそのまま）
+        // 実際のチャンピオン
         championFiles.forEach(filename => {
             const name = filename.replace('.avif', '');
             const p = document.createElement('div');
@@ -420,43 +436,49 @@ function init() {
             bench.appendChild(p);
         });
 
-                // 空マス作成（共通構造）
-        const defaultColors = ['#2a2a3a', '#36363f', '#28283a', '#1f1f2a'];
+        // ==================== Box画像（空マス代替） ====================
+        const boxFiles = [
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'A.avif', 'B.avif', 'C.avif', 'D.avif', 'E.avif',
+            'F.avif', 'G.avif', 'LightGray.avif'
+        ];
 
-        for (let i = 0; i < 28; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'piece empty-slot';
-            slot.draggable = true;
-            slot.style.width = '50px';
-            slot.style.height = '50px';
+        boxFiles.forEach(filename => {
+            const boxName = filename.replace('.avif', '');
+            const box = document.createElement('div');
+            box.className = 'piece box-slot';
+            box.draggable = true;
+            box.style.width = '50px';
+            box.style.height = '50px';
 
-            slot.dataset.type = 'empty';
-            slot.dataset.name = '';
-            slot.dataset.text = '';
-            slot.dataset.color = defaultColors[i % defaultColors.length];
-            slot.dataset.size = 'M';
-            slot.dataset.cost = '0';
+            box.innerHTML = `
+                <img src="./img/box/${filename}" 
+                     alt="${boxName}" 
+                     style="width:100%; height:100%; object-fit:contain;">
+            `;
 
-            slot.style.backgroundColor = slot.dataset.color;
-
-            slot.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                editEmptySlot(slot);
+            box.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'box',
+                    icon: boxName
+                }));
+                box.classList.add('dragging-hidden');
             });
 
-            const textDiv = document.createElement('div');
-            textDiv.className = 'empty-text';
-            slot.appendChild(textDiv);
+            box.addEventListener('dragend', () => {
+                box.classList.remove('dragging-hidden');
+            });
 
-            updatePieceDisplay(slot);
-            bench.appendChild(slot);
-        }
+            bench.appendChild(box);
+        });
 
-        // ★★★ ここを追加 ★★★
-        setupSortable(itemsArea);        // アイテムエリア用
-        setupBenchSortable(bench);       // ベンチ専用スワップ用
-      
+        setupBenchSortable(bench);   // ベンチ専用スワップ
     }
+
+
 
     window.currentDragSource = null;
     window.currentDragSourceBench = null;
