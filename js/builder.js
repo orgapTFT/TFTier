@@ -385,15 +385,34 @@ function setupSortable(container) {
     container.addEventListener('drop', e => {
         e.preventDefault();
 
-        let dragged = Array.from(container.children).find(el => 
+        // ドラッグ中の要素を探す
+        const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
         );
-
         if (!dragged) return;
 
-        const target = e.target.closest('.item-slot');
-        if (target && target !== dragged) {
-            // スワップ処理
+        dragged.classList.remove('dragging-hidden');
+
+        // ドロップ先の対象要素を探す
+        let target = e.target.closest('.piece, .item-slot');
+        if (!target || target === dragged) return;
+
+        // ==================== ベンチ内のチャンピオン入れ替え ====================
+        if (dragged.classList.contains('piece') && target.classList.contains('piece')) {
+            // HTMLとドラッグ可能状態をスワップ
+            const tempHTML = dragged.innerHTML;
+            const tempDraggable = dragged.draggable;
+
+            dragged.innerHTML = target.innerHTML;
+            dragged.draggable = target.draggable;
+
+            target.innerHTML = tempHTML;
+            target.draggable = tempDraggable;
+            return;
+        }
+
+        // ==================== アイテム同士のスワップ ====================
+        if (dragged.classList.contains('item-slot') && target.classList.contains('item-slot')) {
             const tempHTML = dragged.innerHTML;
             const tempName = dragged.dataset.name;
 
@@ -403,8 +422,6 @@ function setupSortable(container) {
             target.innerHTML = tempHTML;
             target.dataset.name = tempName;
         }
-
-        dragged.classList.remove('dragging-hidden');
     });
 }
 
