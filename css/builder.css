@@ -385,8 +385,9 @@ html, body {
 /* Lv表示（六角形より手前・星より後ろ） */
 .lv-display {
     position: absolute;
-    top: -9px;
+    top: 8px;
     right: 8px;
+    background: rgba(0, 0, 0, 0.8);
     color: #ffffff;
     font-size: 18px;
     font-weight: bold;
@@ -394,9 +395,8 @@ html, body {
     border-radius: 3px;
     text-shadow: 0 0 5px black;
     pointer-events: none;
-    z-index: 12;           /* 重要：六角形より手前、星より後ろ */
+    z-index: 15;
     white-space: nowrap;
-    display: none;         /* デフォルト非表示 */
 }
 
 .bench-slot {

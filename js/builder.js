@@ -83,7 +83,7 @@ function placeChampion(container, data) {
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
         
-        <!-- Lv表示（右上） -->
+        <!-- Lv表示（右上・デフォルト非表示） -->
         <div class="lv-display" style="display:none;">Lv3</div>
     `;
 
@@ -102,20 +102,26 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // ====================== Lv切り替え（右クリック） ======================
+    // ====================== Lv切り替え（左ダブルクリック） ======================
     const lvDisplay = champ.querySelector('.lv-display');
-    let currentLv = 3;
+    let currentLv = 0;
 
-    champ.addEventListener('contextmenu', (e) => {
-        e.preventDefault();   // デフォルトの右クリックメニューを無効化
+    champ.addEventListener('dblclick', (e) => {
+        e.preventDefault();
+        e.stopImmediatePropagation();
 
-        currentLv = (currentLv % 8) + 3;   // 3〜10までループ
-
-        if (currentLv === 3 && lvDisplay.style.display === 'block') {
-            lvDisplay.style.display = 'none';   // もう一度右クリックで非表示
-        } else {
+        if (currentLv === 0) {
+            currentLv = 3;
             lvDisplay.textContent = `Lv${currentLv}`;
             lvDisplay.style.display = 'block';
+        } else {
+            currentLv++;
+            if (currentLv > 10) {
+                currentLv = 0;
+                lvDisplay.style.display = 'none';
+            } else {
+                lvDisplay.textContent = `Lv${currentLv}`;
+            }
         }
     });
 
@@ -145,10 +151,12 @@ function handleDrop(e, hex) {
         if (rawData) {
             const data = JSON.parse(rawData);
 
-            // チャンピオン移動（移動）
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
+
+                // ★★★ 重要：ベンチから盤面への場合は「コピー」（ベンチは消さない） ★★★
+                const isFromBench = source.closest && source.closest('#bench');
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
@@ -157,18 +165,22 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
                 } : null;
 
-                source.innerHTML = '';
                 hex.innerHTML = '';
 
-                if (targetData) placeChampion(source, targetData);
+                if (targetData) placeChampion(hex, targetData);  // スワップの場合
                 placeChampion(hex, data);
+
+                // ベンチからの移動の場合はソースを消さない
+                if (!isFromBench && source) {
+                    source.innerHTML = '';
+                }
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
                 return;
             }
 
-            // BOX移動（移動）
+            // BOXの場合も同じ挙動
             if (data.type === 'box' && data.icon) {
                 hex.innerHTML = '';
 
@@ -183,24 +195,19 @@ function handleDrop(e, hex) {
                          style="width:88%; height:88%; object-fit:contain;">
                 `;
 
-                // 右クリックで解除
                 boxDiv.addEventListener('contextmenu', e => {
                     e.preventDefault();
                     boxDiv.remove();
                 });
 
-                // ダブルクリックで文字入力（後で実装）
-                boxDiv.addEventListener('dblclick', () => editBoxText(boxDiv));
-
                 hex.appendChild(boxDiv);
                 return;
             }
 
-            // アイテム装備
+            // アイテム
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
-                if (!itemsContainer) return;
-                if (Array.from(itemsContainer.children).length >= 3) return;
+                if (!itemsContainer || Array.from(itemsContainer.children).length >= 3) return;
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
