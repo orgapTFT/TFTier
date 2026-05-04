@@ -59,7 +59,7 @@ function placeChampion(container, data) {
              alt="${champName}" 
              class="champ-icon"
              style="width:88%; height:88%; object-fit:contain;"
-             onerror="this.style.display='none'; this.parentElement.innerHTML += '<span style=\"font-size:45px; opacity:0.6\">${champName}</span>';">
+             >
     `;
 
     // 星
