@@ -291,7 +291,7 @@ if (bench) {
     bench.style.gridTemplateColumns = 'repeat(7, 54px)';
     bench.style.gap = '6px';
     bench.style.justifyContent = 'center';
-    bench.style.padding = '20px 40px';   // 左右スペース
+    bench.style.padding = '20px 30px';
 
     // 実際のチャンピオン
     championFiles.forEach(filename => {
@@ -308,17 +308,16 @@ if (bench) {
                 <img src="./img/champ/17/${filename}" 
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                <div style="position:absolute; bottom:4px; left:0; right:0; 
-                    text-align:center; color:white; font-size:11.5px; 
+                <div style="position:absolute; bottom:3px; left:0; right:0; 
+                    text-align:center; color:white; font-size:10.5px; 
                     text-shadow: 0 0 4px black; pointer-events:none;
                     white-space: nowrap; overflow: hidden; 
-                    text-overflow: ellipsis; padding: 0 2px;">
+                    text-overflow: ellipsis; padding: 0 1px;">
                   ${name}
                 </div>
             </div>
         `;
 
-        // ドラッグ設定
         p.addEventListener('dragstart', e => {
             e.dataTransfer.setData('text/plain', name);
             p.classList.add('dragging-hidden');
@@ -330,18 +329,39 @@ if (bench) {
         bench.appendChild(p);
     });
 
-    // ====================== 空欄追加 ======================
-    for (let i = 0; i < 28; i++) {        // 28個の空欄（4行分くらい）
+    // 空欄追加
+    for (let i = 0; i < 28; i++) {
         const empty = document.createElement('div');
         empty.className = 'piece empty-slot';
         empty.style.width = '50px';
         empty.style.height = '50px';
-        empty.style.background = '#1a1a2a';
-        empty.style.border = '2px dashed #555';
-        empty.style.opacity = '0.5';
-        
         bench.appendChild(empty);
     }
+
+    // ベンチ内並び替え（空欄も含めて機能するように強化）
+    bench.addEventListener('dragover', e => e.preventDefault());
+    bench.addEventListener('drop', e => {
+        e.preventDefault();
+        const name = e.dataTransfer.getData('text/plain');
+        if (!name) return;
+
+        const dragged = window.currentDragSourceBench;
+        if (!dragged || dragged.parentElement !== bench) return;
+
+        const target = e.target.closest('.piece');
+        if (target && target !== dragged) {
+            const children = Array.from(bench.children);
+            const fromIdx = children.indexOf(dragged);
+            const toIdx = children.indexOf(target);
+
+            if (fromIdx < toIdx) {
+                bench.insertBefore(dragged, target.nextSibling);
+            } else {
+                bench.insertBefore(dragged, target);
+            }
+        }
+        window.currentDragSourceBench = null;
+    });
 }
 
 // アイテムエリアの並び替え（強化版）

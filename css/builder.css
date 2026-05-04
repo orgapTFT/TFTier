@@ -65,7 +65,7 @@ html, body {
     grid-template-columns: repeat(7, 54px);
     gap: 6px;
     justify-content: center;
-    padding: 10px 20px; 
+    padding: 20px 30px; 
     background: #1f1f2e;
     border-radius: 12px;
     border: 2px solid #444;
@@ -73,21 +73,37 @@ html, body {
     margin: 0 auto;
 }
 
-/* === ベンチ専用サイズ（ここを強く指定）=== */
+/* ベンチ専用サイズ */
 #bench .piece {
-    width: 50px !important;     /* ここを希望サイズに調整 */
+    width: 50px !important;
     height: 50px !important;
     background: #222;
     border: 3px solid #666;
     border-radius: 12px;
 }
 
-/* ベンチ内の画像も確実に調整 */
 #bench .piece img {
     width: 100% !important;
     height: 100% !important;
     object-fit: contain;
     border-radius: 8px;
+}
+
+/* 空欄スロットの修正（ここが原因でした） */
+.empty-slot {
+    width: 50px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    background: #1a1a2a;
+    border: 2px dashed #555;
+    opacity: 0.5;
+    cursor: default;
+    border-radius: 12px;
+}
+
+.empty-slot:hover {
+    background: #25253a !important;
+    opacity: 0.8;
 }
 
 /* ベンチ内の名前テキストも調整 */
@@ -135,15 +151,6 @@ html, body {
     max-width: 100%;               /* 親要素内に収める */
 }
 
-.empty-slot {
-    cursor: default;
-    min-height: 72px;
-}
-
-.empty-slot:hover {
-    background: #25253a !important;
-    opacity: 0.8;
-}
 
 #board {
   display: grid;
