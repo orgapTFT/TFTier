@@ -206,7 +206,8 @@ html, body {
 .champ img {
     width: 100%;
     height: 100%;
-    object-fit: contain;     /* cover → contain に変更 */
+    object-fit: contain;        /* 小さい画像も比率を保ったまま拡大 */
+    transform: scale(1.3);     /* ← これで少し強制拡大 */
     border-radius: 8px;
     z-index: 3;
 }
