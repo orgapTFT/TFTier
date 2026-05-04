@@ -380,6 +380,8 @@ function init() {
         }
 
         setupSortable(itemsArea);
+        setupBenchSortable(bench);       // ベンチ専用スワップ用
+        
     }
 
     // ==================== ベンチ ====================
@@ -511,7 +513,7 @@ for (let i = 0; i < 28; i++) {
     });
 }
 
-// 共通並び替え関数（丸ごと置き換え）
+// 共通並び替え関数（アイテム用）
 function setupSortable(container) {
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -527,47 +529,62 @@ function setupSortable(container) {
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        // ==================== ベンチ内のスワップ ====================
-        if (container.id === 'bench') {
-            const target = e.target.closest('.piece');
-            if (target && target !== dragged) {
-                console.log("✅ ベンチスワップ実行");
+        const target = e.target.closest('.item, .item-slot');
+        if (target && target !== dragged) {
+            const tempHTML = dragged.innerHTML;
+            const tempName = dragged.dataset.name;
 
-                const tempHTML = dragged.innerHTML;
-                const tempClass = dragged.className;
-                const tempStyle = dragged.style.cssText;
-                const tempData = {...dragged.dataset};
+            dragged.innerHTML = target.innerHTML;
+            dragged.dataset.name = target.dataset.name;
 
-                dragged.innerHTML = target.innerHTML;
-                dragged.className = target.className;
-                dragged.style.cssText = target.style.cssText;
-                Object.assign(dragged.dataset, target.dataset);
-
-                target.innerHTML = tempHTML;
-                target.className = tempClass;
-                target.style.cssText = tempStyle;
-                Object.assign(target.dataset, tempData);
-
-                // 空マス表示更新
-                if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
-                if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
-
-                return;
-            }
+            target.innerHTML = tempHTML;
+            target.dataset.name = tempName;
         }
+    });
+}
 
-        // アイテムスワップ
-        if (dragged.classList.contains('item') || dragged.classList.contains('item-slot')) {
-            const target = e.target.closest('.item, .item-slot');
-            if (target && target !== dragged) {
-                const tempHTML = dragged.innerHTML;
-                const tempName = dragged.dataset.name;
-                dragged.innerHTML = target.innerHTML;
-                dragged.dataset.name = target.dataset.name;
-                target.innerHTML = tempHTML;
-                target.dataset.name = tempName;
-            }
-        }
+// ==================== ベンチ専用スワップ関数 ====================
+function setupBenchSortable(bench) {
+    bench.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+
+    bench.addEventListener('drop', e => {
+        e.preventDefault();
+        
+        const dragged = Array.from(bench.children).find(el => 
+            el.classList.contains('dragging-hidden')
+        );
+        if (!dragged) return;
+        dragged.classList.remove('dragging-hidden');
+
+        const target = e.target.closest('.piece');
+        if (!target || target === dragged) return;
+
+        console.log("✅ ベンチ専用スワップ実行");
+
+        // 完全スワップ
+        const tempHTML = dragged.innerHTML;
+        const tempClass = dragged.className;
+        const tempStyle = dragged.style.cssText;
+        const tempData = { ...dragged.dataset };
+
+        dragged.innerHTML = target.innerHTML;
+        dragged.className = target.className;
+        dragged.style.cssText = target.style.cssText;
+        Object.keys(dragged.dataset).forEach(k => delete dragged.dataset[k]);
+        Object.assign(dragged.dataset, target.dataset);
+
+        target.innerHTML = tempHTML;
+        target.className = tempClass;
+        target.style.cssText = tempStyle;
+        Object.keys(target.dataset).forEach(k => delete target.dataset[k]);
+        Object.assign(target.dataset, tempData);
+
+        // 空マス表示更新
+        if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
+        if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
     });
 }
 
