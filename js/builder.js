@@ -56,64 +56,50 @@ function addDragToChampion(champ) {
 
 function placeChampion(container, data) {
     if (!container) return;
-    
-    // 完全にクリアする前に一度保存（念のため）
-    const oldItems = data.items || [];
 
     container.innerHTML = '';
 
     const currentStars = parseInt(data.stars) || 1;
-    const champName = data.icon;
+    const champName = data.icon || data.name || '';
 
-    const champ = document.createElement('div');
-    champ.className = 'champ';
-    champ.draggable = true;
-    champ.dataset.stars = currentStars;
-    champ.dataset.name = champName;
+    const slot = document.createElement('div');
+    slot.className = 'piece';                    // 共通クラス
+    slot.draggable = true;
 
-    champ.innerHTML = `
-        <img src="./img/champ/17/${champName}.avif" 
-             alt="${champName}" 
-             class="champ-icon"
-             style="width:88%; height:88%; object-fit:contain;"
-             onerror="this.style.display='none';">
-        <div class="champ-name-onboard">${champName}</div>
+    // 共通データ構造
+    slot.dataset.type = 'champ';
+    slot.dataset.name = champName;
+    slot.dataset.text = champName;               // 表示用テキスト
+    slot.dataset.color = '#222';                 // デフォルト色（後で調整可能）
+    slot.dataset.size = 'M';
+    slot.dataset.cost = data.cost || '0';
+    slot.dataset.stars = currentStars;
+
+    slot.style.backgroundColor = slot.dataset.color;
+
+    // ビジュアル
+    slot.innerHTML = `
+        <div class="champ">
+            <img src="./img/champ/17/${champName}.avif" 
+                 alt="${champName}" 
+                 class="champ-icon"
+                 style="width:88%; height:88%; object-fit:contain;"
+                 onerror="this.style.display='none';">
+            <div class="champ-name-onboard">${champName}</div>
+        </div>
     `;
 
     // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
-    
-    let startX, startY;
-    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
-    starLabel.addEventListener('mouseup', e => {
-        e.stopPropagation();
-        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        let s = (parseInt(champ.dataset.stars) % 5) + 1;
-        champ.dataset.stars = s;
-        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
-    });
+    // 星クリック処理（省略可）
 
-    // アイテムコンテナ
-    const itemsDiv = document.createElement('div');
-    itemsDiv.className = 'items-container';
+    container.appendChild(slot);
+    container.appendChild(starLabel);   // 必要に応じて調整
 
-    if (oldItems && Array.isArray(oldItems)) {
-        oldItems.forEach(itemName => {
-            if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
-        });
-    }
-
-    container.appendChild(champ);
-    container.appendChild(itemsDiv);
-    container.appendChild(starLabel);
-
-    addDragToChampion(champ);
-    
-    if (typeof setupSortable === 'function') {
-        setupSortable(itemsDiv);
-    }
+    addDragToChampion(slot.querySelector('.champ') || slot);
+    updatePieceDisplay(slot);
 }
 
 function handleDrop(e, hex) {
@@ -219,42 +205,25 @@ let selectedColorTemp = ''; // 選択中の色を一時保持
 
 
 
-// 空マス表示
-function updateEmptySlotDisplay(slot) {
-    const textDiv = slot.querySelector('.empty-text');
+// 共通表示更新関数（チャンピオン＋空マス対応）
+function updatePieceDisplay(slot) {
+    if (!slot) return;
+
+    const textDiv = slot.querySelector('.empty-text, .champ-name-onboard');
     if (!textDiv) return;
-    
-    const text = slot.dataset.text || '';
-    
-    // 改行を尊重 + 長いテキストは自動折り返し
-    textDiv.innerHTML = text.replace(/\n/g, '<br>');
-    
-    // 真っ白 + くっきり
+
+    const displayText = slot.dataset.text || slot.dataset.name || '';
+    textDiv.innerHTML = displayText.replace(/\n/g, '<br>');
+
     textDiv.style.color = '#ffffff';
     textDiv.style.fontWeight = 'bold';
     textDiv.style.textAlign = 'center';
     textDiv.style.lineHeight = '1.15';
-    textDiv.style.padding = '4px';
-    textDiv.style.width = '100%';
-    textDiv.style.height = '100%';
-    textDiv.style.display = 'flex';
-    textDiv.style.alignItems = 'center';
-    textDiv.style.justifyContent = 'center';
-    textDiv.style.overflowWrap = 'break-word';   // 長い単語も自動改行
-    textDiv.style.wordBreak = 'break-all';       // 強制折り返し
-    textDiv.style.whiteSpace = 'pre-wrap';       // 入力時の改行を尊重
-    textDiv.style.textShadow = '3px 3px 5px #000, -2px -2px 4px #000';
+    textDiv.style.textShadow = '3px 3px 5px #000';
 
-    // サイズ設定
-    const sizeMap = {
-        'LL': '23px',   // 大きめ維持
-        'L': '16px',
-        'M': '12.5px',
-        'S': '9.5px'
-    };
+    const sizeMap = { 'LL': '23px', 'L': '16px', 'M': '12.5px', 'S': '9.5px' };
     textDiv.style.fontSize = sizeMap[slot.dataset.size] || '12.5px';
 
-    // 親要素設定
     slot.style.display = 'flex';
     slot.style.alignItems = 'center';
     slot.style.justifyContent = 'center';
@@ -383,7 +352,6 @@ function init() {
     }
 
     // ==================== ベンチ ====================
-  // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -434,42 +402,41 @@ function init() {
             bench.appendChild(p);
         });
 
-        // 空マス作成（そのまま）
-        const emptyColors = [ /* ... あなたの色配列 ... */ ];
+                // 空マス作成（共通構造）
+        const defaultColors = ['#2a2a3a', '#36363f', '#28283a', '#1f1f2a'];
 
         for (let i = 0; i < 28; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'piece empty-slot';
-            empty.draggable = true;
-            empty.style.width = '50px';
-            empty.style.height = '50px';
-            
-            empty.dataset.color = emptyColors[i % emptyColors.length] || '#2a2a3a';
-            empty.dataset.text = '';
-            empty.dataset.size = 'M';
-            empty.style.backgroundColor = empty.dataset.color;
-            empty.style.border = '2px solid rgba(255,255,255,0.2)';
+            const slot = document.createElement('div');
+            slot.className = 'piece empty-slot';
+            slot.draggable = true;
+            slot.style.width = '50px';
+            slot.style.height = '50px';
 
-            empty.addEventListener('contextmenu', e => {
+            slot.dataset.type = 'empty';
+            slot.dataset.name = '';
+            slot.dataset.text = '';
+            slot.dataset.color = defaultColors[i % defaultColors.length];
+            slot.dataset.size = 'M';
+            slot.dataset.cost = '0';
+
+            slot.style.backgroundColor = slot.dataset.color;
+
+            slot.addEventListener('contextmenu', e => {
                 e.preventDefault();
-                editEmptySlot(empty);
+                editEmptySlot(slot);
             });
 
             const textDiv = document.createElement('div');
             textDiv.className = 'empty-text';
-            textDiv.style.pointerEvents = 'none';
-            empty.appendChild(textDiv);
-            
-            updateEmptySlotDisplay(empty);
-            bench.appendChild(empty);
+            slot.appendChild(textDiv);
+
+            updatePieceDisplay(slot);
+            bench.appendChild(slot);
         }
 
         // ★★★ ここを追加 ★★★
         setupSortable(itemsArea);        // アイテムエリア用
         setupBenchSortable(bench);       // ベンチ専用スワップ用
-
-    
-
       
     }
 
@@ -533,7 +500,7 @@ function setupSortable(container) {
     });
 }
 
-// ==================== ベンチ専用スワップ関数 ====================
+// ==================== ベンチ専用スワップ関数（共通構造対応） ====================
 function setupBenchSortable(bench) {
     bench.addEventListener('dragover', e => {
         e.preventDefault();
@@ -543,23 +510,14 @@ function setupBenchSortable(bench) {
     bench.addEventListener('drop', e => {
         e.preventDefault();
         
-        const dragged = Array.from(bench.children).find(el => 
-            el.classList.contains('dragging-hidden')
-        );
-        if (!dragged) {
-            console.log("❌ draggedが見つかりません");
-            return;
-        }
+        const dragged = Array.from(bench.children).find(el => el.classList.contains('dragging-hidden'));
+        if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        // 空マス同士も確実に拾う
         const target = e.target.closest('.piece');
-        if (!target || target === dragged) {
-            console.log("❌ targetが見つからない or 同じ");
-            return;
-        }
+        if (!target || target === dragged) return;
 
-        console.log(`✅ スワップ実行: ${dragged.className} → ${target.className}`);
+        console.log(`スワップ実行: ${dragged.dataset.type || 'unknown'} ↔ ${target.dataset.type || 'unknown'}`);
 
         // 完全スワップ
         const tempHTML = dragged.innerHTML;
@@ -579,9 +537,9 @@ function setupBenchSortable(bench) {
         Object.keys(target.dataset).forEach(k => delete target.dataset[k]);
         Object.assign(target.dataset, tempData);
 
-        // 空マス表示更新
-        if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
-        if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
+        // 表示更新
+        updatePieceDisplay(dragged);
+        updatePieceDisplay(target);
     });
 }
 
