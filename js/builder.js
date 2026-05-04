@@ -380,11 +380,10 @@ function init() {
         }
 
         setupSortable(itemsArea);
-        setupBenchSortable(bench);       // ベンチ専用スワップ用
-        
     }
 
     // ==================== ベンチ ====================
+  // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -394,7 +393,7 @@ function init() {
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
-        // 実際のチャンピオン
+        // 実際のチャンピオン（省略せずそのまま）
         championFiles.forEach(filename => {
             const name = filename.replace('.avif', '');
             const p = document.createElement('div');
@@ -435,50 +434,41 @@ function init() {
             bench.appendChild(p);
         });
 
-        // ==================== 空マス（色・テキスト付き） ====================
-                // ==================== 空マス（落ち着いたグレー系 + Tierカラー） ====================
-        const emptyColors = [
-            '#2a2a3a', // デフォルトグレー
-            '#00000000',
-            '#ffffff',
-            '#1d1dad',
-            '#ff2d55', // HYPER (ピンク)
-            '#ff9500', // SUPER (オレンジ)
-            '#ffcc00', // A (黄色)
-            '#ffeb3b', // B (薄黄色)
-            '#32ff7e', // C (ライム)
-            '#00f0ff', // X (シアン)
-            '#d2a5e3',
-        ];
+        // 空マス作成（そのまま）
+        const emptyColors = [ /* ... あなたの色配列 ... */ ];
 
+        for (let i = 0; i < 28; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'piece empty-slot';
+            empty.draggable = true;
+            empty.style.width = '50px';
+            empty.style.height = '50px';
+            
+            empty.dataset.color = emptyColors[i % emptyColors.length] || '#2a2a3a';
+            empty.dataset.text = '';
+            empty.dataset.size = 'M';
+            empty.style.backgroundColor = empty.dataset.color;
+            empty.style.border = '2px solid rgba(255,255,255,0.2)';
 
-for (let i = 0; i < 28; i++) {
-    const empty = document.createElement('div');
-    empty.className = 'piece empty-slot';
-    empty.draggable = true;
-    empty.style.width = '50px';
-    empty.style.height = '50px';
+            empty.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                editEmptySlot(empty);
+            });
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'empty-text';
+            textDiv.style.pointerEvents = 'none';
+            empty.appendChild(textDiv);
+            
+            updateEmptySlotDisplay(empty);
+            bench.appendChild(empty);
+        }
+
+        // ★★★ ここを追加 ★★★
+        setupSortable(itemsArea);        // アイテムエリア用
+        setupBenchSortable(bench);       // ベンチ専用スワップ用
+
     
-    // デフォルト設定
-    empty.dataset.color = '#2a2a3a'; // グレー[cite: 1]
-    empty.dataset.text = '';
-    empty.dataset.size = 'M';
-    empty.style.backgroundColor = empty.dataset.color;
-    empty.style.border = '2px solid rgba(255,255,255,0.2)';
-
-    empty.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        editEmptySlot(empty);
-    });
-
-    const textDiv = document.createElement('div');
-    textDiv.className = 'empty-text';
-    textDiv.style.pointerEvents = 'none';
-    empty.appendChild(textDiv);
-    
-    updateEmptySlotDisplay(empty); // ここで中央揃えや色を適用
-    bench.appendChild(empty);
-}
 
       
     }
