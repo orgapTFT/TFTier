@@ -113,6 +113,10 @@ function placeChampion(container, data) {
     container.appendChild(starLabel);   // ← ここで追加
 
     addDragToChampion(champ);
+
+    if (typeof setupSortable === 'function') {
+        setupSortable(itemsDiv);   // 装備アイテムのスワップを有効化
+    }
 }
 
 function handleDrop(e, hex) {
@@ -151,42 +155,10 @@ function handleDrop(e, hex) {
             window.currentDragSource = null;
         }
 
-        // ====================== アイテム移動（強化） ======================
-        else if (data.type === 'item') {
-            const champ = hex.querySelector('.champ');
-            if (!champ) return;
-
-            let itemsContainer = hex.querySelector('.items-container');
-            if (!itemsContainer) {
-                itemsContainer = document.createElement('div');
-                itemsContainer.className = 'items-container';
-                hex.appendChild(itemsContainer);
-            }
-
-            const draggedSlot = data.sourceSlot;
-
-            // 同じチャンピオン内スワップ
-            if (draggedSlot && itemsContainer.contains(draggedSlot)) {
-                const targetSlot = e.target.closest('.item-slot');
-                if (targetSlot && targetSlot !== draggedSlot) {
-                    const tempHTML = draggedSlot.innerHTML;
-                    const tempName = draggedSlot.dataset.name;
-                    draggedSlot.innerHTML = targetSlot.innerHTML;
-                    draggedSlot.dataset.name = targetSlot.dataset.name;
-                    targetSlot.innerHTML = tempHTML;
-                    targetSlot.dataset.name = tempName;
-                }
-                return;
-            }
-
-            // 別チャンピオンへ移動
-            if (itemsContainer.children.length < 3) {
-                addItemSlot(itemsContainer, data.icon);
-                if (draggedSlot && draggedSlot.parentElement) {
-                    draggedSlot.parentElement.removeChild(draggedSlot);
-                }
-            }
-        }
+        // ====================== アイテム移動 ======================
+      if (typeof setupSortable === 'function') {
+        setupSortable(itemsDiv);   // 装備したアイテムのドラッグ＆ドロップを有効化
+    }
     } catch (err) {
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 20) {
@@ -375,31 +347,34 @@ document.addEventListener('drop', (e) => {
 
 // 共通並び替え関数
 function setupSortable(container) {
-    container.addEventListener('dragover', e => e.preventDefault());
-    
+    container.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+
     container.addEventListener('drop', e => {
         e.preventDefault();
-        
-        let dragged = window.currentDragSourceBench;
-        
-        if (!dragged) {
-            dragged = Array.from(container.children).find(el => el.classList.contains('dragging-hidden'));
-        }
+
+        let dragged = Array.from(container.children).find(el => 
+            el.classList.contains('dragging-hidden')
+        );
 
         if (!dragged) return;
 
-        const target = e.target.closest('.piece, .item');
-        if (target && target !== dragged && target.parentElement === container) {
-            // スワップ
-            const temp = document.createElement('div');
-            dragged.parentNode.insertBefore(temp, dragged);
-            target.parentNode.insertBefore(dragged, target);
-            temp.parentNode.insertBefore(target, temp);
-            temp.remove();
+        const target = e.target.closest('.item-slot');
+        if (target && target !== dragged) {
+            // スワップ処理
+            const tempHTML = dragged.innerHTML;
+            const tempName = dragged.dataset.name;
+
+            dragged.innerHTML = target.innerHTML;
+            dragged.dataset.name = target.dataset.name;
+
+            target.innerHTML = tempHTML;
+            target.dataset.name = tempName;
         }
-        
+
         dragged.classList.remove('dragging-hidden');
-        window.currentDragSourceBench = null;
     });
 }
 
