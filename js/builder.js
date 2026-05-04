@@ -142,54 +142,40 @@ function handleDrop(e, hex) {
                 const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
 
-                // ★★★ 重要：ベンチから盤面への場合は「コピー」（ベンチは消さない） ★★★
                 const isFromBench = source.closest && source.closest('#bench');
+
+                // ★★★ 最新のデータを確実に取得 ★★★
+                const sourceChampElement = source.querySelector('.champ');
+                
+                const sourceData = {
+                    type: 'champ',
+                    icon: sourceChampElement ? sourceChampElement.dataset.name : (data.icon || ''),
+                    stars: sourceChampElement ? (sourceChampElement.dataset.stars || "1") : (data.stars || "1"),
+                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                    lv: source.dataset.lv || data.lv || '0'
+                };
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
                     icon: hex.querySelector('.champ').dataset.name,
                     stars: hex.querySelector('.champ').dataset.stars || "1",
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                    lv: hex.dataset.lv || '0'
                 } : null;
 
+                source.innerHTML = '';
                 hex.innerHTML = '';
 
-                if (targetData) placeChampion(hex, targetData);  // スワップの場合
-                placeChampion(hex, data);
-
-                // ベンチからの移動の場合はソースを消さない
-                if (!isFromBench && source) {
-                    source.innerHTML = '';
-                }
+                if (targetData) placeChampion(source, targetData);
+                placeChampion(hex, sourceData);   // ← ここをsourceDataに変更
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
                 return;
             }
 
-            // BOXの場合も同じ挙動
-            if (data.type === 'box' && data.icon) {
-                hex.innerHTML = '';
-
-                const boxDiv = document.createElement('div');
-                boxDiv.className = 'piece box-slot';
-                boxDiv.draggable = true;
-                boxDiv.dataset.type = 'box';
-                boxDiv.dataset.name = data.icon;
-
-                boxDiv.innerHTML = `
-                    <img src="./img/box/${data.icon}.avif" 
-                         style="width:88%; height:88%; object-fit:contain;">
-                `;
-
-                boxDiv.addEventListener('contextmenu', e => {
-                    e.preventDefault();
-                    boxDiv.remove();
-                });
-
-                hex.appendChild(boxDiv);
-                return;
-            }
+            // BOXは盤面に置けない
+            if (data.type === 'box') return;
 
             // アイテム
             if (data.type === 'item' && data.icon) {
@@ -401,12 +387,12 @@ function init() {
     if (bench) {
         bench.innerHTML = '';
         bench.style.display = 'grid';
-        bench.style.gridTemplateColumns = 'repeat(10, 54px)';  // ← 7 → 10 に変更
+        bench.style.gridTemplateColumns = 'repeat(10, 54px)';
         bench.style.gap = '2px';
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
-        // 実際のチャンピオン（必要に応じて増やす）
+        // 実際のチャンピオン
         championFiles.forEach(filename => {
             const name = filename.replace('.avif', '');
             const p = document.createElement('div');
@@ -445,45 +431,49 @@ function init() {
             bench.appendChild(p);
         });
 
-        // ==================== BOX（下層グレー + 上層） ====================
-        for (let i = 0; i < 70; i++) {   // 10列 × 7行 = 70マス
-            const slot = document.createElement('div');
-            slot.className = 'bench-slot';
-            slot.style.width = '50px';
-            slot.style.height = '50px';
-            slot.style.position = 'relative';
+        // ==================== Box画像（空箱代わり） ====================
+        const boxFiles = [
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
+            'A.avif', 'B.avif', 'C.avif', 'D.avif', 'E.avif',
+            'F.avif', 'G.avif', 'LightGray.avif', 'Black.avif'
+        ];
 
-            // 下層：固定グレーBOX
-            const baseBox = document.createElement('div');
-            baseBox.className = 'base-gray-box';
-            baseBox.innerHTML = `
-                <img src="./img/box/Gray.avif" 
-                     style="width:100%; height:100%; object-fit:contain; opacity:0.85;">
+        boxFiles.forEach(filename => {
+            const boxName = filename.replace('.avif', '');
+            const box = document.createElement('div');
+            box.className = 'piece box-slot';
+            box.draggable = true;
+            box.style.width = '50px';
+            box.style.height = '50px';
+
+            box.innerHTML = `
+                <img src="./img/box/${filename}" 
+                     alt="${boxName}" 
+                     style="width:100%; height:100%; object-fit:contain;">
             `;
-            baseBox.style.position = 'absolute';
-            baseBox.style.top = '0';
-            baseBox.style.left = '0';
-            baseBox.style.width = '100%';
-            baseBox.style.height = '100%';
-            baseBox.style.zIndex = '1';
-            baseBox.draggable = false;
 
-            slot.appendChild(baseBox);
+            box.dataset.type = 'box';
+            box.dataset.name = boxName;
 
-            // 上層：配置エリア
-            const upperLayer = document.createElement('div');
-            upperLayer.className = 'upper-layer';
-            upperLayer.style.position = 'absolute';
-            upperLayer.style.top = '0';
-            upperLayer.style.left = '0';
-            upperLayer.style.width = '100%';
-            upperLayer.style.height = '100%';
-            upperLayer.style.zIndex = '2';
-            upperLayer.draggable = true;
+            box.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'box',
+                    icon: boxName
+                }));
+                box.classList.add('dragging-hidden');
+            });
 
-            slot.appendChild(upperLayer);
-            bench.appendChild(slot);
-        }
+            box.addEventListener('dragend', () => box.classList.remove('dragging-hidden'));
+
+            // 右クリックで解除
+            box.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                box.remove();
+            });
+
+            bench.appendChild(box);
+        });
 
         setupBenchSortable(bench);
     }
@@ -563,7 +553,7 @@ function setupSortable(container) {
     });
 }
 
-// ==================== ベンチ専用スワップ関数（Lv保持強化） ====================
+// ==================== ベンチ専用スワップ関数 ====================
 function setupBenchSortable(bench) {
     bench.addEventListener('dragover', e => {
         e.preventDefault();
@@ -573,20 +563,19 @@ function setupBenchSortable(bench) {
     bench.addEventListener('drop', e => {
         e.preventDefault();
         
-        const dragged = Array.from(bench.children).find(el => 
-            el.classList.contains('dragging-hidden')
-        );
+        const dragged = Array.from(bench.children).find(el => el.classList.contains('dragging-hidden'));
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
         const target = e.target.closest('.piece');
         if (!target || target === dragged) return;
 
-        // 完全データスワップ
+        console.log(`スワップ: ${dragged.dataset.type || 'empty'} ↔ ${target.dataset.type || 'empty'}`);
+
         const tempHTML = dragged.innerHTML;
         const tempClass = dragged.className;
         const tempStyle = dragged.style.cssText;
-        const tempData = { ...dragged.dataset };   // Lvも含めて全部コピー
+        const tempData = { ...dragged.dataset };
 
         dragged.innerHTML = target.innerHTML;
         dragged.className = target.className;
@@ -601,12 +590,8 @@ function setupBenchSortable(bench) {
         Object.assign(target.dataset, tempData);
 
         // 表示更新
-        if (dragged.classList.contains('empty-slot') || dragged.dataset.type === 'champ') {
-            updatePieceDisplay(dragged);
-        }
-        if (target.classList.contains('empty-slot') || target.dataset.type === 'champ') {
-            updatePieceDisplay(target);
-        }
+        updatePieceDisplay(dragged);
+        updatePieceDisplay(target);
     });
 }
 
