@@ -274,7 +274,7 @@ window.saveEmptySlot = function(oldColor) {
 function init() {
     createBoard();
     
-    // ==================== アイテムエリア ====================
+      // ==================== アイテムエリア ====================
     const itemsArea = document.getElementById('items');
     if (itemsArea) {
         itemsArea.innerHTML = '';
@@ -284,7 +284,6 @@ function init() {
         itemsArea.style.justifyContent = 'center';
         itemsArea.style.padding = '15px';
 
-        // 実際のアイテム
         itemFiles.forEach(filename => {
             const itemName = filename.replace('.avif', '');
             const item = document.createElement('div');
@@ -298,14 +297,13 @@ function init() {
                      onerror="this.style.display='none'; this.parentElement.textContent='?'">
             `;
             
-item.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('application/json', JSON.stringify({
-        type: 'item', 
-        icon: itemName
-        // sourceSlot は書かない（undefinedのまま）
-    }));
-    item.classList.add('dragging-hidden');
-});
+            item.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'item', 
+                    icon: itemName
+                }));
+                item.classList.add('dragging-hidden');
+            });
 
             item.addEventListener('dragend', () => {
                 item.classList.remove('dragging-hidden');
@@ -314,46 +312,20 @@ item.addEventListener('dragstart', e => {
             itemsArea.appendChild(item);
         });
 
-  // ==================== 空マス（色・テキスト付き） ====================
-        const colors = ['#1a1a2a', '#2a1a1a', '#1a2a1a', '#1a1a4a', '#3a2a1a', 
-                       '#4a1a2a', '#2a4a1a', '#1a3a4a', '#3a1a4a', '#4a3a1a'];
-
-        for (let i = 0; i < 28; i++) {
+        // 空白追加
+        for (let i = 0; i < 10; i++) {
             const empty = document.createElement('div');
-            empty.className = 'piece empty-slot';
+            empty.className = 'item empty-slot';
             empty.draggable = true;
             empty.style.width = '50px';
             empty.style.height = '50px';
-            
-            // 空マス用データ
-            empty.dataset.color = colors[i % colors.length];
-            empty.dataset.text = '';
-            empty.dataset.size = 'M';
-            
-            // 背景色適用
-            empty.style.backgroundColor = empty.dataset.color;
-            
-            // 右クリックで編集
-            empty.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                editEmptySlot(empty);
-            });
-
-            // テキスト表示用子要素
-            const textDiv = document.createElement('div');
-            textDiv.className = 'empty-text';
-            textDiv.style.pointerEvents = 'none';
-            empty.appendChild(textDiv);
-            
-            updateEmptySlotDisplay(empty);
-            
-            bench.appendChild(empty);
+            itemsArea.appendChild(empty);
         }
 
         setupSortable(itemsArea);
     }
 
-       // ==================== ベンチ ====================
+    // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -420,7 +392,6 @@ item.addEventListener('dragstart', e => {
             empty.dataset.size = 'M';
             empty.style.backgroundColor = empty.dataset.color;
 
-            // 右クリックで編集
             empty.addEventListener('contextmenu', e => {
                 e.preventDefault();
                 editEmptySlot(empty);
@@ -431,7 +402,7 @@ item.addEventListener('dragstart', e => {
             textDiv.style.pointerEvents = 'none';
             empty.appendChild(textDiv);
             
-            updateEmptySlotDisplay(empty);   // 後で定義
+            updateEmptySlotDisplay(empty);
             
             bench.appendChild(empty);
         }
