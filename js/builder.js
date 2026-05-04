@@ -54,41 +54,56 @@ function placeChampion(container, data) {
     champ.dataset.stars = currentStars;
     champ.dataset.name = champName;
 
-champ.innerHTML = `
-    <img src="./img/champ/17/${champName}.avif" 
-         alt="${champName}" 
-         class="champ-icon"
-         style="width:88%; height:88%; object-fit:contain;"
-         onerror="this.style.display='none';">
-    
-    <!-- チャンピオン名表示 -->
-    <div class="champ-name-onboard">
-        ${champName}
-    </div>
-`;
+    champ.innerHTML = `
+        <img src="./img/champ/17/${champName}.avif" 
+             alt="${champName}" 
+             class="champ-icon"
+             style="width:88%; height:88%; object-fit:contain;"
+             onerror="this.style.display='none';">
+        
+        <!-- チャンピオン名 -->
+        <div class="champ-name-onboard">
+            ${champName}
+        </div>
+    `;
 
-    // 星
+    // ====================== 星の復活 ======================
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // 星クリック処理（省略可）
+    // 星クリックで星数変更
+    let startX, startY;
+    starLabel.addEventListener('mousedown', (e) => { 
+        startX = e.screenX; 
+        startY = e.screenY; 
+    });
+    starLabel.addEventListener('mouseup', (e) => {
+        e.stopPropagation();
+        const diffX = Math.abs(e.screenX - startX);
+        const diffY = Math.abs(e.screenY - startY);
+        if (diffX > 5 || diffY > 5) return;
 
-    // Items
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
+        champ.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    });
+
+    // ====================== アイテム ======================
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
 
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(itemName => {
             if (itemName && typeof itemName === 'string' && itemName.trim() !== '') {
-                addItemSlot(itemsDiv, itemName.trim());  // 名前だけ渡す
+                addItemSlot(itemsDiv, itemName.trim());
             }
         });
     }
 
     container.appendChild(champ);
     container.appendChild(itemsDiv);
-    container.appendChild(starLabel);
+    container.appendChild(starLabel);   // ← ここで追加
 
     addDragToChampion(champ);
 }
