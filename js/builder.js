@@ -215,12 +215,12 @@ if (itemsArea) {
         item.className = 'item';
         item.draggable = true;
         
-        item.innerHTML = `
+        /*item.innerHTML = `
             <img src="./img/item/${filename}" 
                  alt="${itemName}" 
                  style="width:100%; height:100%; object-fit:contain;"
                  onerror="this.style.display='none'; this.parentElement.textContent='?'">
-        `;
+        `;*/
         
         // ドラッグ時のデータ
         item.addEventListener('dragstart', e => {
@@ -257,11 +257,16 @@ if (bench) {
                 <img src="./img/champ/17/${filename}" 
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                <div style="position:absolute; bottom:4px; left:0; right:0; 
-                            text-align:center; color:white; font-size:11px; 
-                            text-shadow: 0 0 4px black; pointer-events:none;">
-                    ${name}
-                </div>
+                    <div style="position:absolute; bottom:15px; left:0; right:0; 
+                        text-align:center; color:white; font-size:15px; 
+                        text-shadow: 0 0 4px black; pointer-events:none;
+                        white-space: nowrap;           /* 改行禁止 */
+                        overflow: hidden;              /* はみ出し隠す */
+                        text-overflow: ellipsis;       /* …を表示 */
+                        padding: 0 4px;                /* 端の余白 */
+                        max-width: 100%;">
+                      ${name}
+                    </div>
             </div>
         `;
         
