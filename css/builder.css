@@ -62,8 +62,8 @@ html, body {
 /* ベンチ内部のグリッド */
 #bench {
     display: grid;
-    grid-template-columns: repeat(10, 50px);
-    gap: 10px;
+    grid-template-columns: repeat(8, 40px);
+    gap: 2px;
 }
 
 
@@ -103,6 +103,16 @@ html, body {
     text-overflow: ellipsis;       /* …を表示 */
     padding: 0 4px;                /* 少し余白を取って見やすく */
     max-width: 100%;               /* 親要素内に収める */
+}
+
+.empty-slot {
+    cursor: default;
+    min-height: 72px;
+}
+
+.empty-slot:hover {
+    background: #25253a !important;
+    opacity: 0.8;
 }
 
 #board {

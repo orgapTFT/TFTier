@@ -284,15 +284,18 @@ item.innerHTML = `
 
 
 // === ベンチに全チャンピオンを表示 ===
+// === ベンチ（横10列 + 空白スロット追加）===
 const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(10, 72px)';  // 横10列
+    bench.style.gridTemplateColumns = 'repeat(10, 72px)';
     bench.style.gap = '12px';
     bench.style.justifyContent = 'center';
     bench.style.padding = '15px';
+    bench.style.minHeight = '180px';   // 最低2行分確保
 
+    // 1. 実際のチャンピオンを表示
     championFiles.forEach(filename => {
         const name = filename.replace('.avif', '');
         
@@ -305,13 +308,13 @@ if (bench) {
                 <img src="./img/champ/17/${filename}" 
                      alt="${name}" 
                      style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                    <div style="position:absolute; bottom:5px; left:0; right:0; 
-                        text-align:center; color:white; font-size:13px; 
-                        text-shadow: 0 0 4px black; pointer-events:none;
-                        white-space: nowrap; overflow: hidden; 
-                        text-overflow: ellipsis; padding: 0 4px;">
-                      ${name}
-                    </div>
+                <div style="position:absolute; bottom:5px; left:0; right:0; 
+                    text-align:center; color:white; font-size:13px; 
+                    text-shadow: 0 0 4px black; pointer-events:none;
+                    white-space: nowrap; overflow: hidden; 
+                    text-overflow: ellipsis; padding: 0 4px;">
+                  ${name}
+                </div>
             </div>
         `;
 
@@ -327,6 +330,30 @@ if (bench) {
 
         bench.appendChild(p);
     });
+
+    // 2. 空白スロットを追加（20個追加で合計かなり余裕が出る）
+    for (let i = 0; i < 25; i++) {
+        const empty = document.createElement('div');
+        empty.className = 'piece empty-slot';
+        empty.style.background = '#1a1a2a';
+        empty.style.border = '2px dashed #555';
+        empty.style.opacity = '0.6';
+        // ドラッグオーバー対応
+        empty.addEventListener('dragover', e => {
+            e.preventDefault();
+            empty.style.borderColor = '#ffd700';
+            empty.style.opacity = '0.9';
+        });
+        empty.addEventListener('dragleave', () => {
+            empty.style.borderColor = '#555';
+            empty.style.opacity = '0.6';
+        });
+        empty.addEventListener('drop', e => {
+            e.preventDefault();
+            // 必要ならここにベンチ内並び替えロジック追加可能
+        });
+        bench.appendChild(empty);
+    }
 }
 
     
