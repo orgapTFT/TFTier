@@ -62,13 +62,13 @@ function placeChampion(container, data) {
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
 
-    // 共通データ構造
+    // 共通データ
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
-    container.dataset.lv = '0';        // 0 = 非表示
+    container.dataset.lv = '0';
 
     const champ = document.createElement('div');
     champ.className = 'champ';
@@ -84,8 +84,8 @@ function placeChampion(container, data) {
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
         
-        <!-- Lv表示（右上・デフォルト非表示） -->
-        <div class="lv-display" style="display:none;">Lv3</div>
+        <!-- Lv表示（右上） -->
+        <div class="lv-display">Lv3</div>
     `;
 
     // ====================== 星 ======================
@@ -98,7 +98,6 @@ function placeChampion(container, data) {
     starLabel.addEventListener('mouseup', e => {
         e.stopPropagation();
         if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
@@ -106,17 +105,17 @@ function placeChampion(container, data) {
 
     // ====================== Lv切り替え（ホイールクリック） ======================
     const lvDisplay = champ.querySelector('.lv-display');
-    let currentLv = 0;
+    let currentLv = 3;
 
     champ.addEventListener('auxclick', (e) => {
         if (e.button === 1) {   // ホイールクリック
             e.preventDefault();
-            e.stopImmediatePropagation();   // 他のイベントを止める
+            e.stopImmediatePropagation();
 
-            currentLv = (currentLv % 8) + 3;   // 3〜10まで
-            if (currentLv > 10) {
-                currentLv = 0;
-                lvDisplay.style.display = 'none';
+            currentLv = (currentLv % 8) + 3;   // 3〜10までループ
+
+            if (currentLv === 3 && lvDisplay.style.display !== 'none') {
+                lvDisplay.style.display = 'none';   // もう一度クリックで非表示
             } else {
                 lvDisplay.textContent = `Lv${currentLv}`;
                 lvDisplay.style.display = 'block';
@@ -138,7 +137,6 @@ function placeChampion(container, data) {
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
-    // 右クリックで解除（星も残るように）
     addDragToChampion(champ);
 }
 
@@ -409,25 +407,63 @@ function init() {
     }
 
     // ==================== ベンチ ====================
-    // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
         bench.style.display = 'grid';
-        bench.style.gridTemplateColumns = 'repeat(7, 54px)';
+        bench.style.gridTemplateColumns = 'repeat(10, 54px)';  // ← 7 → 10 に変更
         bench.style.gap = '2px';
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
-        // ==================== 各マスに下層グレーBOX + 上層 ====================
-        for (let i = 0; i < 49; i++) {   // 7×7 = 49マス（余裕を持たせる）
+        // 実際のチャンピオン（必要に応じて増やす）
+        championFiles.forEach(filename => {
+            const name = filename.replace('.avif', '');
+            const p = document.createElement('div');
+            p.className = 'piece';
+            p.draggable = true;
+            p.style.width = '50px';
+            p.style.height = '50px';
+
+            p.innerHTML = `
+                <div style="position:relative; width:100%; height:100%;">
+                    <img src="./img/champ/17/${filename}" 
+                         alt="${name}" 
+                         style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                    <div style="position:absolute; bottom:3px; left:0; right:0; 
+                        text-align:center; color:white; font-size:10.5px; 
+                        text-shadow: 0 0 4px black; pointer-events:none;">
+                      ${name}
+                    </div>
+                </div>
+            `;
+
+            p.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', name);
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'champ',
+                    icon: name,
+                    stars: "1",
+                    items: []
+                }));
+                p.classList.add('dragging-hidden');
+                window.currentDragSourceBench = p;
+            });
+
+            p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
+
+            bench.appendChild(p);
+        });
+
+        // ==================== BOX（下層グレー + 上層） ====================
+        for (let i = 0; i < 70; i++) {   // 10列 × 7行 = 70マス
             const slot = document.createElement('div');
             slot.className = 'bench-slot';
             slot.style.width = '50px';
             slot.style.height = '50px';
             slot.style.position = 'relative';
 
-            // ==================== 下層：固定グレーBOX ====================
+            // 下層：固定グレーBOX
             const baseBox = document.createElement('div');
             baseBox.className = 'base-gray-box';
             baseBox.innerHTML = `
@@ -440,11 +476,11 @@ function init() {
             baseBox.style.width = '100%';
             baseBox.style.height = '100%';
             baseBox.style.zIndex = '1';
-            baseBox.draggable = false;   // 移動不可
+            baseBox.draggable = false;
 
             slot.appendChild(baseBox);
 
-            // ==================== 上層：実際の配置場所 ====================
+            // 上層：配置エリア
             const upperLayer = document.createElement('div');
             upperLayer.className = 'upper-layer';
             upperLayer.style.position = 'absolute';
@@ -456,43 +492,6 @@ function init() {
             upperLayer.draggable = true;
 
             slot.appendChild(upperLayer);
-
-            // 実際のチャンピオンを上層に配置
-            if (i < championFiles.length) {
-                const filename = championFiles[i];
-                const name = filename.replace('.avif', '');
-                const p = document.createElement('div');
-                p.className = 'piece';
-                p.draggable = true;
-
-                p.innerHTML = `
-                    <div style="position:relative; width:100%; height:100%;">
-                        <img src="./img/champ/17/${filename}" 
-                             alt="${name}" 
-                             style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                        <div style="position:absolute; bottom:3px; left:0; right:0; 
-                            text-align:center; color:white; font-size:10.5px; 
-                            text-shadow: 0 0 4px black; pointer-events:none;">
-                          ${name}
-                        </div>
-                    </div>
-                `;
-
-                p.addEventListener('dragstart', e => {
-                    e.dataTransfer.setData('text/plain', name);
-                    e.dataTransfer.setData('application/json', JSON.stringify({
-                        type: 'champ',
-                        icon: name,
-                        stars: "1",
-                        items: []
-                    }));
-                    p.classList.add('dragging-hidden');
-                    window.currentDragSourceBench = p;
-                });
-
-                upperLayer.appendChild(p);
-            }
-
             bench.appendChild(slot);
         }
 
