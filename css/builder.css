@@ -113,7 +113,7 @@ html, body {
     align-items: center;
     justify-content: center;
     position: relative;
-    cursor: help;
+    cursor: grab;           /* help → grab に変更 */
     overflow: hidden;
 }
 
