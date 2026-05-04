@@ -84,25 +84,36 @@ function placeChampion(container, data) {
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
         
-        <!-- Lv表示（右上） -->
+        <!-- Lv表示（右上・デフォルト非表示） -->
         <div class="lv-display" style="display:none;">Lv3</div>
     `;
 
-    // 星
+    // ====================== 星 ======================
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
+
+    let startX, startY;
+    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
+    starLabel.addEventListener('mouseup', e => {
+        e.stopPropagation();
+        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
+        
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
+        champ.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    });
 
     // ====================== Lv切り替え（ホイールクリック） ======================
     const lvDisplay = champ.querySelector('.lv-display');
     let currentLv = 0;
 
     champ.addEventListener('auxclick', (e) => {
-        if (e.button === 1) {  // 中クリック（ホイールクリック）
+        if (e.button === 1) {   // ホイールクリック
             e.preventDefault();
-            e.stopPropagation();
+            e.stopImmediatePropagation();   // 他のイベントを止める
 
-            currentLv = (currentLv % 9) + 3;   // 3〜11まで（11は非表示扱い）
+            currentLv = (currentLv % 8) + 3;   // 3〜10まで
             if (currentLv > 10) {
                 currentLv = 0;
                 lvDisplay.style.display = 'none';
@@ -127,6 +138,7 @@ function placeChampion(container, data) {
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
+    // 右クリックで解除（星も残るように）
     addDragToChampion(champ);
 }
 
@@ -397,7 +409,7 @@ function init() {
     }
 
     // ==================== ベンチ ====================
-        // ==================== ベンチ ====================
+    // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -407,87 +419,84 @@ function init() {
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
-        // 実際のチャンピオン
-        championFiles.forEach(filename => {
-            const name = filename.replace('.avif', '');
-            const p = document.createElement('div');
-            p.className = 'piece';
-            p.draggable = true;
-            p.style.width = '50px';
-            p.style.height = '50px';
+        // ==================== 各マスに下層グレーBOX + 上層 ====================
+        for (let i = 0; i < 49; i++) {   // 7×7 = 49マス（余裕を持たせる）
+            const slot = document.createElement('div');
+            slot.className = 'bench-slot';
+            slot.style.width = '50px';
+            slot.style.height = '50px';
+            slot.style.position = 'relative';
 
-            p.innerHTML = `
-                <div style="position:relative; width:100%; height:100%;">
-                    <img src="./img/champ/17/${filename}" 
-                         alt="${name}" 
-                         style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                    <div style="position:absolute; bottom:3px; left:0; right:0; 
-                        text-align:center; color:white; font-size:10.5px; 
-                        text-shadow: 0 0 4px black; pointer-events:none;
-                        white-space: nowrap; overflow: hidden; 
-                        text-overflow: ellipsis; padding: 0 1px;">
-                      ${name}
+            // ==================== 下層：固定グレーBOX ====================
+            const baseBox = document.createElement('div');
+            baseBox.className = 'base-gray-box';
+            baseBox.innerHTML = `
+                <img src="./img/box/Gray.avif" 
+                     style="width:100%; height:100%; object-fit:contain; opacity:0.85;">
+            `;
+            baseBox.style.position = 'absolute';
+            baseBox.style.top = '0';
+            baseBox.style.left = '0';
+            baseBox.style.width = '100%';
+            baseBox.style.height = '100%';
+            baseBox.style.zIndex = '1';
+            baseBox.draggable = false;   // 移動不可
+
+            slot.appendChild(baseBox);
+
+            // ==================== 上層：実際の配置場所 ====================
+            const upperLayer = document.createElement('div');
+            upperLayer.className = 'upper-layer';
+            upperLayer.style.position = 'absolute';
+            upperLayer.style.top = '0';
+            upperLayer.style.left = '0';
+            upperLayer.style.width = '100%';
+            upperLayer.style.height = '100%';
+            upperLayer.style.zIndex = '2';
+            upperLayer.draggable = true;
+
+            slot.appendChild(upperLayer);
+
+            // 実際のチャンピオンを上層に配置
+            if (i < championFiles.length) {
+                const filename = championFiles[i];
+                const name = filename.replace('.avif', '');
+                const p = document.createElement('div');
+                p.className = 'piece';
+                p.draggable = true;
+
+                p.innerHTML = `
+                    <div style="position:relative; width:100%; height:100%;">
+                        <img src="./img/champ/17/${filename}" 
+                             alt="${name}" 
+                             style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                        <div style="position:absolute; bottom:3px; left:0; right:0; 
+                            text-align:center; color:white; font-size:10.5px; 
+                            text-shadow: 0 0 4px black; pointer-events:none;">
+                          ${name}
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
 
-            p.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', name);
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'champ',
-                    icon: name,
-                    stars: "1",
-                    items: []
-                }));
-                p.classList.add('dragging-hidden');
-                window.currentDragSourceBench = p;
-            });
+                p.addEventListener('dragstart', e => {
+                    e.dataTransfer.setData('text/plain', name);
+                    e.dataTransfer.setData('application/json', JSON.stringify({
+                        type: 'champ',
+                        icon: name,
+                        stars: "1",
+                        items: []
+                    }));
+                    p.classList.add('dragging-hidden');
+                    window.currentDragSourceBench = p;
+                });
 
-            p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
+                upperLayer.appendChild(p);
+            }
 
-            bench.appendChild(p);
-        });
+            bench.appendChild(slot);
+        }
 
-        // ==================== Box画像（空マス代替） ====================
-        const boxFiles = [
-            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
-            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
-            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
-            'Gray.avif','Gray.avif','Gray.avif','Gray.avif','Gray.avif',
-            'A.avif', 'B.avif', 'C.avif', 'D.avif', 'E.avif',
-            'F.avif', 'G.avif', 'LightGray.avif'
-        ];
-
-        boxFiles.forEach(filename => {
-            const boxName = filename.replace('.avif', '');
-            const box = document.createElement('div');
-            box.className = 'piece box-slot';
-            box.draggable = true;
-            box.style.width = '50px';
-            box.style.height = '50px';
-
-            box.innerHTML = `
-                <img src="./img/box/${filename}" 
-                     alt="${boxName}" 
-                     style="width:100%; height:100%; object-fit:contain;">
-            `;
-
-            box.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'box',
-                    icon: boxName
-                }));
-                box.classList.add('dragging-hidden');
-            });
-
-            box.addEventListener('dragend', () => {
-                box.classList.remove('dragging-hidden');
-            });
-
-            bench.appendChild(box);
-        });
-
-        setupBenchSortable(bench);   // ベンチ専用スワップ
+        setupBenchSortable(bench);
     }
 
 
