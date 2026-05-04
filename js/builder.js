@@ -94,7 +94,6 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
         // ====================== チャンピオン移動 ======================
@@ -107,7 +106,6 @@ function handleDrop(e, hex) {
                                   .map(s => s.dataset.name || '');
 
             const sourceData = {
-                type: 'champ',
                 icon: source.querySelector('.champ')?.dataset.name || '',
                 stars: source.querySelector('.champ')?.dataset.stars || "1",
                 items: Array.from(source.querySelectorAll('.item-slot'))
@@ -117,12 +115,7 @@ function handleDrop(e, hex) {
             source.innerHTML = '';
 
             if (targetChamp) {
-                placeChampion(source, {
-                    type: 'champ',
-                    icon: targetChamp.dataset.name || '',
-                    stars: targetChamp.dataset.stars || "1",
-                    items: targetItems
-                });
+                placeChampion(source, { ...sourceData, type: 'champ' });
             }
 
             placeChampion(hex, data);
@@ -138,21 +131,33 @@ function handleDrop(e, hex) {
             if (!itemsContainer) {
                 itemsContainer = document.createElement('div');
                 itemsContainer.className = 'items-container';
-                hex.appendChild(itemsContainer); // 簡易版
+                hex.appendChild(itemsContainer);
             }
 
-            // 同じアイテムをドラッグした場合は何もしない
-            if (itemsContainer.contains(data.sourceSlot)) {
+            const draggedSlot = data.sourceSlot;
+
+            // 同じチャンピオン内の移動（スワップ）
+            if (draggedSlot && itemsContainer.contains(draggedSlot)) {
+                const targetSlot = e.target.closest('.item-slot');
+                if (targetSlot && targetSlot !== draggedSlot) {
+                    // スワップ
+                    const temp = document.createElement('div');
+                    draggedSlot.parentNode.insertBefore(temp, draggedSlot);
+                    targetSlot.parentNode.insertBefore(draggedSlot, targetSlot);
+                    temp.parentNode.insertBefore(targetSlot, temp);
+                    temp.remove();
+                }
                 return;
             }
 
-            // 空きがあれば装備（最大3個）
+            // 別のチャンピオンへ移動
             if (itemsContainer.children.length < 3) {
                 addItemSlot(itemsContainer, data.icon);
+                if (draggedSlot) draggedSlot.remove();  // 元の場所から削除
             }
         }
     } catch (err) {
-        // Benchからチャンプ直接ドロップ
+        // Benchから直接置く場合
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 20) {
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
@@ -163,7 +168,7 @@ function handleDrop(e, hex) {
 function addItemSlot(container, iconName) {
     const slot = document.createElement('div');
     slot.className = 'item-slot';
-    slot.draggable = true;                    // ← 追加
+    slot.draggable = true;
     slot.dataset.name = iconName;
 
     slot.innerHTML = `
@@ -172,19 +177,25 @@ function addItemSlot(container, iconName) {
              style="width:100%; height:100%; object-fit:contain;">
     `;
 
-    // アイテムのドラッグ開始
     slot.addEventListener('dragstart', e => {
         e.dataTransfer.setData('application/json', JSON.stringify({
             type: 'item',
             icon: iconName,
-            sourceSlot: slot  // 後で削除用
+            sourceSlot: slot,
+            fromBoard: true   // 盤面上からドラッグしたことを明示
         }));
         slot.classList.add('dragging-hidden');
-        e.stopPropagation(); // 親への伝播防止
+        e.stopPropagation();
     });
 
     slot.addEventListener('dragend', () => {
         slot.classList.remove('dragging-hidden');
+    });
+
+    // 右クリックで解除
+    slot.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        slot.remove();
     });
 
     container.appendChild(slot);
@@ -311,29 +322,25 @@ if (bench) {
     
 // アイテムエリアにドロップイベントを追加（並び替え用）
 itemsArea.addEventListener('dragover', e => e.preventDefault());
-itemsArea.addEventListener('drop', e => {
-    e.preventDefault();
-    const rawData = e.dataTransfer.getData('application/json');
-    if (!rawData) return;
-    
+// 盤面外ドロップ処理
+document.addEventListener('drop', (e) => {
+    const isOverBoard = e.target.closest('#board');
+    const isOverHex = e.target.closest('.hex');
+
     try {
-        const data = JSON.parse(rawData);
-        if (data.type !== 'item') return;
+        const rawData = e.dataTransfer.getData('application/json');
+        if (rawData) {
+            const data = JSON.parse(rawData);
 
-        const draggedItem = Array.from(itemsArea.querySelectorAll('.item'))
-                               .find(item => item.querySelector('img')?.alt === data.icon);
+            // 盤面上アイテムを外側にドラッグ → 解除
+            if (data.type === 'item' && data.sourceSlot && !isOverBoard) {
+                data.sourceSlot.remove();
+            }
 
-        const targetItem = e.target.closest('.item');
-
-        if (draggedItem && targetItem && draggedItem !== targetItem) {
-            const items = Array.from(itemsArea.children);
-            const fromIndex = items.indexOf(draggedItem);
-            const toIndex = items.indexOf(targetItem);
-
-            if (fromIndex < toIndex) {
-                itemsArea.insertBefore(draggedItem, targetItem.nextSibling);
-            } else {
-                itemsArea.insertBefore(draggedItem, targetItem);
+            // チャンピオン削除
+            else if (!isOverBoard && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                window.currentDragSource = null;
             }
         }
     } catch (err) {}
