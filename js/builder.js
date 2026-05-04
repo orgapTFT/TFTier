@@ -61,13 +61,15 @@ function placeChampion(container, data) {
 
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
+    const currentLv = data.lv || container.dataset.lv || '0';
 
+    // 共通データ構造
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
-    container.dataset.lv = '0';   // 0 = 非表示
+    container.dataset.lv = currentLv;   // Lvを保持
 
     const champ = document.createElement('div');
     champ.className = 'champ';
@@ -83,49 +85,34 @@ function placeChampion(container, data) {
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
         
-        <!-- Lv表示（右上・デフォルト非表示） -->
-        <div class="lv-display" style="display:none;">Lv3</div>
+        <!-- Lv表示 -->
+        <div class="lv-display" style="${currentLv !== '0' ? 'display:block' : 'display:none'}">Lv${currentLv}</div>
     `;
 
-    // ====================== 星 ======================
+    // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    let startX, startY;
-    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
-    starLabel.addEventListener('mouseup', e => {
-        e.stopPropagation();
-        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        let s = (parseInt(champ.dataset.stars) % 5) + 1;
-        champ.dataset.stars = s;
-        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
-    });
-
-    // ====================== Lv切り替え（左ダブルクリック） ======================
+    // Lv切り替え（右クリック）
     const lvDisplay = champ.querySelector('.lv-display');
-    let currentLv = 0;
+    let currentLvNum = parseInt(currentLv) || 3;
 
-    champ.addEventListener('dblclick', (e) => {
+    champ.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        e.stopImmediatePropagation();
-
-        if (currentLv === 0) {
-            currentLv = 3;
-            lvDisplay.textContent = `Lv${currentLv}`;
-            lvDisplay.style.display = 'block';
+        currentLvNum = (currentLvNum % 8) + 3;
+        if (currentLvNum > 10) {
+            currentLvNum = 0;
+            lvDisplay.style.display = 'none';
+            container.dataset.lv = '0';
         } else {
-            currentLv++;
-            if (currentLv > 10) {
-                currentLv = 0;
-                lvDisplay.style.display = 'none';
-            } else {
-                lvDisplay.textContent = `Lv${currentLv}`;
-            }
+            lvDisplay.textContent = `Lv${currentLvNum}`;
+            lvDisplay.style.display = 'block';
+            container.dataset.lv = currentLvNum;
         }
     });
 
-    // アイテムコンテナ
+    // アイテムコンテナなど（省略せず残す）
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
 
@@ -576,7 +563,7 @@ function setupSortable(container) {
     });
 }
 
-// ==================== ベンチ専用スワップ関数（共通構造対応） ====================
+// ==================== ベンチ専用スワップ関数（Lv保持強化） ====================
 function setupBenchSortable(bench) {
     bench.addEventListener('dragover', e => {
         e.preventDefault();
@@ -586,20 +573,20 @@ function setupBenchSortable(bench) {
     bench.addEventListener('drop', e => {
         e.preventDefault();
         
-        const dragged = Array.from(bench.children).find(el => el.classList.contains('dragging-hidden'));
+        const dragged = Array.from(bench.children).find(el => 
+            el.classList.contains('dragging-hidden')
+        );
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
         const target = e.target.closest('.piece');
         if (!target || target === dragged) return;
 
-        console.log(`スワップ実行: ${dragged.dataset.type || 'unknown'} ↔ ${target.dataset.type || 'unknown'}`);
-
-        // 完全スワップ
+        // 完全データスワップ
         const tempHTML = dragged.innerHTML;
         const tempClass = dragged.className;
         const tempStyle = dragged.style.cssText;
-        const tempData = { ...dragged.dataset };
+        const tempData = { ...dragged.dataset };   // Lvも含めて全部コピー
 
         dragged.innerHTML = target.innerHTML;
         dragged.className = target.className;
@@ -614,8 +601,12 @@ function setupBenchSortable(bench) {
         Object.assign(target.dataset, tempData);
 
         // 表示更新
-        updatePieceDisplay(dragged);
-        updatePieceDisplay(target);
+        if (dragged.classList.contains('empty-slot') || dragged.dataset.type === 'champ') {
+            updatePieceDisplay(dragged);
+        }
+        if (target.classList.contains('empty-slot') || target.dataset.type === 'champ') {
+            updatePieceDisplay(target);
+        }
     });
 }
 
