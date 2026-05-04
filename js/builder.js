@@ -219,48 +219,72 @@ function addItemSlot(container, iconName) {
 // 空マス編集関数
 let selectedColorTemp = ''; // 選択中の色を一時保持
 
-function editEmptySlot(slot) {
-    window.editingSlot = slot; // 編集中のスロットをグローバルに保持
-    selectedColorTemp = slot.dataset.color || '#2a2a3a';
 
-    const colorOptions = [
-        '#2a2a3a', '#00000000', '#ffffff', '#1d1dad', 
-        '#ff2d55', '#ff9500', '#ffcc00', '#ffeb3b', 
-        '#32ff7e', '#00f0ff', '#d2a5e3'
-    ];
+
+// 共通の表示更新関数
+function updateEmptySlotDisplay(slot) {
+    const textDiv = slot.querySelector('.empty-text');
+    if (!textDiv) return;
+    
+    const text = slot.dataset.text || '';
+    const bgColor = slot.dataset.color || '#2a2a3a';
+    
+    // 改行対応（\n を <br> に変換）と文字色の自動判定
+    textDiv.innerHTML = text.replace(/\n/g, '<br>');
+    
+    // 背景が白(#ffffff)の時は文字を黒、それ以外ははっきりした白
+    textDiv.style.color = (bgColor.toLowerCase() === '#ffffff') ? '#000000' : '#ffffff';
+    textDiv.style.textShadow = (bgColor.toLowerCase() === '#ffffff') ? 'none' : '0 0 4px rgba(0,0,0,0.8)';
+
+    // 中央揃えスタイル
+    slot.style.display = 'flex';
+    slot.style.alignItems = 'center';
+    slot.style.justifyContent = 'center';
+    slot.style.textAlign = 'center';
+    slot.style.lineHeight = '1.2';
+    slot.style.wordBreak = 'break-word';
+    slot.style.overflow = 'hidden';
+
+    // サイズ調整
+    const sizeMap = { 'LL': '18px', 'L': '14px', 'M': '11px', 'S': '9px' };
+    textDiv.style.fontSize = sizeMap[slot.dataset.size] || '11px';
+}
+
+// 編集モーダル呼び出し
+function editEmptySlot(slot) {
+    window.editingSlot = slot;
+    const colorOptions = ['#2a2a3a', '#00000000', '#ffffff', '#1d1dad', '#ff2d55', '#ff9500', '#ffcc00', '#ffeb3b', '#32ff7e', '#00f0ff', '#d2a5e3'];
     
     let html = `
-        <div id="modal-container" style="padding:20px; min-width:320px; background:#1f1f2e; border:2px solid #555; border-radius:8px; color:white;">
-            <h3 style="margin:0 0 15px 0;">空マス編集</h3>
-            <p>色を選択:</p>
-            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
-                ${colorOptions.map(c => `
-                    <div class="color-picker-item" onclick="selectColor(this, '${c}')" 
-                         style="width:40px;height:40px;background:${c};border:${c === selectedColorTemp ? '3px solid #ff2d55' : '2px solid #fff'};cursor:pointer;border-radius:4px;">
-                    </div>
-                `).join('')}
-            </div>
-            <p>テキスト:</p>
-            <input type="text" id="emptyText" value="${slot.dataset.text || ''}" style="width:100%; padding:10px; margin-bottom:15px; background:#333; color:white; border:1px solid #555;">
-            <p>文字サイズ:</p>
-            <select id="emptySize" style="width:100%; padding:8px; margin-bottom:15px; background:#333; color:white;">
-                <option value="LL" ${slot.dataset.size==='LL'?'selected':''}>LL (特大)</option>
-                <option value="L" ${slot.dataset.size==='L'?'selected':''}>L (大)</option>
-                <option value="M" ${slot.dataset.size==='M'?'selected':''}>M (中)</option>
-                <option value="S" ${slot.dataset.size==='S'?'selected':''}>S (小)</option>
-            </select>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="closeModal()" style="margin-right:10px; padding:8px 16px; cursor:pointer;">キャンセル</button>
-                <button onclick="saveEmptySlot()" style="padding:8px 20px; background:#ff2d55; color:white; border:none; border-radius:4px; cursor:pointer;">保存</button>
+        <div id="modal-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center;">
+            <div style="padding:20px; min-width:320px; background:#1f1f2e; border:2px solid #555; border-radius:8px; color:white;">
+                <h3 style="margin-top:0;">空マス編集</h3>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">
+                    ${colorOptions.map(c => `
+                        <div class="color-option" onclick="selectColor(this, '${c}')" 
+                             style="width:35px;height:35px;background:${c};border:3px solid ${slot.dataset.color===c?'#ff2d55':'#fff'};cursor:pointer;border-radius:4px;">
+                        </div>
+                    `).join('')}
+                </div>
+                <p>テキスト (改行OK):</p>
+                <textarea id="emptyText" style="width:100%; height:60px; padding:8px; background:#333; color:white; border:1px solid #555;">${slot.dataset.text || ''}</textarea>
+                <p>サイズ:</p>
+                <select id="emptySize" style="width:100%; padding:8px; background:#333; color:white;">
+                    <option value="LL" ${slot.dataset.size==='LL'?'selected':''}>LL</option>
+                    <option value="L" ${slot.dataset.size==='L'?'selected':''}>L</option>
+                    <option value="M" ${slot.dataset.size==='M'?'selected':''}>M</option>
+                    <option value="S" ${slot.dataset.size==='S'?'selected':''}>S</option>
+                </select>
+                <div style="text-align:right; margin-top:15px;">
+                    <button onclick="this.closest('#modal-overlay').remove()" style="margin-right:10px; padding:8px 16px;">キャンセル</button>
+                    <button onclick="saveEmptySlot()" style="padding:8px 20px; background:#ff2d55; color:white; border:none; border-radius:4px; cursor:pointer;">保存</button>
+                </div>
             </div>
         </div>
     `;
-
-    const overlay = document.createElement('div');
-    overlay.id = 'modal-overlay';
-    overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center;';
-    overlay.innerHTML = html;
-    document.body.appendChild(overlay);
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstElementChild);
 }
 
 window.selectColor = function(el, color) {
@@ -415,37 +439,35 @@ function init() {
         ];
 
 
-        for (let i = 0; i < 28; i++) {
+for (let i = 0; i < 28; i++) {
     const empty = document.createElement('div');
     empty.className = 'piece empty-slot';
     empty.draggable = true;
     empty.style.width = '50px';
     empty.style.height = '50px';
     
-    // デフォルトはグレーに設定
-    empty.dataset.color = '#2a2a3a'; 
+    // デフォルト設定
+    empty.dataset.color = '#2a2a3a'; // グレー[cite: 1]
     empty.dataset.text = '';
     empty.dataset.size = 'M';
     empty.style.backgroundColor = empty.dataset.color;
     empty.style.border = '2px solid rgba(255,255,255,0.2)';
 
-            // 右クリックで編集
-            empty.addEventListener('contextmenu', e => {
-                e.preventDefault();
-                editEmptySlot(empty);
-            });
+    empty.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        editEmptySlot(empty);
+    });
 
-            const textDiv = document.createElement('div');
-            textDiv.className = 'empty-text';
-            textDiv.style.pointerEvents = 'none';
-            textDiv.style.color = '#ffffff';
-            textDiv.style.fontWeight = 'bold';
-            textDiv.style.textShadow = '0 0 5px black';
-            empty.appendChild(textDiv);
-            
-            updateEmptySlotDisplay(empty);
-            bench.appendChild(empty);
-        }
+    const textDiv = document.createElement('div');
+    textDiv.className = 'empty-text';
+    textDiv.style.pointerEvents = 'none';
+    empty.appendChild(textDiv);
+    
+    updateEmptySlotDisplay(empty); // ここで中央揃えや色を適用
+    bench.appendChild(empty);
+}
+
+      
     }
 
     window.currentDragSource = null;
@@ -496,32 +518,46 @@ function setupSortable(container) {
         if (!dragged || !target || dragged === target) return;
         dragged.classList.remove('dragging-hidden');
 
-        // ベンチ内（または同一コンテナ内）のスワップ
-        const tempHTML = dragged.innerHTML;
-        const tempClass = dragged.className;
-        const tempDraggable = dragged.draggable;
-        const tempData = { ...dragged.dataset }; // すべてのデータ属性をコピー
+        // ==================== ベンチ内の完全スワップ ====================
+        if (container.id === 'bench') {
+            // 一時保存
+            const tempHTML = dragged.innerHTML;
+            const tempClass = dragged.className;
+            const tempStyle = dragged.style.cssText;
+            const tempData = { ...dragged.dataset };
 
-        // ターゲットからドラッグ要素へコピー
-        dragged.innerHTML = target.innerHTML;
-        dragged.className = target.className;
-        dragged.draggable = target.draggable;
-        // datasetを一度リセットしてからコピー
-        Object.keys(dragged.dataset).forEach(key => delete dragged.dataset[key]);
-        Object.assign(dragged.dataset, target.dataset);
-        dragged.style.backgroundColor = target.style.backgroundColor;
+            // ターゲットの情報をドラッグ要素へ
+            dragged.innerHTML = target.innerHTML;
+            dragged.className = target.className;
+            dragged.style.cssText = target.style.cssText;
+            Object.keys(dragged.dataset).forEach(k => delete dragged.dataset[k]);
+            Object.assign(dragged.dataset, target.dataset);
 
-        // ドラッグ要素からターゲットへコピー
-        target.innerHTML = tempHTML;
-        target.className = tempClass;
-        target.draggable = tempDraggable;
-        Object.keys(target.dataset).forEach(key => delete target.dataset[key]);
-        Object.assign(target.dataset, tempData);
-        target.style.backgroundColor = tempData.color || '';
+            // ドラッグ情報をターゲットへ
+            target.innerHTML = tempHTML;
+            target.className = tempClass;
+            target.style.cssText = tempStyle;
+            Object.keys(target.dataset).forEach(k => delete target.dataset[k]);
+            Object.assign(target.dataset, tempData);
 
-        // テキスト表示の再更新（空マスの場合）
-        if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
-        if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
+            // 表示更新
+            if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
+            if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
+            return;
+        }
+
+        // アイテムのスワップ（既存ロジックを維持）
+        if (dragged.classList.contains('item') || dragged.classList.contains('item-slot')) {
+            const t = e.target.closest('.item, .item-slot');
+            if (t && t !== dragged) {
+                const h = dragged.innerHTML;
+                const n = dragged.dataset.name;
+                dragged.innerHTML = t.innerHTML;
+                dragged.dataset.name = t.dataset.name;
+                t.innerHTML = h;
+                t.dataset.name = n;
+            }
+        }
     });
 }
 
