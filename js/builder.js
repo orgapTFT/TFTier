@@ -125,10 +125,17 @@ function handleDrop(e, hex) {
         if (rawData) {
             const data = JSON.parse(rawData);
 
-            // ====================== チャンピオン移動 ======================
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
+
+                // 移動元を一時保存
+                const sourceData = {
+                    type: 'champ',
+                    icon: source.querySelector('.champ')?.dataset.name || '',
+                    stars: source.querySelector('.champ')?.dataset.stars || "1",
+                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name)
+                };
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
@@ -137,44 +144,35 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
                 } : null;
 
+                // クリアしてから配置（消滅防止）
                 source.innerHTML = '';
                 hex.innerHTML = '';
 
                 if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, data);
+                placeChampion(hex, data);   // 移動元から来たデータを配置
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
                 return;
             }
 
-            // ====================== アイテム装備 ======================
+            // アイテム装備
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
-
-                const currentItems = Array.from(itemsContainer.children);
-
-                // ★★★ ここを変更 ★★★
-                // 同じアイテムも装備可能に（最大3個のみ制限）
-                if (currentItems.length >= 3) {
-                    return;                    // 個数だけ制限
-                }
-
-                // 重複チェックは削除（同じアイテムOK）
+                if (Array.from(itemsContainer.children).length >= 3) return;
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
-                return;
             }
         }
-    } catch (err) {}
-
-    // フォールバック（text/plain）
-    const icon = e.dataTransfer.getData('text/plain');
-    if (icon && icon.length < 30) {
-        hex.innerHTML = '';
-        placeChampion(hex, { icon: icon, stars: 1, items: [] });
+    } catch (err) {
+        // ベンチからのシンプル移動
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon && icon.length < 30) {
+            hex.innerHTML = '';
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
