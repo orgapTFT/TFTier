@@ -62,44 +62,64 @@ function placeChampion(container, data) {
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
 
-    const slot = document.createElement('div');
-    slot.className = 'piece';                    // 共通クラス
-    slot.draggable = true;
+    // 共通データ構造（空マスと統一）
+    container.dataset.type = 'champ';
+    container.dataset.name = champName;
+    container.dataset.text = champName;
+    container.dataset.color = data.color || '#222';
+    container.dataset.size = data.size || 'M';
+    container.dataset.cost = data.cost || '0';
 
-    // 共通データ構造
-    slot.dataset.type = 'champ';
-    slot.dataset.name = champName;
-    slot.dataset.text = champName;               // 表示用テキスト
-    slot.dataset.color = '#222';                 // デフォルト色（後で調整可能）
-    slot.dataset.size = 'M';
-    slot.dataset.cost = data.cost || '0';
-    slot.dataset.stars = currentStars;
+    container.style.backgroundColor = container.dataset.color;
 
-    slot.style.backgroundColor = slot.dataset.color;
+    // ビジュアル部分（.champ を維持して六角形スタイルを復活）
+    const champDiv = document.createElement('div');
+    champDiv.className = 'champ';
+    champDiv.draggable = true;
+    champDiv.dataset.stars = currentStars;
+    champDiv.dataset.name = champName;
 
-    // ビジュアル
-    slot.innerHTML = `
-        <div class="champ">
-            <img src="./img/champ/17/${champName}.avif" 
-                 alt="${champName}" 
-                 class="champ-icon"
-                 style="width:88%; height:88%; object-fit:contain;"
-                 onerror="this.style.display='none';">
-            <div class="champ-name-onboard">${champName}</div>
-        </div>
+    champDiv.innerHTML = `
+        <img src="./img/champ/17/${champName}.avif" 
+             alt="${champName}" 
+             class="champ-icon"
+             style="width:88%; height:88%; object-fit:contain;"
+             onerror="this.style.display='none';">
+        <div class="champ-name-onboard">${champName}</div>
     `;
 
     // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
-    // 星クリック処理（省略可）
 
-    container.appendChild(slot);
-    container.appendChild(starLabel);   // 必要に応じて調整
+    // 星クリック処理
+    let startX, startY;
+    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
+    starLabel.addEventListener('mouseup', e => {
+        e.stopPropagation();
+        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
+        let s = (parseInt(champDiv.dataset.stars) % 5) + 1;
+        champDiv.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    });
 
-    addDragToChampion(slot.querySelector('.champ') || slot);
-    updatePieceDisplay(slot);
+    // アイテムコンテナ
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'items-container';
+
+    if (data.items && Array.isArray(data.items)) {
+        data.items.forEach(itemName => {
+            if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
+        });
+    }
+
+    container.appendChild(champDiv);
+    container.appendChild(itemsDiv);
+    container.appendChild(starLabel);
+
+    addDragToChampion(champDiv);
+    updatePieceDisplay(container);   // 共通表示更新
 }
 
 function handleDrop(e, hex) {
@@ -202,8 +222,6 @@ function addItemSlot(container, iconName) {
 
 // 空マス編集関数
 let selectedColorTemp = ''; // 選択中の色を一時保持
-
-
 
 // 共通表示更新関数（チャンピオン＋空マス対応）
 function updatePieceDisplay(slot) {
