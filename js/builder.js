@@ -120,13 +120,15 @@ function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
 
+    // JSONデータ処理
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (rawData) {
             const data = JSON.parse(rawData);
 
+            // チャンピオン移動
             if (data.type === 'champ') {
-                const source = window.currentDragSource;
+                const source = window.currentDragSource || window.currentDragSourceBench;
                 if (!source || source === hex) return;
 
                 const targetData = hex.querySelector('.champ') ? {
@@ -143,9 +145,11 @@ function handleDrop(e, hex) {
                 placeChampion(hex, data);
 
                 window.currentDragSource = null;
+                window.currentDragSourceBench = null;
                 return;
             }
 
+            // アイテム装備
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
@@ -155,14 +159,16 @@ function handleDrop(e, hex) {
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
+                return;
             }
         }
-    } catch (err) {
-        const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 30) {
-            hex.innerHTML = '';
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+    } catch (err) {}
+
+    // フォールバック（text/plain）
+    const icon = e.dataTransfer.getData('text/plain');
+    if (icon && icon.length < 30) {
+        hex.innerHTML = '';
+        placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
 }
 
