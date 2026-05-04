@@ -207,24 +207,26 @@ function addItemSlot(container, iconName) {
              style="width:100%; height:100%; object-fit:contain;">
     `;
 
-slot.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('application/json', JSON.stringify({
-        type: 'item',
-        icon: iconName,
-        sourceSlot: slot
-    }));
-    slot.classList.add('dragging-hidden');
-    e.stopPropagation();
-});
+    // ドラッグ開始処理
+    slot.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('application/json', JSON.stringify({
+            type: 'item',
+            icon: iconName,
+            sourceSlot: slot          // これが超重要
+        }));
+        slot.classList.add('dragging-hidden');
+        e.stopPropagation();          // 親要素への伝播を止める
+    });
 
+    // ★ 追加：ドラッグ終了時の後処理
     slot.addEventListener('dragend', () => {
         slot.classList.remove('dragging-hidden');
     });
 
-    // 右クリックで解除
+    // ★ 追加：右クリックでアイテムを外す
     slot.addEventListener('contextmenu', e => {
         e.preventDefault();
-        slot.remove();
+        slot.remove();                // その場で削除（装備解除）
     });
 
     container.appendChild(slot);
