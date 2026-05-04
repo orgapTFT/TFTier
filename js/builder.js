@@ -63,13 +63,13 @@ function placeChampion(container, data) {
     const champName = data.icon || data.name || '';
     const currentLv = data.lv || container.dataset.lv || '0';
 
-    // 共通データ構造
+    // 共通データ
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
-    container.dataset.lv = currentLv;   // Lvを保持
+    container.dataset.lv = currentLv;
 
     const champ = document.createElement('div');
     champ.className = 'champ';
@@ -84,8 +84,6 @@ function placeChampion(container, data) {
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
-        
-        <!-- Lv表示 -->
         <div class="lv-display" style="${currentLv !== '0' ? 'display:block' : 'display:none'}">Lv${currentLv}</div>
     `;
 
@@ -94,28 +92,41 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // Lv切り替え（右クリック）
+    // 星クリック
+    let startX, startY;
+    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
+    starLabel.addEventListener('mouseup', e => {
+        e.stopPropagation();
+        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
+        champ.dataset.stars = s;
+        starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+    });
+
+    // ====================== Lv切り替え（左ダブルクリック） ======================
     const lvDisplay = champ.querySelector('.lv-display');
     let currentLvNum = parseInt(currentLv) || 3;
 
-    champ.addEventListener('contextmenu', (e) => {
+    champ.addEventListener('dblclick', (e) => {
         e.preventDefault();
-        currentLvNum = (currentLvNum % 8) + 3;
-        if (currentLvNum > 10) {
+        e.stopImmediatePropagation();   // 他のイベントを止める
+
+        currentLvNum = (currentLvNum % 8) + 3;   // 3〜10までループ
+
+        if (currentLvNum > 10 || currentLvNum === 3 && lvDisplay.style.display === 'block') {
             currentLvNum = 0;
             lvDisplay.style.display = 'none';
-            container.dataset.lv = '0';
         } else {
             lvDisplay.textContent = `Lv${currentLvNum}`;
             lvDisplay.style.display = 'block';
-            container.dataset.lv = currentLvNum;
         }
+
+        container.dataset.lv = currentLvNum;   // データも更新
     });
 
-    // アイテムコンテナなど（省略せず残す）
+    // アイテム
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
-
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(itemName => {
             if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
@@ -126,7 +137,7 @@ function placeChampion(container, data) {
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
-    addDragToChampion(champ);
+    addDragToChampion(champ);   // 重要：イベント再付与
 }
 
 function handleDrop(e, hex) {
@@ -372,16 +383,39 @@ function init() {
             }
 
             // チャンピオン / BOX解除
-            if ((data.type === 'champ' || data.type === 'box') && window.currentDragSource) {
-                if (window.currentDragSource) {
-                    window.currentDragSource.innerHTML = '';
-                    console.log("✅ チャンピオン/BOX解除完了");
-                }
+              if (data.type === 'champ') {
+                const source = window.currentDragSource || window.currentDragSourceBench;
+                if (!source || source === hex) return;
+
+                const isFromBench = source.closest && source.closest('#bench');
+
+                const sourceChamp = source.querySelector('.champ');
+                const sourceData = {
+                    type: 'champ',
+                    icon: sourceChamp ? sourceChamp.dataset.name : data.icon,
+                    stars: sourceChamp ? sourceChamp.dataset.stars : data.stars,
+                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                    lv: source.dataset.lv || data.lv || '0'
+                };
+
+                const targetData = hex.querySelector('.champ') ? {
+                    type: 'champ',
+                    icon: hex.querySelector('.champ').dataset.name,
+                    stars: hex.querySelector('.champ').dataset.stars || "1",
+                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                    lv: hex.dataset.lv || '0'
+                } : null;
+
+                source.innerHTML = '';
+                hex.innerHTML = '';
+
+                if (targetData) placeChampion(source, targetData);
+                placeChampion(hex, sourceData);   // 最新データを使用
+
                 window.currentDragSource = null;
+                window.currentDragSourceBench = null;
+                return;
             }
-        } catch (err) {
-            console.log("解除処理でエラー:", err);
-        }
     });
 }
 
