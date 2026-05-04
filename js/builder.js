@@ -62,24 +62,21 @@ function placeChampion(container, data) {
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
 
-    // 共通データ構造（空マスと統一）
+    // 共通データ構造（空マスと同期）
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
-    container.dataset.cost = data.cost || '0';
 
-    container.style.backgroundColor = container.dataset.color;
+    // ====================== チャンピオン本体 ======================
+    const champ = document.createElement('div');
+    champ.className = 'champ';
+    champ.draggable = true;
+    champ.dataset.stars = currentStars;
+    champ.dataset.name = champName;
 
-    // ビジュアル部分（.champ を維持して六角形スタイルを復活）
-    const champDiv = document.createElement('div');
-    champDiv.className = 'champ';
-    champDiv.draggable = true;
-    champDiv.dataset.stars = currentStars;
-    champDiv.dataset.name = champName;
-
-    champDiv.innerHTML = `
+    champ.innerHTML = `
         <img src="./img/champ/17/${champName}.avif" 
              alt="${champName}" 
              class="champ-icon"
@@ -93,14 +90,13 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // 星クリック処理
     let startX, startY;
     starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
     starLabel.addEventListener('mouseup', e => {
         e.stopPropagation();
         if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        let s = (parseInt(champDiv.dataset.stars) % 5) + 1;
-        champDiv.dataset.stars = s;
+        let s = (parseInt(champ.dataset.stars) % 5) + 1;
+        champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
@@ -114,12 +110,11 @@ function placeChampion(container, data) {
         });
     }
 
-    container.appendChild(champDiv);
+    container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
-    addDragToChampion(champDiv);
-    updatePieceDisplay(container);   // 共通表示更新
+    addDragToChampion(champ);
 }
 
 function handleDrop(e, hex) {
@@ -131,10 +126,19 @@ function handleDrop(e, hex) {
         if (rawData) {
             const data = JSON.parse(rawData);
 
-            // ====================== チャンピオン移動 ======================
+            // ====================== チャンピオン ======================
             if (data.type === 'champ') {
                 const source = window.currentDragSource || window.currentDragSourceBench;
-                if (!source || source === hex) return;
+
+                // ベンチから盤面への場合は「コピー」（ベンチは消さない）
+                const isFromBench = source && source.closest('#bench');
+
+                if (!isFromBench) {
+                    // 盤面内移動やスワップの場合は移動
+                    if (source && source !== hex) {
+                        source.innerHTML = '';
+                    }
+                }
 
                 const targetData = hex.querySelector('.champ') ? {
                     type: 'champ',
@@ -143,10 +147,9 @@ function handleDrop(e, hex) {
                     items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
                 } : null;
 
-                source.innerHTML = '';
                 hex.innerHTML = '';
 
-                if (targetData) placeChampion(source, targetData);
+                if (targetData) placeChampion(hex.parentElement || hex, targetData); // スワップ用
                 placeChampion(hex, data);
 
                 window.currentDragSource = null;
@@ -154,29 +157,21 @@ function handleDrop(e, hex) {
                 return;
             }
 
-            // ====================== Box画像を盤面に置く ======================
+            // ====================== Box画像 ======================
             if (data.type === 'box' && data.icon) {
-                hex.innerHTML = '';  // 既存をクリア
+                hex.innerHTML = '';
 
                 const boxDiv = document.createElement('div');
                 boxDiv.className = 'piece box-slot';
-                boxDiv.style.width = '100%';
-                boxDiv.style.height = '100%';
-                boxDiv.style.display = 'flex';
-                boxDiv.style.alignItems = 'center';
-                boxDiv.style.justifyContent = 'center';
-
                 boxDiv.innerHTML = `
                     <img src="./img/box/${data.icon}.avif" 
-                         alt="${data.icon}" 
                          style="width:85%; height:85%; object-fit:contain;">
                 `;
-
                 hex.appendChild(boxDiv);
                 return;
             }
 
-            // ====================== アイテム装備 ======================
+            // ====================== アイテム ======================
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer) return;
@@ -184,11 +179,10 @@ function handleDrop(e, hex) {
 
                 if (data.sourceSlot) data.sourceSlot.remove();
                 addItemSlot(itemsContainer, data.icon);
-                return;
             }
         }
     } catch (err) {
-        // ベンチからのシンプル移動（チャンピオン）
+        // フォールバック（テキストのみ）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
