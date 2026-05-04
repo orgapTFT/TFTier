@@ -168,13 +168,13 @@ function handleDrop(e, hex) {
                 return;
             }
         }
-    } catch (err) {
-        // ベンチから直接置く
-        const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 30) {
-            hex.innerHTML = '';
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
+    } catch (err) {}
+
+    // フォールバック（text/plain）
+    const icon = e.dataTransfer.getData('text/plain');
+    if (icon && icon.length < 30) {
+        hex.innerHTML = '';
+        placeChampion(hex, { icon: icon, stars: 1, items: [] });
     }
 }
 
@@ -215,6 +215,61 @@ function addItemSlot(container, iconName) {
 
     container.appendChild(slot);
 }
+
+// 空マス編集関数
+function editEmptySlot(slot) {
+    const colorOptions = ['#1a1a2a','#2a1a1a','#1a2a1a','#1a1a4a','#3a2a1a',
+                         '#4a1a2a','#2a4a1a','#1a3a4a','#3a1a4a','#4a3a1a'];
+    
+    let html = `<div style="padding:15px;">`;
+    html += `<p>色を選択（10色）:</p><div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:15px;">`;
+    
+    colorOptions.forEach(c => {
+        html += `<div onclick="applyColor(this)" style="width:40px;height:40px;background:${c};border:2px solid #fff;cursor:pointer;" data-color="${c}"></div>`;
+    });
+    html += `</div>`;
+    
+    html += `
+        <p>テキスト:</p>
+        <input type="text" id="emptyText" value="${slot.dataset.text || ''}" style="width:100%; padding:8px;">
+        
+        <p style="margin-top:10px;">文字サイズ:</p>
+        <select id="emptySize">
+            <option value="LL" ${slot.dataset.size==='LL'?'selected':''}>LL (とても大きい)</option>
+            <option value="L" ${slot.dataset.size==='L'?'selected':''}>L (大きい)</option>
+            <option value="M" ${slot.dataset.size==='M'?'selected':''}>M (普通)</option>
+            <option value="S" ${slot.dataset.size==='S'?'selected':''}>S (小さい)</option>
+        </select>
+        
+        <button onclick="saveEmptySlot('${slot.dataset.color}')" style="margin-top:15px; padding:8px 16px;">保存</button>
+    `;
+    
+    // 簡易モーダル（改善の余地あり）
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '50%';
+    modal.style.left = '50%';
+    modal.style.transform = 'translate(-50%, -50%)';
+    modal.style.background = '#1f1f2e';
+    modal.style.padding = '20px';
+    modal.style.border = '2px solid #666';
+    modal.style.zIndex = '10000';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+}
+
+// 色適用（グローバル関数）
+window.applyColor = function(el) {
+    document.querySelectorAll('#emptyText').forEach(input => {
+        // 色は後で保存時に使う
+    });
+};
+
+window.saveEmptySlot = function(oldColor) {
+    // 簡易実装のため一旦コンソール出力（後で完全実装）
+    console.log("空マス編集機能 - 現在開発中");
+    // ここに本実装を入れる
+};
 
 function init() {
     createBoard();
@@ -259,14 +314,40 @@ item.addEventListener('dragstart', e => {
             itemsArea.appendChild(item);
         });
 
-        // 空白追加
-        for (let i = 0; i < 10; i++) {
+  // ==================== 空マス（色・テキスト付き） ====================
+        const colors = ['#1a1a2a', '#2a1a1a', '#1a2a1a', '#1a1a4a', '#3a2a1a', 
+                       '#4a1a2a', '#2a4a1a', '#1a3a4a', '#3a1a4a', '#4a3a1a'];
+
+        for (let i = 0; i < 28; i++) {
             const empty = document.createElement('div');
-            empty.className = 'item empty-slot';
+            empty.className = 'piece empty-slot';
             empty.draggable = true;
             empty.style.width = '50px';
             empty.style.height = '50px';
-            itemsArea.appendChild(empty);
+            
+            // 空マス用データ
+            empty.dataset.color = colors[i % colors.length];
+            empty.dataset.text = '';
+            empty.dataset.size = 'M';
+            
+            // 背景色適用
+            empty.style.backgroundColor = empty.dataset.color;
+            
+            // 右クリックで編集
+            empty.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                editEmptySlot(empty);
+            });
+
+            // テキスト表示用子要素
+            const textDiv = document.createElement('div');
+            textDiv.className = 'empty-text';
+            textDiv.style.pointerEvents = 'none';
+            empty.appendChild(textDiv);
+            
+            updateEmptySlotDisplay(empty);
+            
+            bench.appendChild(empty);
         }
 
         setupSortable(itemsArea);
@@ -376,28 +457,39 @@ function setupSortable(container) {
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        // ==================== ベンチ内の入れ替え（空マス対応） ====================
+        // ==================== ベンチ内の入れ替え（空マス対応強化） ====================
         if (container.id === 'bench') {
             const target = e.target.closest('.piece');
             if (target && target !== dragged) {
                 const tempHTML = dragged.innerHTML;
                 const tempClass = dragged.className;
                 const tempDraggable = dragged.draggable;
+                
+                // データ属性も一緒に移動（色・テキスト用）
+                const tempColor = dragged.dataset.color || '';
+                const tempText = dragged.dataset.text || '';
+                const tempSize = dragged.dataset.size || 'M';
 
                 dragged.innerHTML = target.innerHTML;
                 dragged.className = target.className;
                 dragged.draggable = target.draggable;
+                dragged.dataset.color = target.dataset.color || '';
+                dragged.dataset.text = target.dataset.text || '';
+                dragged.dataset.size = target.dataset.size || 'M';
 
                 target.innerHTML = tempHTML;
                 target.className = tempClass;
                 target.draggable = tempDraggable;
+                target.dataset.color = tempColor;
+                target.dataset.text = tempText;
+                target.dataset.size = tempSize;
             }
             return;
         }
 
-        // ==================== アイテム同士の並び替え（同じチャンピオン内） ====================
-        if (dragged.classList.contains('item-slot')) {
-            const target = e.target.closest('.item-slot');
+        // ==================== アイテムエリア or 装備アイテムのスワップ ====================
+        if (dragged.classList.contains('item') || dragged.classList.contains('item-slot')) {
+            const target = e.target.closest('.item, .item-slot');
             if (target && target !== dragged) {
                 const tempHTML = dragged.innerHTML;
                 const tempName = dragged.dataset.name;
