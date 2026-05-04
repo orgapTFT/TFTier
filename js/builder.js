@@ -112,58 +112,62 @@ function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
 
-    // 1. JSONデータがある場合（盤面上からの移動やアイテム）
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (rawData) {
-            const data = JSON.parse(rawData);
+        if (!rawData) throw new Error();
+        
+        const data = JSON.parse(rawData);
 
-            // === チャンピオン移動 ===
-            if (data.type === 'champ') {
-                const source = window.currentDragSource;
-                if (!source || source === hex) return;
+        // ====================== チャンピオン移動 ======================
+        if (data.type === 'champ') {
+            const source = window.currentDragSource;
+            if (!source || source === hex) return;
 
-                const targetData = hex.querySelector('.champ') ? {
-                    type: 'champ',
-                    icon: hex.querySelector('.champ').dataset.name,
-                    stars: hex.querySelector('.champ').dataset.stars || "1",
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
-                } : null;
+            const targetData = hex.querySelector('.champ') ? {
+                type: 'champ',
+                icon: hex.querySelector('.champ').dataset.name,
+                stars: hex.querySelector('.champ').dataset.stars || "1",
+                items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
+            } : null;
 
-                source.innerHTML = '';
-                hex.innerHTML = '';
+            source.innerHTML = '';
+            hex.innerHTML = '';
 
-                if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, data);
+            if (targetData) placeChampion(source, targetData);
+            placeChampion(hex, data);
 
-                window.currentDragSource = null;
-                return;
-            }
-
-            // === アイテム装備 ===
-            if (data.type === 'item' && data.icon) {
-                const itemsContainer = hex.querySelector('.items-container');
-                if (!itemsContainer) return;
-
-                const currentItems = Array.from(itemsContainer.children);
-                if (currentItems.length >= 3 || currentItems.some(s => s.dataset.name === data.icon)) return;
-
-                if (data.sourceSlot) data.sourceSlot.remove();
-                addItemSlot(itemsContainer, data.icon);
-                return;
-            }
+            window.currentDragSource = null;
+            return;
         }
-    } catch (err) {}
 
-    // 2. ベンチから直接置く場合（これを一番最後に）
-    const icon = e.dataTransfer.getData('text/plain');
-    if (icon && icon.length < 30) {
-        hex.innerHTML = '';           // 重要：空にする
-        placeChampion(hex, { 
-            icon: icon, 
-            stars: 1, 
-            items: [] 
-        });
+        // ====================== アイテムをチャンピオンに装備 ======================
+        if (data.type === 'item' && data.icon) {
+            const itemsContainer = hex.querySelector('.items-container');
+            if (!itemsContainer) return;
+
+            const currentItems = Array.from(itemsContainer.children);
+
+            // 重複防止 + 最大3個
+            if (currentItems.length >= 3 || currentItems.some(slot => slot.dataset.name === data.icon)) {
+                return;
+            }
+
+            // 移動元から削除（アイテムエリア or 他のチャンピオンから）
+            if (data.sourceSlot) {
+                data.sourceSlot.remove();
+            }
+
+            addItemSlot(itemsContainer, data.icon);
+            return;
+        }
+
+    } catch (err) {
+        // ベンチから直接チャンピオンを置く場合
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon && icon.length < 30) {
+            hex.innerHTML = '';
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
     }
 }
 
