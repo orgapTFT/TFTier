@@ -102,29 +102,45 @@ function handleDrop(e, hex) {
         if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
-        // ====================== チャンピオン移動 ======================
+        // ====================== チャンピオン移動・スワップ ======================
         if (data.type === 'champ') {
             const source = window.currentDragSource;
             if (!source || source === hex) return;
 
+            // ターゲット（移動先）の現在の情報を保存
             const targetChamp = hex.querySelector('.champ');
-            const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
-                                  .map(s => s.dataset.name || '');
+            let targetData = null;
 
+            if (targetChamp) {
+                targetData = {
+                    type: 'champ',
+                    icon: targetChamp.dataset.name || '',
+                    stars: targetChamp.dataset.stars || "1",
+                    items: Array.from(hex.querySelectorAll('.item-slot'))
+                                .map(s => s.dataset.name || '')
+                };
+            }
+
+            // 元の場所のデータを保存
             const sourceData = {
-                icon: source.querySelector('.champ')?.dataset.name || '',
-                stars: source.querySelector('.champ')?.dataset.stars || "1",
+                type: 'champ',
+                icon: source.querySelector('.champ')?.dataset.name || data.icon,
+                stars: source.querySelector('.champ')?.dataset.stars || data.stars || "1",
                 items: Array.from(source.querySelectorAll('.item-slot'))
                             .map(s => s.dataset.name || '')
             };
 
+            // 元の場所をクリア
             source.innerHTML = '';
 
-            if (targetChamp) {
-                placeChampion(source, { ...sourceData, type: 'champ' });
+            // スワップ処理
+            if (targetData) {
+                placeChampion(source, targetData);
             }
 
+            // ドラッグしてきたチャンピオンを移動先へ
             placeChampion(hex, data);
+
             window.currentDragSource = null;
         }
 
@@ -142,29 +158,31 @@ function handleDrop(e, hex) {
 
             const draggedSlot = data.sourceSlot;
 
-            // ① 同じチャンピオン内でアイテム同士を入れ替え（スワップ）
+            // ① 同じチャンピオン内でスワップ
             if (draggedSlot && itemsContainer.contains(draggedSlot)) {
                 const targetSlot = e.target.closest('.item-slot');
                 if (targetSlot && targetSlot !== draggedSlot) {
+                    // シンプルにinnerHTMLとdatasetを交換
                     const tempHTML = draggedSlot.innerHTML;
                     const tempName = draggedSlot.dataset.name;
-                    
+
                     draggedSlot.innerHTML = targetSlot.innerHTML;
                     draggedSlot.dataset.name = targetSlot.dataset.name;
-                    
+
                     targetSlot.innerHTML = tempHTML;
                     targetSlot.dataset.name = tempName;
                 }
                 return;
             }
 
-            // ② 別のチャンピオンへアイテムを移動
+            // ② 別のチャンピオンへ移動（空きがあれば）
             if (itemsContainer.children.length < 3) {
                 addItemSlot(itemsContainer, data.icon);
-                if (draggedSlot) draggedSlot.remove();   // 元の場所から削除
+                if (draggedSlot) draggedSlot.remove();  // 元のアイテムを削除
             }
         }
     } catch (err) {
+        // Benchから直接ドロップ
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 20) {
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
@@ -184,16 +202,15 @@ function addItemSlot(container, iconName) {
              style="width:100%; height:100%; object-fit:contain;">
     `;
 
-    slot.addEventListener('dragstart', e => {
-        e.dataTransfer.setData('application/json', JSON.stringify({
-            type: 'item',
-            icon: iconName,
-            sourceSlot: slot,
-            fromBoard: true   // 盤面上からドラッグしたことを明示
-        }));
-        slot.classList.add('dragging-hidden');
-        e.stopPropagation();
-    });
+slot.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('application/json', JSON.stringify({
+        type: 'item',
+        icon: iconName,
+        sourceSlot: slot
+    }));
+    slot.classList.add('dragging-hidden');
+    e.stopPropagation();
+});
 
     slot.addEventListener('dragend', () => {
         slot.classList.remove('dragging-hidden');
