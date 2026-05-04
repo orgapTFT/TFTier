@@ -140,19 +140,18 @@ function handleDrop(e, hex) {
             return;
         }
 
-        // ====================== アイテムをチャンピオンに装備 ======================
+        // ====================== アイテム装備 ======================
         if (data.type === 'item' && data.icon) {
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
             const currentItems = Array.from(itemsContainer.children);
 
-            // 重複防止 + 最大3個
             if (currentItems.length >= 3 || currentItems.some(slot => slot.dataset.name === data.icon)) {
                 return;
             }
 
-            // 移動元から削除（アイテムエリア or 他のチャンピオンから）
+            // 移動元から削除（sourceSlotがあれば）
             if (data.sourceSlot) {
                 data.sourceSlot.remove();
             }
@@ -162,7 +161,7 @@ function handleDrop(e, hex) {
         }
 
     } catch (err) {
-        // ベンチから直接チャンピオンを置く場合
+        // ベンチから直接置く
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
@@ -183,23 +182,24 @@ function addItemSlot(container, iconName) {
              style="width:100%; height:100%; object-fit:contain;">
     `;
 
-p.addEventListener('dragstart', e => {
-    const name = p.querySelector('img')?.alt || name;
+    // ドラッグ開始
+    slot.addEventListener('dragstart', e => {
+        e.stopImmediatePropagation();
 
-    // 両方送る（公式に近い挙動）
-    e.dataTransfer.setData('text/plain', name);
-    e.dataTransfer.setData('application/json', JSON.stringify({
-        type: 'champ',
-        icon: name,
-        stars: "1",
-        items: []
-    }));
+        e.dataTransfer.setData('application/json', JSON.stringify({
+            type: 'item',
+            icon: iconName,
+            sourceSlot: slot          // これだけ残せばOK
+        }));
 
-    p.classList.add('dragging-hidden');
-    window.currentDragSourceBench = p;
-});
+        slot.classList.add('dragging-hidden');
+    });
 
-    // 右クリックで即解除
+    slot.addEventListener('dragend', () => {
+        slot.classList.remove('dragging-hidden');
+    });
+
+    // 右クリックで解除
     slot.addEventListener('contextmenu', e => {
         e.preventDefault();
         slot.remove();
@@ -235,13 +235,14 @@ function init() {
                      onerror="this.style.display='none'; this.parentElement.textContent='?'">
             `;
             
-            item.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'item', 
-                    icon: itemName
-                }));
-                item.classList.add('dragging-hidden');
-            });
+item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('application/json', JSON.stringify({
+        type: 'item', 
+        icon: itemName,
+        sourceSlot: null   // アイテムプールからは null
+    }));
+    item.classList.add('dragging-hidden');
+});
 
             item.addEventListener('dragend', () => {
                 item.classList.remove('dragging-hidden');
@@ -327,8 +328,8 @@ function init() {
 
        // グローバルドロップ処理
     document.addEventListener('drop', (e) => {
-        const overBoard = e.target.closest('#board');
-        const overBench = e.target.closest('#bench');
+        const overBoard = !!e.target.closest('#board');
+        const overBench = !!e.target.closest('#bench');
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
@@ -336,34 +337,13 @@ function init() {
                 const data = JSON.parse(rawData);
 
                 if (data.type === 'item' && data.sourceSlot) {
-                    // ベンチにアイテムを落としたら解除
-                    if (overBench) {
-                        data.sourceSlot.remove();
-                    }
-                    // 盤面外に落としたら解除
-                    else if (!overBoard) {
+                    if (overBench || !overBoard) {
                         data.sourceSlot.remove();
                     }
                 }
             }
         } catch (err) {}
     });
-
-// init() 内の最後に置く
-document.addEventListener('drop', (e) => {
-    if (e.target.closest('#board') || e.target.closest('#bench') || e.target.closest('#items')) return;
-
-    try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
-
-        if (data.type === 'item' && data.sourceSlot) {
-            data.sourceSlot.remove();
-        }
-    } catch (e) {}
-});
-}
 
 // 共通並び替え関数（丸ごと置き換え）
 function setupSortable(container) {
