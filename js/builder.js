@@ -485,21 +485,40 @@ function init() {
 
 
      // ========== 盤面外ドロップで解除 ==========
-     // 盤面外に落としたら消える
+    // ========== 盤面外（#boardの外）にドロップしたら解除 ==========
     document.addEventListener('drop', (e) => {
-        if (e.target.closest('#board') || e.target.closest('#bench') || e.target.closest('#items')) {
+        // #board, #bench, #items の上なら無視
+        if (e.target.closest('#board') || 
+            e.target.closest('#bench') || 
+            e.target.closest('#items')) {
             return;
         }
+
+        console.log("🗑️ 盤面外ドロップ検知 → 解除処理");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
             if (!rawData) return;
+            
             const data = JSON.parse(rawData);
 
-            if (data.sourceSlot) {
+            // アイテム解除
+            if (data.type === 'item' && data.sourceSlot) {
                 data.sourceSlot.remove();
+                console.log("✅ アイテム解除完了");
             }
-        } catch (err) {}
+
+            // チャンピオン / BOX解除
+            if ((data.type === 'champ' || data.type === 'box') && window.currentDragSource) {
+                if (window.currentDragSource) {
+                    window.currentDragSource.innerHTML = '';
+                    console.log("✅ チャンピオン/BOX解除完了");
+                }
+                window.currentDragSource = null;
+            }
+        } catch (err) {
+            console.log("解除処理でエラー:", err);
+        }
     });
 }
 
