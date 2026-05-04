@@ -524,41 +524,48 @@ function setupSortable(container) {
         const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
         );
-        const target = e.target.closest('.piece, .item, .item-slot');
-        
-        if (!dragged || !target || dragged === target) return;
+        if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-          // ==================== ベンチ内の完全スワップ ====================
-      if (container.id === 'bench') {
+        // ==================== ベンチ内のスワップ ====================
+        if (container.id === 'bench') {
             const target = e.target.closest('.piece');
             if (target && target !== dragged) {
-                console.log("ベンチ完全スワップ:", dragged.className, "↔", target.className);
+                console.log("✅ ベンチスワップ実行");
 
-                // 一時保存（全部）
                 const tempHTML = dragged.innerHTML;
                 const tempClass = dragged.className;
                 const tempStyle = dragged.style.cssText;
-                const tempData = { ...dragged.dataset };
+                const tempData = {...dragged.dataset};
 
-                // スワップ実行
                 dragged.innerHTML = target.innerHTML;
                 dragged.className = target.className;
                 dragged.style.cssText = target.style.cssText;
-                Object.keys(dragged.dataset).forEach(k => delete dragged.dataset[k]);
                 Object.assign(dragged.dataset, target.dataset);
 
                 target.innerHTML = tempHTML;
                 target.className = tempClass;
                 target.style.cssText = tempStyle;
-                Object.keys(target.dataset).forEach(k => delete target.dataset[k]);
                 Object.assign(target.dataset, tempData);
 
-                // 空マスだった側は表示を更新
+                // 空マス表示更新
                 if (dragged.classList.contains('empty-slot')) updateEmptySlotDisplay(dragged);
                 if (target.classList.contains('empty-slot')) updateEmptySlotDisplay(target);
 
                 return;
+            }
+        }
+
+        // アイテムスワップ
+        if (dragged.classList.contains('item') || dragged.classList.contains('item-slot')) {
+            const target = e.target.closest('.item, .item-slot');
+            if (target && target !== dragged) {
+                const tempHTML = dragged.innerHTML;
+                const tempName = dragged.dataset.name;
+                dragged.innerHTML = target.innerHTML;
+                dragged.dataset.name = target.dataset.name;
+                target.innerHTML = tempHTML;
+                target.dataset.name = tempName;
             }
         }
     });
