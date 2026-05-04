@@ -62,8 +62,8 @@ html, body {
 /* ベンチ内部のグリッド */
 #bench {
     display: grid;
-    grid-template-columns: repeat(7, 68px);   /* 横7列固定 */
-    gap: 6px;                                 /* 適度な隙間 */
+    grid-template-columns: repeat(7, 68px);
+    gap: 6px;
     justify-content: center;
     padding: 15px;
     background: #1f1f2e;
@@ -73,29 +73,39 @@ html, body {
     margin: 0 auto;
 }
 
-/* ベンチのピースサイズ調整 */
+/* === ベンチ専用サイズ（ここを強く指定）=== */
 #bench .piece {
-    width: 50px;
-    height: 50px;
+    width: 50px !important;     /* ここを希望サイズに調整 */
+    height: 50px !important;
+    background: #222;
+    border: 3px solid #666;
+    border-radius: 12px;
 }
 
+/* ベンチ内の画像も確実に調整 */
 #bench .piece img {
-    width: 100%;
-    height: 100%;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain;
     border-radius: 8px;
+}
+
+/* ベンチ内の名前テキストも調整 */
+#bench .piece div[style*="bottom"] {
+    font-size: 11px;
+    bottom: 3px;
 }
 
 
 /* .piece, .item */
 .piece, .item {
-    width: 72px;
-    height: 72px;
+    width: 50px;
+    height: 50px;
     background: #222;
     border: 3px solid #666;
     border-radius: 12px;
-    position: relative;           /* 追加 */
-    overflow: hidden;             /* 追加 */
+    position: relative;
+    overflow: hidden;
     cursor: grab;
 }
 
