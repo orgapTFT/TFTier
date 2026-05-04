@@ -62,13 +62,12 @@ function placeChampion(container, data) {
     const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
 
-    // 共通データ
     container.dataset.type = 'champ';
     container.dataset.name = champName;
     container.dataset.text = champName;
     container.dataset.color = data.color || '#222';
     container.dataset.size = data.size || 'M';
-    container.dataset.lv = '0';
+    container.dataset.lv = '0';   // 0 = 非表示
 
     const champ = document.createElement('div');
     champ.className = 'champ';
@@ -85,7 +84,7 @@ function placeChampion(container, data) {
         <div class="champ-name-onboard">${champName}</div>
         
         <!-- Lv表示（右上） -->
-        <div class="lv-display">Lv3</div>
+        <div class="lv-display" style="display:none;">Lv3</div>
     `;
 
     // ====================== 星 ======================
@@ -103,23 +102,20 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // ====================== Lv切り替え（ホイールクリック） ======================
+    // ====================== Lv切り替え（右クリック） ======================
     const lvDisplay = champ.querySelector('.lv-display');
     let currentLv = 3;
 
-    champ.addEventListener('auxclick', (e) => {
-        if (e.button === 1) {   // ホイールクリック
-            e.preventDefault();
-            e.stopImmediatePropagation();
+    champ.addEventListener('contextmenu', (e) => {
+        e.preventDefault();   // デフォルトの右クリックメニューを無効化
 
-            currentLv = (currentLv % 8) + 3;   // 3〜10までループ
+        currentLv = (currentLv % 8) + 3;   // 3〜10までループ
 
-            if (currentLv === 3 && lvDisplay.style.display !== 'none') {
-                lvDisplay.style.display = 'none';   // もう一度クリックで非表示
-            } else {
-                lvDisplay.textContent = `Lv${currentLv}`;
-                lvDisplay.style.display = 'block';
-            }
+        if (currentLv === 3 && lvDisplay.style.display === 'block') {
+            lvDisplay.style.display = 'none';   // もう一度右クリックで非表示
+        } else {
+            lvDisplay.textContent = `Lv${currentLv}`;
+            lvDisplay.style.display = 'block';
         }
     });
 
