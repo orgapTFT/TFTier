@@ -353,7 +353,7 @@ item.addEventListener('dragstart', e => {
         setupSortable(itemsArea);
     }
 
-    // ==================== ベンチ ====================
+       // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
@@ -389,6 +389,12 @@ item.addEventListener('dragstart', e => {
 
             p.addEventListener('dragstart', e => {
                 e.dataTransfer.setData('text/plain', name);
+                e.dataTransfer.setData('application/json', JSON.stringify({
+                    type: 'champ',
+                    icon: name,
+                    stars: "1",
+                    items: []
+                }));
                 p.classList.add('dragging-hidden');
                 window.currentDragSourceBench = p;
             });
@@ -398,13 +404,35 @@ item.addEventListener('dragstart', e => {
             bench.appendChild(p);
         });
 
-        // 空欄追加
+        // ==================== 空マス（色・テキスト付き） ====================
+        const colors = ['#1a1a2a', '#2a1a1a', '#1a2a1a', '#1a1a4a', '#3a2a1a', 
+                       '#4a1a2a', '#2a4a1a', '#1a3a4a', '#3a1a4a', '#4a3a1a'];
+
         for (let i = 0; i < 28; i++) {
             const empty = document.createElement('div');
             empty.className = 'piece empty-slot';
             empty.draggable = true;
             empty.style.width = '50px';
             empty.style.height = '50px';
+            
+            empty.dataset.color = colors[i % colors.length];
+            empty.dataset.text = '';
+            empty.dataset.size = 'M';
+            empty.style.backgroundColor = empty.dataset.color;
+
+            // 右クリックで編集
+            empty.addEventListener('contextmenu', e => {
+                e.preventDefault();
+                editEmptySlot(empty);
+            });
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'empty-text';
+            textDiv.style.pointerEvents = 'none';
+            empty.appendChild(textDiv);
+            
+            updateEmptySlotDisplay(empty);   // 後で定義
+            
             bench.appendChild(empty);
         }
 
@@ -505,3 +533,18 @@ function setupSortable(container) {
 }
 
 init();
+
+// 空マス表示更新関数
+function updateEmptySlotDisplay(slot) {
+    const textDiv = slot.querySelector('.empty-text');
+    if (!textDiv) return;
+    
+    const text = slot.dataset.text || '';
+    textDiv.textContent = text;
+    
+    // サイズに応じたスタイル（後で調整）
+    if (slot.dataset.size === 'LL') textDiv.style.fontSize = '18px';
+    else if (slot.dataset.size === 'L') textDiv.style.fontSize = '14px';
+    else if (slot.dataset.size === 'S') textDiv.style.fontSize = '9px';
+    else textDiv.style.fontSize = '11px';
+}
