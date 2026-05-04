@@ -50,6 +50,10 @@ function addDragToChampion(champ) {
 
 function placeChampion(container, data) {
     if (!container) return;
+    
+    // 完全にクリアする前に一度保存（念のため）
+    const oldItems = data.items || [];
+
     container.innerHTML = '';
 
     const currentStars = parseInt(data.stars) || 1;
@@ -75,13 +79,11 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
     
-    // 星クリック処理（省略せず残す）
     let startX, startY;
     starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
     starLabel.addEventListener('mouseup', e => {
         e.stopPropagation();
         if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
-        
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
@@ -91,8 +93,8 @@ function placeChampion(container, data) {
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
 
-    if (data.items && Array.isArray(data.items)) {
-        data.items.forEach(itemName => {
+    if (oldItems && Array.isArray(oldItems)) {
+        oldItems.forEach(itemName => {
             if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
         });
     }
@@ -102,7 +104,7 @@ function placeChampion(container, data) {
     container.appendChild(starLabel);
 
     addDragToChampion(champ);
-        // アイテム同士のスワップを有効化
+    
     if (typeof setupSortable === 'function') {
         setupSortable(itemsDiv);
     }
@@ -343,6 +345,7 @@ item.addEventListener('dragstart', e => {
             }
         } catch (err) {}
     });
+}
 
 // 共通並び替え関数（丸ごと置き換え）
 function setupSortable(container) {
