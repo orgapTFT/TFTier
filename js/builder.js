@@ -97,48 +97,49 @@ function handleDrop(e, hex) {
         if (!rawData) throw new Error();
         const data = JSON.parse(rawData);
 
-if (data.type === 'champ') {
-    const source = window.currentDragSource;
-    if (!source || source === hex) return;
+        if (data.type === 'champ') {
+            const source = window.currentDragSource;
+            if (!source || source === hex) return;
 
-    const targetChamp = hex.querySelector('.champ');
-    const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
-                          .map(s => s.innerHTML);
+            const targetChamp = hex.querySelector('.champ');
 
-    // 元の場所のデータを確実に保存
-    const sourceData = {
-        type: 'champ',
-        icon: source.querySelector('.champ')?.dataset.name || 
-              source.querySelector('img')?.alt || '',
-        stars: source.querySelector('.champ')?.dataset.stars || "1",
-        items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.innerHTML)
-    };
+            // ターゲット側のアイテムを**名前だけ**で取得
+            const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
+                                  .map(s => s.dataset.name || '');
 
-    source.innerHTML = '';
+            // 元の場所のデータを名前だけで保存
+            const sourceData = {
+                type: 'champ',
+                icon: source.querySelector('.champ')?.dataset.name || '',
+                stars: source.querySelector('.champ')?.dataset.stars || "1",
+                items: Array.from(source.querySelectorAll('.item-slot'))
+                            .map(s => s.dataset.name || '')
+            };
 
-    if (targetChamp) {
-        placeChampion(source, {
-            type: 'champ',
-            icon: targetChamp.dataset.name || targetChamp.querySelector('img')?.alt || '',
-            stars: targetChamp.dataset.stars || "1",
-            items: targetItems
-        });
-    }
+            source.innerHTML = '';
 
-    placeChampion(hex, data);   // ドラッグしてきた方を置く
+            // スワップ
+            if (targetChamp) {
+                placeChampion(source, {
+                    type: 'champ',
+                    icon: targetChamp.dataset.name || '',
+                    stars: targetChamp.dataset.stars || "1",
+                    items: targetItems
+                });
+            }
 
-    window.currentDragSource = null;
-}
+            placeChampion(hex, data);   // ドラッグしてきた方を置く
+
+            window.currentDragSource = null;
+        }
         else if (data.type === 'item') {
-            // ==================== アイテム装備処理 ====================
             const champ = hex.querySelector('.champ');
-            if (!champ) return; // チャンプがいなければ何もしない
+            if (!champ) return;
 
             let itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) {
                 itemsContainer = document.createElement('div');
                 itemsContainer.className = 'items-container';
-                // items-containerをchampの後ろに挿入
                 if (champ.nextSibling) {
                     hex.insertBefore(itemsContainer, champ.nextSibling);
                 } else {
@@ -146,17 +147,14 @@ if (data.type === 'champ') {
                 }
             }
 
-            // 最大3個まで
             if (itemsContainer.children.length < 3) {
-                if (typeof addItemSlot === 'function') {
-                    addItemSlot(itemsContainer, data.icon);
-                }
+                addItemSlot(itemsContainer, data.icon);
             }
         }
     } catch (err) {
-        // Benchからチャンプを直接置く場合
+        // Benchから直接ドロップ
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 10) {
+        if (icon && icon.length < 20) {
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
@@ -199,17 +197,13 @@ if (itemsArea) {
         item.className = 'item';
         item.draggable = true;
         
-        item.innerHTML = `
-            <img src="./img/item/${filename}" 
-                 alt="${itemName}" 
-                 style="width:100%; height:100%; object-fit:contain;"
-                 onerror="this.style.display='none'; 
-                          this.parentElement.style.display='flex'; 
-                          this.parentElement.style.alignItems='center'; 
-                          this.parentElement.style.justifyContent='center'; 
-                          this.parentElement.innerHTML += '<span style=\"font-size:38px; opacity:0.75; color:#ccc\">${champName}</span>';"
-                            this.parentElement.textContent='?'">
-        `;
+item.innerHTML = `
+    <img src="./img/item/${filename}" 
+         alt="${itemName}" 
+         style="width:100%; height:100%; object-fit:contain;"
+         onerror="this.style.display='none'; 
+                  this.parentElement.textContent='?'">
+`;
         
         // ドラッグ時のデータ
         item.addEventListener('dragstart', e => {
