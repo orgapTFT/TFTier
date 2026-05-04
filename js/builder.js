@@ -67,56 +67,41 @@ function placeChampion(container, data) {
              class="champ-icon"
              style="width:88%; height:88%; object-fit:contain;"
              onerror="this.style.display='none';">
-        
-        <!-- チャンピオン名 -->
-        <div class="champ-name-onboard">
-            ${champName}
-        </div>
+        <div class="champ-name-onboard">${champName}</div>
     `;
 
-    // ====================== 星の復活 ======================
+    // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
-
-    // 星クリックで星数変更
+    
+    // 星クリック処理（省略せず残す）
     let startX, startY;
-    starLabel.addEventListener('mousedown', (e) => { 
-        startX = e.screenX; 
-        startY = e.screenY; 
-    });
-    starLabel.addEventListener('mouseup', (e) => {
+    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
+    starLabel.addEventListener('mouseup', e => {
         e.stopPropagation();
-        const diffX = Math.abs(e.screenX - startX);
-        const diffY = Math.abs(e.screenY - startY);
-        if (diffX > 5 || diffY > 5) return;
-
+        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
+        
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // ====================== アイテム ======================
+    // アイテムコンテナ
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
 
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(itemName => {
-            if (itemName && typeof itemName === 'string' && itemName.trim() !== '') {
-                addItemSlot(itemsDiv, itemName.trim());
-            }
+            if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
         });
     }
 
     container.appendChild(champ);
     container.appendChild(itemsDiv);
-    container.appendChild(starLabel);   // ← ここで追加
+    container.appendChild(starLabel);
 
     addDragToChampion(champ);
-
-    if (typeof setupSortable === 'function') {
-        setupSortable(itemsDiv);   // 装備アイテムのスワップを有効化
-    }
 }
 
 function handleDrop(e, hex) {
@@ -133,35 +118,70 @@ function handleDrop(e, hex) {
             const source = window.currentDragSource;
             if (!source || source === hex) return;
 
+            // ターゲットに既にチャンピオンがいる場合のスワップ用データ
             const targetChamp = hex.querySelector('.champ');
-            const targetItems = Array.from(hex.querySelectorAll('.item-slot'))
-                                  .map(s => s.dataset.name || '');
+            let targetData = null;
 
+            if (targetChamp) {
+                targetData = {
+                    type: 'champ',
+                    icon: targetChamp.dataset.name || '',
+                    stars: targetChamp.dataset.stars || "1",
+                    items: Array.from(hex.querySelectorAll('.item-slot'))
+                                .map(slot => slot.dataset.name || '')
+                };
+            }
+
+            // ソースのデータを保存
             const sourceData = {
                 type: 'champ',
                 icon: source.querySelector('.champ')?.dataset.name || '',
                 stars: source.querySelector('.champ')?.dataset.stars || "1",
                 items: Array.from(source.querySelectorAll('.item-slot'))
-                            .map(s => s.dataset.name || '')
+                            .map(slot => slot.dataset.name || '')
             };
 
+            // クリア
             source.innerHTML = '';
+            hex.innerHTML = '';
 
-            if (targetChamp) {
-                placeChampion(source, sourceData);
+            // スワップ
+            if (targetData) {
+                placeChampion(source, targetData);
             }
-
             placeChampion(hex, data);
+
             window.currentDragSource = null;
+            return;
         }
 
-        // ====================== アイテム移動 ======================
-      if (typeof setupSortable === 'function') {
-        setupSortable(itemsDiv);   // 装備したアイテムのドラッグ＆ドロップを有効化
-    }
+        // ====================== アイテムドロップ ======================
+        if (data.type === 'item') {
+            const champ = hex.querySelector('.champ');
+            if (!champ) return; // チャンピオンがいなければ何もしない
+
+            const itemsContainer = hex.querySelector('.items-container');
+            if (!itemsContainer) return;
+
+            const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
+            
+            // 同じアイテムは重複装備不可（任意）
+            if (currentItems.some(slot => slot.dataset.name === data.icon)) {
+                return;
+            }
+
+            // 最大3個まで（TFT仕様）
+            if (currentItems.length >= 3) return;
+
+            addItemSlot(itemsContainer, data.icon);
+            return;
+        }
+
     } catch (err) {
+        // 古い形式（benchから直接ドラッグ）のチャンピオン
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 20) {
+        if (icon && icon.length < 30) {
+            hex.innerHTML = '';
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
