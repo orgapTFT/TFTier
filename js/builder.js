@@ -88,7 +88,7 @@ function placeChampion(container, data) {
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
 
-    // 星クリック（右クリック）
+    // 星クリック
     let startX, startY;
     starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
     starLabel.addEventListener('mouseup', e => {
@@ -107,7 +107,7 @@ function placeChampion(container, data) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
-        currentLvNum = (currentLvNum % 8) + 3;
+        currentLvNum = (currentLvNum % 8) + 1;
         if (currentLvNum > 10) {
             currentLvNum = 0;
             lvDisplay.style.display = 'none';
@@ -345,37 +345,46 @@ function init() {
 
 
 
-     // ========== 盤面外ドロップで解除 ==========
-       // ========== 盤面外ドロップで解除 ==========
+      // ========== 盤面外ドロップで解除（右クリック解除と同じ考え方） ==========
     document.addEventListener('drop', (e) => {
+        // 内部エリアなら無視
         if (e.target.closest('#board') || 
             e.target.closest('#bench') || 
             e.target.closest('#items')) {
             return;
         }
 
-        console.log("🗑️ 盤面外ドロップ検知 → 解除処理");
+        console.log("🗑️ 盤面外ドロップ → 解除");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
             if (!rawData) return;
-            
+
             const data = JSON.parse(rawData);
 
+            if (data.type === 'champ') {
+                // ドラッグ中の要素を優先的に探す
+                const source = window.currentDragSource || window.currentDragSourceBench;
+                if (source) {
+                    source.innerHTML = '';           // ← 右クリック解除と同じ方法
+                    console.log("✅ チャンピオン解除完了");
+                }
+            }
+
             if (data.type === 'item' && data.sourceSlot) {
-                data.sourceSlot.remove();
+                data.sourceSlot.remove();            // アイテムはremove()
                 console.log("✅ アイテム解除完了");
             }
 
-            if (data.type === 'champ' && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                console.log("✅ チャンピオン解除完了");
-                window.currentDragSource = null;
-            }
+            // グローバル変数クリア
+            window.currentDragSource = null;
+            window.currentDragSourceBench = null;
+
         } catch (err) {
-            console.log("解除処理でエラー:", err);
+            console.log("解除エラー:", err);
         }
     });
+
 }
 
 // 共通並び替え関数（アイテム用）
