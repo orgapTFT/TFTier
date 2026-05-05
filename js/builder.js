@@ -361,43 +361,35 @@ function init() {
 
 
 
-      // ========== 盤面外ドロップで解除（右クリック解除と同じ考え方） ==========
+      // ========== 盤面外ドロップで解除（アイテムベンチ内は無視） ==========
     document.addEventListener('drop', (e) => {
-        // 内部エリアなら無視
+        // 重要なエリア内なら何もしない（解除処理をスキップ）
         if (e.target.closest('#board') || 
             e.target.closest('#bench') || 
             e.target.closest('#items')) {
             return;
         }
 
-        console.log("🗑️ 盤面外ドロップ → 解除");
+        console.log("🗑️ 盤面外ドロップ検知 → 解除処理");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
             if (!rawData) return;
-
+            
             const data = JSON.parse(rawData);
 
-            if (data.type === 'champ') {
-                // ドラッグ中の要素を優先的に探す
-                const source = window.currentDragSource || window.currentDragSourceBench;
-                if (source) {
-                    source.innerHTML = '';           // ← 右クリック解除と同じ方法
-                    console.log("✅ チャンピオン解除完了");
-                }
-            }
-
             if (data.type === 'item' && data.sourceSlot) {
-                data.sourceSlot.remove();            // アイテムはremove()
+                data.sourceSlot.remove();
                 console.log("✅ アイテム解除完了");
             }
 
-            // グローバル変数クリア
-            window.currentDragSource = null;
-            window.currentDragSourceBench = null;
-
+            if (data.type === 'champ' && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                console.log("✅ チャンピオン解除完了");
+                window.currentDragSource = null;
+            }
         } catch (err) {
-            console.log("解除エラー:", err);
+            console.log("解除処理でエラー:", err);
         }
     });
 
@@ -412,7 +404,8 @@ function setupSortable(container) {
 
     container.addEventListener('drop', e => {
         e.preventDefault();
-        
+        e.stopImmediatePropagation();   // ← これを追加
+
         const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
         );
