@@ -367,14 +367,14 @@ document.body.addEventListener('dragover', e => {
 });
 
 // ドロップイベント
-document.body.addEventListener('drop', e => {
+ddocument.body.addEventListener('drop', e => {
     e.preventDefault();
 
     // .hex の内側にドロップしたかどうか
     const droppedOnHex = e.target.closest('.hex');
 
+    // .hex の外側にドロップした場合のみ解除処理
     if (!droppedOnHex) {
-        // === .hex の外側にドロップされた場合 ===
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) return;
 
@@ -382,21 +382,27 @@ document.body.addEventListener('drop', e => {
             const data = JSON.parse(rawData);
 
             if (data.type === 'item') {
-                // ドラッグ中のアイテムを削除（解除）
-                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
-                
+                // ドラッグ中のアイテムをすべて解除
+                document.querySelectorAll('.dragging-hidden').forEach(el => {
+                    el.remove();
+                });
                 console.log("🗑️ .hex外ドロップ → アイテム解除");
             }
-            
-            if (data.type === 'champ' && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                console.log("✅ チャンピオン解除完了");
-                window.currentDragSource = null;
+
+            if (data.type === 'champ') {
+                if (window.currentDragSource) {
+                    window.currentDragSource.innerHTML = '';
+                    window.currentDragSource.classList.remove('occupied', 'has-champ'); // 必要に応じて
+                    console.log("✅ チャンピオン解除完了");
+                    window.currentDragSource = null;
+                }
             }
+
         } catch (err) {
-            console.log("解除処理でエラー:", err);
+            console.error("解除処理でエラー:", err);
         }
-    });
+    }
+});
 
 }
 
