@@ -140,67 +140,74 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (rawData) {
-            const data = JSON.parse(rawData);
+        if (!rawData) return;
+        
+        const data = JSON.parse(rawData);
 
-            if (data.type === 'champ') {
-                const source = window.currentDragSource || window.currentDragSourceBench;
-                if (!source || source === hex) return;
+        // ====================== チャンピオン ======================
+        if (data.type === 'champ') {
+            const source = window.currentDragSource || window.currentDragSourceBench;
+            if (!source || source === hex) return;
 
-                const isFromBench = source.closest && source.closest('#bench');
+            const isFromBench = source.closest && source.closest('#bench');
 
-                const sourceChamp = source.querySelector('.champ');
-                const sourceData = {
-                    type: 'champ',
-                    icon: sourceChamp ? sourceChamp.dataset.name : data.icon,
-                    stars: sourceChamp ? (sourceChamp.dataset.stars || "1") : (data.stars || "1"),
-                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
-                    lv: source.dataset.lv || data.lv || '0'
-                };
+            const sourceChamp = source.querySelector('.champ');
+            const sourceData = {
+                type: 'champ',
+                icon: sourceChamp ? sourceChamp.dataset.name : data.icon,
+                stars: sourceChamp ? (sourceChamp.dataset.stars || "1") : (data.stars || "1"),
+                items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                lv: source.dataset.lv || data.lv || '0'
+            };
 
-                const targetData = hex.querySelector('.champ') ? {
-                    type: 'champ',
-                    icon: hex.querySelector('.champ').dataset.name,
-                    stars: hex.querySelector('.champ').dataset.stars || "1",
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name),
-                    lv: hex.dataset.lv || '0'
-                } : null;
+            const targetData = hex.querySelector('.champ') ? {
+                type: 'champ',
+                icon: hex.querySelector('.champ').dataset.name,
+                stars: hex.querySelector('.champ').dataset.stars || "1",
+                items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name),
+                lv: hex.dataset.lv || '0'
+            } : null;
 
-                hex.innerHTML = '';
-                if (!isFromBench) source.innerHTML = '';
+            hex.innerHTML = '';
+            if (!isFromBench) source.innerHTML = '';
 
-                if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, sourceData);
+            if (targetData) placeChampion(source, targetData);
+            placeChampion(hex, sourceData);
 
-                window.currentDragSource = null;
-                window.currentDragSourceBench = null;
-                return;
-            }
+            window.currentDragSource = null;
+            window.currentDragSourceBench = null;
+            return;
+        }
 
-       else if (data.type === 'item' && data.icon) {
+        // ====================== アイテム ======================
+        else if (data.type === 'item' && data.icon) {
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
+            // アイテム枠チェック
             if (itemsContainer.children.length >= 3) {
                 console.log("アイテム枠がいっぱいです");
                 return;
             }
 
+            // 元の位置から削除（移動）
             if (data.sourceSlot) {
-                data.sourceSlot.remove();   // 元の位置から確実に削除
+                data.sourceSlot.remove();
             }
 
+            // 装備
             addItemSlot(itemsContainer, data.icon);
+            console.log(`アイテム装備: ${data.icon}`);
         }
+
     } catch (err) {
-        // text/plain フォールバック
+        // text/plain フォールバック（ベンチから直接ドラッグなど）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
-}
 }
 
 function addItemSlot(container, iconName) {
