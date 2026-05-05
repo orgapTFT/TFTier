@@ -149,7 +149,6 @@ function handleDrop(e, hex) {
 
                 const isFromBench = source.closest && source.closest('#bench');
 
-                // ★★★ 最新の状態からデータを確実に取得 ★★★
                 const sourceChamp = source.querySelector('.champ');
                 const sourceData = {
                     type: 'champ',
@@ -167,23 +166,17 @@ function handleDrop(e, hex) {
                     lv: hex.dataset.lv || '0'
                 } : null;
 
-                // クリア
-                source.innerHTML = '';
                 hex.innerHTML = '';
+                if (!isFromBench) source.innerHTML = '';
 
-                // 正しい順序で配置
                 if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, sourceData);   // ← ここが重要：スワップ後の最新データを使う
+                placeChampion(hex, sourceData);
 
                 window.currentDragSource = null;
                 window.currentDragSourceBench = null;
                 return;
             }
 
-            // BOXは盤面に置けない
-            if (data.type === 'box') return;
-
-            // アイテム
             if (data.type === 'item' && data.icon) {
                 const itemsContainer = hex.querySelector('.items-container');
                 if (!itemsContainer || Array.from(itemsContainer.children).length >= 3) return;
@@ -353,9 +346,8 @@ function init() {
 
 
      // ========== 盤面外ドロップで解除 ==========
-    // ========== 盤面外（#boardの外）にドロップしたら解除 ==========
+       // ========== 盤面外ドロップで解除 ==========
     document.addEventListener('drop', (e) => {
-        // #board, #bench, #items の上なら無視
         if (e.target.closest('#board') || 
             e.target.closest('#bench') || 
             e.target.closest('#items')) {
@@ -370,46 +362,19 @@ function init() {
             
             const data = JSON.parse(rawData);
 
-            // アイテム解除
             if (data.type === 'item' && data.sourceSlot) {
                 data.sourceSlot.remove();
                 console.log("✅ アイテム解除完了");
             }
 
-            // チャンピオン / BOX解除
-              if (data.type === 'champ') {
-                const source = window.currentDragSource || window.currentDragSourceBench;
-                if (!source || source === hex) return;
-
-                const isFromBench = source.closest && source.closest('#bench');
-
-                const sourceChamp = source.querySelector('.champ');
-                const sourceData = {
-                    type: 'champ',
-                    icon: sourceChamp ? sourceChamp.dataset.name : data.icon,
-                    stars: sourceChamp ? sourceChamp.dataset.stars : data.stars,
-                    items: Array.from(source.querySelectorAll('.item-slot')).map(s => s.dataset.name),
-                    lv: source.dataset.lv || data.lv || '0'
-                };
-
-                const targetData = hex.querySelector('.champ') ? {
-                    type: 'champ',
-                    icon: hex.querySelector('.champ').dataset.name,
-                    stars: hex.querySelector('.champ').dataset.stars || "1",
-                    items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name),
-                    lv: hex.dataset.lv || '0'
-                } : null;
-
-                source.innerHTML = '';
-                hex.innerHTML = '';
-
-                if (targetData) placeChampion(source, targetData);
-                placeChampion(hex, sourceData);   // 最新データを使用
-
+            if (data.type === 'champ' && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                console.log("✅ チャンピオン解除完了");
                 window.currentDragSource = null;
-                window.currentDragSourceBench = null;
-                return;
             }
+        } catch (err) {
+            console.log("解除処理でエラー:", err);
+        }
     });
 }
 
