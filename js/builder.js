@@ -107,9 +107,9 @@ function placeChampion(container, data) {
         e.preventDefault();
         e.stopImmediatePropagation();
 
-        currentLvNum = (currentLvNum % 8) + 1;
+        currentLvNum = (currentLvNum % 10) + 3;
         if (currentLvNum > 10) {
-            currentLvNum = 0;
+            currentLvNum = 3;
             lvDisplay.style.display = 'none';
         } else {
             lvDisplay.textContent = `Lv${currentLvNum}`;
@@ -177,21 +177,30 @@ function handleDrop(e, hex) {
                 return;
             }
 
-            if (data.type === 'item' && data.icon) {
-                const itemsContainer = hex.querySelector('.items-container');
-                if (!itemsContainer || Array.from(itemsContainer.children).length >= 3) return;
+       else if (data.type === 'item' && data.icon) {
+            const itemsContainer = hex.querySelector('.items-container');
+            if (!itemsContainer) return;
 
-                if (data.sourceSlot) data.sourceSlot.remove();
-                addItemSlot(itemsContainer, data.icon);
+            if (itemsContainer.children.length >= 3) {
+                console.log("アイテム枠がいっぱいです");
+                return;
             }
+
+            if (data.sourceSlot) {
+                data.sourceSlot.remove();   // 元の位置から確実に削除
+            }
+
+            addItemSlot(itemsContainer, data.icon);
         }
     } catch (err) {
+        // text/plain フォールバック
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
+}
 }
 
 function addItemSlot(container, iconName) {
