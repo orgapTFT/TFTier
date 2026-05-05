@@ -361,28 +361,33 @@ function init() {
 
 
 
-      // ========== 盤面外ドロップで解除（アイテムベンチ内は無視） ==========
-    document.addEventListener('drop', (e) => {
-        // 重要なエリア内なら何もしない（解除処理をスキップ）
-        if (e.target.closest('#board') || 
-            e.target.closest('#bench') || 
-            e.target.closest('#items')) {
-            return;
-        }
+ // 全体でドロップを許可
+document.body.addEventListener('dragover', e => {
+    e.preventDefault();
+});
 
-        console.log("🗑️ 盤面外ドロップ検知 → 解除処理");
+// ドロップイベント
+document.body.addEventListener('drop', e => {
+    e.preventDefault();
+
+    // .hex の内側にドロップしたかどうか
+    const droppedOnHex = e.target.closest('.hex');
+
+    if (!droppedOnHex) {
+        // === .hex の外側にドロップされた場合 ===
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) return;
 
         try {
-            const rawData = e.dataTransfer.getData('application/json');
-            if (!rawData) return;
-            
             const data = JSON.parse(rawData);
 
-            if (data.type === 'item' && data.sourceSlot) {
-                data.sourceSlot.remove();
-                console.log("✅ アイテム解除完了");
+            if (data.type === 'item') {
+                // ドラッグ中のアイテムを削除（解除）
+                document.querySelectorAll('.dragging-hidden').forEach(el => el.remove());
+                
+                console.log("🗑️ .hex外ドロップ → アイテム解除");
             }
-
+            
             if (data.type === 'champ' && window.currentDragSource) {
                 window.currentDragSource.innerHTML = '';
                 console.log("✅ チャンピオン解除完了");
