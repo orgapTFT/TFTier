@@ -366,28 +366,28 @@ document.body.addEventListener('dragover', e => {
     e.preventDefault();
 });
 
-     // ========== 盤面外・アイテムベンチ外ドロップで解除 ==========
+     // ========== 盤面外ドロップで解除（main-container対応版） ==========
     document.addEventListener('drop', (e) => {
-        // 解除対象エリアの判定
-        const isBoard = e.target.closest('#board');
-        const isBench = e.target.closest('#bench');
-        const isItems = e.target.closest('#items');
+        // 解除をスキップするエリア
+        const insideBoard = e.target.closest('#board');
+        const insideBench = e.target.closest('#bench');
+        const insideItems = e.target.closest('#items');
+        const insideMain   = e.target.closest('.main-container');   // ← 追加
 
-        // ① 完全に内部エリア内 → 解除しない（スワップなどは許可）
-        if (isBoard || isBench) {
-            console.log("内部エリア（board/bench）ドロップ → 解除スキップ");
+        // ① 明確に内部エリアなら解除しない
+        if (insideBoard || insideBench || insideItems) {
+            console.log("内部エリアドロップ → 解除スキップ");
             return;
         }
 
-        // ② アイテムベンチ内でドロップした場合 → スワップ処理はsetupSortableに任せる
-        if (isItems) {
-            console.log("アイテムベンチ内ドロップ → 解除スキップ（スワップ処理）");
-            return;
+        // ② main-container内だけど #board外 → 解除を実行
+        if (insideMain) {
+            console.log("main-container内だが #board外 → 解除実行");
+        } else {
+            console.log("完全に画面外 → 解除実行");
         }
 
-        // ③ 本当に外にドロップした場合 → 解除実行
-        console.log("🗑️ 盤面外/アイテムベンチ外ドロップ → 解除処理");
-
+        // 解除処理
         try {
             const rawData = e.dataTransfer.getData('application/json');
             if (!rawData) return;
@@ -405,7 +405,7 @@ document.body.addEventListener('dragover', e => {
                 window.currentDragSource = null;
             }
         } catch (err) {
-            console.log("解除処理でエラー:", err);
+            console.log("解除処理エラー:", err);
         }
     });
 
