@@ -9,20 +9,16 @@ html, body {
 }
 
 /* ===================== メイン横並び ===================== */
-.main-wrapper {
+.main-container {
     display: flex;
+    flex-direction: column; 
     align-items: flex-start;
     justify-content: center;
     gap: 12px;           /* 全体のgapを少し小さく */
     flex-wrap: wrap;   /* 折り返しを防止（必要ならwrapのままでも可） */
-    max-width: 1400px;
+    max-width: 1680px;
     margin: 0 auto;
-}
-
-/* 盤面とベンチを横並びにする */
-.main-container > #board,
-.main-container > #bench {
-    display: inline-flex;       /* 横並びにする */
+    padding: 10px 0;
 }
 
 /* ===================== ベンチ & アイテム ===================== */
