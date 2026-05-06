@@ -283,6 +283,33 @@ function addItemSlot(container, iconName) {
     container.appendChild(slot);
 }
 
+// ==================== 盤面のドラッグオーバー・ドロップ強化 ====================
+function setupBoardDrop() {
+    const hexes = document.querySelectorAll('.hex');
+    hexes.forEach(hex => {
+        // 既に設定済みの場合はスキップ（重複防止）
+        if (hex.dataset.dropSetup === 'true') return;
+        
+        hex.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            hex.classList.add('dragover');
+        });
+
+        hex.addEventListener('dragleave', () => {
+            hex.classList.remove('dragover');
+        });
+
+        hex.addEventListener('drop', e => {
+            e.preventDefault();
+            hex.classList.remove('dragover');
+            handleDrop(e, hex);   // ← これを確実に呼ぶ
+        });
+
+        hex.dataset.dropSetup = 'true';
+    });
+}
+
 // チャンピオンデータ取得用ヘルパー
 function getChampionData(container) {
     const champ = container.querySelector('.champ');
@@ -401,6 +428,8 @@ function init() {
         // ★★★ benchの並び替え機能を完全にOFF ★★★
         // setupBenchSortable(bench);  // コメントアウト・削除済み
     }
+
+setupBoardDrop(); 
 
     window.currentDragSource = null;
     window.currentDragSourceBench = null;
