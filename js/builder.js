@@ -366,24 +366,18 @@ document.body.addEventListener('dragover', e => {
     e.preventDefault();
 });
 
-      // ========== 盤面外ドロップで解除（強化版） ==========
+     // ========== HEXの外側にドロップしたら解除 ==========
     document.addEventListener('drop', (e) => {
-        const boardElement = document.getElementById('board');
+        const isInsideHex = e.target.closest('.hex');
 
-        // #board の内部かどうかをより確実に判定
-        const isInsideBoard = boardElement && boardElement.contains(e.target);
-
-        // ベンチとアイテムエリアもチェック
-        const isInsideBench = e.target.closest('#bench');
-        const isInsideItems = e.target.closest('#items');
-
-        // 内部エリアなら解除しない
-        if (isInsideBoard || isInsideBench || isInsideItems) {
-            console.log("内部エリアドロップ → 解除スキップ");
+        // HEXの中にドロップした場合は解除しない（配置・スワップ優先）
+        if (isInsideHex) {
+            console.log("HEX内ドロップ → 解除スキップ");
             return;
         }
 
-        console.log("🗑️ 本当の盤面外ドロップ → 解除実行");
+        // HEXの外側にドロップした場合 → 解除実行
+        console.log("🗑️ HEX外ドロップ → 解除実行");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
@@ -391,22 +385,15 @@ document.body.addEventListener('dragover', e => {
             
             const data = JSON.parse(rawData);
 
-            // アイテム解除（特に重要）
             if (data.type === 'item' && data.sourceSlot) {
                 data.sourceSlot.remove();
                 console.log("✅ アイテム解除完了");
-                return;
             }
 
-            // チャンピオン解除
-            if (data.type === 'champ') {
-                const source = window.currentDragSource || window.currentDragSourceBench;
-                if (source) {
-                    source.innerHTML = '';
-                    console.log("✅ チャンピオン解除完了");
-                }
+            if (data.type === 'champ' && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                console.log("✅ チャンピオン解除完了");
                 window.currentDragSource = null;
-                window.currentDragSourceBench = null;
             }
         } catch (err) {
             console.log("解除処理エラー:", err);
