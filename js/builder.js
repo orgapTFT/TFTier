@@ -283,33 +283,6 @@ function addItemSlot(container, iconName) {
     container.appendChild(slot);
 }
 
-// ==================== 盤面のドラッグオーバー・ドロップ強化 ====================
-function setupBoardDrop() {
-    const hexes = document.querySelectorAll('.hex');
-    hexes.forEach(hex => {
-        // 既に設定済みの場合はスキップ（重複防止）
-        if (hex.dataset.dropSetup === 'true') return;
-        
-        hex.addEventListener('dragover', e => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-            hex.classList.add('dragover');
-        });
-
-        hex.addEventListener('dragleave', () => {
-            hex.classList.remove('dragover');
-        });
-
-        hex.addEventListener('drop', e => {
-            e.preventDefault();
-            hex.classList.remove('dragover');
-            handleDrop(e, hex);   // ← これを確実に呼ぶ
-        });
-
-        hex.dataset.dropSetup = 'true';
-    });
-}
-
 // チャンピオンデータ取得用ヘルパー
 function getChampionData(container) {
     const champ = container.querySelector('.champ');
@@ -429,8 +402,6 @@ function init() {
         // setupBenchSortable(bench);  // コメントアウト・削除済み
     }
 
-setupBoardDrop(); 
-
     window.currentDragSource = null;
     window.currentDragSourceBench = null;
 
@@ -445,7 +416,7 @@ setupBoardDrop();
             if (!rawData) return;
             const data = JSON.parse(rawData);
 
-            if (data.type === 'item' && data.sourceSlot) {
+            if (data.type === 'item-slot' && data.sourceSlot) {
                 data.sourceSlot.remove();
             }
             if (data.type === 'champ' && window.currentDragSource) {
@@ -456,7 +427,7 @@ setupBoardDrop();
     });
 }
 
-// アイテム用の並び替え（そのまま残す）
+// ==================== アイテム並び替え ====================
 function setupSortable(container) {
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -473,8 +444,10 @@ function setupSortable(container) {
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        const target = e.target.closest('.item, .item-slot');
-        if (target && target !== dragged) {
+        // ドロップ先の対象を .item-slot のみに限定（ベンチは別途処理）
+        const target = e.target.closest('.item-slot');
+        
+        if (target && target !== dragged && target.parentElement === container) {
             const tempHTML = dragged.innerHTML;
             const tempName = dragged.dataset.name;
 
