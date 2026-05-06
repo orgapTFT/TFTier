@@ -19,10 +19,16 @@ html, body {
     margin: 0 auto;
 }
 
+/* 盤面とベンチを横並びにする */
+.main-container > #board,
+.main-container > #bench {
+    display: inline-flex;       /* 横並びにする */
+}
+
 /* ===================== ベンチ & アイテム ===================== */
 #bench {
     display: grid;
-    grid-template-columns: repeat(7, 45px);
+    grid-template-columns: repeat(7, 42px);
     gap: 2px;
     justify-content: center;
     padding: 20px 30px;
@@ -36,7 +42,7 @@ html, body {
 
 #items {
     display: grid;
-    grid-template-columns: repeat(30, 45px);
+    grid-template-columns: repeat(30, 42px);
     gap: 2px;
     justify-content: center;
     background: #1f1f2e;
