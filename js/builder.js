@@ -129,7 +129,6 @@ function placeChampion(container, data) {
 }
 
 
-  // ==================== ドロップ処理（アイテムの他チャンプ移動対応） ====================
 function handleDrop(e, hex) {
     e.preventDefault();
     hex.classList.remove('dragover');
@@ -157,6 +156,66 @@ function handleDrop(e, hex) {
             window.currentDragSourceBench = null;
             return;
         }
+
+        // ====================== アイテム移動（スワップ＋上書き対応） ======================
+        if (data.type === 'item' && data.icon) {
+            const newItemName = data.icon;
+            const sourceSlot = data.sourceSlot;
+            const sourceHex = sourceSlot ? sourceSlot.closest('.hex') : null;
+
+            // ドロップ先の items-container を取得（なければ作成）
+            let targetItemsContainer = hex.querySelector('.items-container');
+            if (!targetItemsContainer) {
+                const champ = hex.querySelector('.champ');
+                if (!champ) return; // チャンピオンがいない場所には置けない
+                targetItemsContainer = document.createElement('div');
+                targetItemsContainer.className = 'items-container';
+                hex.appendChild(targetItemsContainer);
+            }
+
+            // ドロップ位置に一番近いアイテムスロットを探す
+            const dropTargetSlot = getClosestItemSlot(targetItemsContainer, e);
+
+            // ==================== 別チャンピオン間 → スワップ ====================
+            if (sourceSlot && sourceHex !== hex && dropTargetSlot) {
+                swapItems(sourceSlot, dropTargetSlot);
+                return;
+            }
+
+            // ==================== 同じチャンピオン内 or 新規追加 ====================
+            if (sourceSlot) {
+                sourceSlot.remove();   // 移動元を削除
+            }
+
+            const currentItems = Array.from(targetItemsContainer.querySelectorAll('.item-slot'));
+
+            if (currentItems.length < 3) {
+                // 空きあり → 追加
+                addItemSlot(targetItemsContainer, newItemName);
+            } 
+            else if (dropTargetSlot) {
+                // 3つ満杯 → ドロップした位置のアイテムを上書き
+                dropTargetSlot.remove();
+                addItemSlot(targetItemsContainer, newItemName);
+            } 
+            else {
+                // フォールバック：一番左を上書き
+                if (currentItems[0]) currentItems[0].remove();
+                addItemSlot(targetItemsContainer, newItemName);
+            }
+
+            return;
+        }
+
+    } catch (err) {
+        // フォールバック（ベンチから直接チャンプ追加）
+        const icon = e.dataTransfer.getData('text/plain');
+        if (icon && icon.length < 30) {
+            hex.innerHTML = '';
+            placeChampion(hex, { icon: icon, stars: 1, items: [] });
+        }
+    }
+}
 
    // ドロップ位置に一番近いアイテムスロットを返す
 function getClosestItemSlot(itemsContainer, e) {
@@ -202,14 +261,19 @@ function swapItems(slotA, slotB) {
     reattachItemEvents(slotB);
 }
 
-// アイテムのイベントを再付与
+// アイテムのイベントを再付与（スワップ後に必要）
 function reattachItemEvents(slot) {
-    // 古いイベントを一旦クリア（簡易版）
+    if (!slot || !slot.parentNode) return;
+
+    // クローンして古いイベントリスナーをすべてクリア
     const newSlot = slot.cloneNode(true);
     slot.parentNode.replaceChild(newSlot, slot);
-    
-    // addItemSlotと同じイベントを再登録
+
+    // 再設定
     newSlot.draggable = true;
+    newSlot.dataset.name = slot.dataset.name; // 念のため名前もコピー
+
+    // Dragstart
     newSlot.addEventListener('dragstart', e => {
         e.stopImmediatePropagation();
         const data = {
@@ -221,24 +285,16 @@ function reattachItemEvents(slot) {
         newSlot.classList.add('dragging-hidden');
     });
 
+    // Dragend
     newSlot.addEventListener('dragend', () => {
         newSlot.classList.remove('dragging-hidden');
     });
 
+    // 右クリック削除
     newSlot.addEventListener('contextmenu', e => {
         e.preventDefault();
         newSlot.remove();
     });
-
-    } catch (err) {
-        // フォールバック（ベンチから直接チャンプ追加）
-        const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 30) {
-            hex.innerHTML = '';
-            placeChampion(hex, { icon: icon, stars: 1, items: [] });
-        }
-    }
-
 }
 
 // ==================== アイテムスロット作成 ====================
@@ -529,5 +585,6 @@ function setupSortable(container) {
         }
     });
 }
+
 
 init();
