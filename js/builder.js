@@ -157,32 +157,41 @@ function handleDrop(e, hex) {
             return;
         }
 
-        // ====================== アイテム移動（ここを独立強化） ======================
-        if (data.type === 'item' && data.icon) {
-            const itemsContainer = hex.querySelector('.items-container');
-            if (!itemsContainer) return;
+  // ====================== アイテム移動 ======================
+if (data.type === 'item' && data.icon) {
+    const itemsContainer = hex.querySelector('.items-container');
+    if (!itemsContainer) return;
 
-            // 同じ場所にドロップしたら何もしない
-            if (data.sourceSlot && data.sourceSlot.parentElement === itemsContainer) {
-                return;
-            }
+    const currentItems = itemsContainer.querySelectorAll('.item-slot');
+    const newItemName = data.icon;
 
-            // アイテム枠が3つ以上なら拒否
-            if (itemsContainer.children.length >= 3) {
-                console.log("アイテム枠がいっぱいです");
-                return;
-            }
+    // 同じアイテムを同じチャンピオンにドロップした場合は何もしない
+    if (data.sourceSlot && data.sourceSlot.parentElement === itemsContainer) {
+        return;
+    }
 
-            // 元のスロットを削除
-            if (data.sourceSlot) {
-                data.sourceSlot.remove();
-            }
+    // 元のスロットを削除（移動元から消す）
+    if (data.sourceSlot) {
+        data.sourceSlot.remove();
+    }
 
-            // 新しい場所に追加
-            addItemSlot(itemsContainer, data.icon);
-            console.log(`アイテム移動: ${data.icon}`);
-            return;
-        }
+    if (currentItems.length < 3) {
+        // 枠に空きがある場合は普通に追加
+        addItemSlot(itemsContainer, newItemName);
+} else {
+    // ドロップ位置に最も近いアイテムスロットを上書き
+    const rect = itemsContainer.getBoundingClientRect();
+    const dropX = e.clientX - rect.left;
+    
+    let targetIndex = Math.floor((dropX / rect.width) * currentItems.length);
+    targetIndex = Math.max(0, Math.min(currentItems.length - 1, targetIndex));
+    
+    currentItems[targetIndex].remove();
+    addItemSlot(itemsContainer, newItemName);
+}
+
+    return;
+}
 
     } catch (err) {
         // フォールバック（ベンチから直接チャンプ追加）
