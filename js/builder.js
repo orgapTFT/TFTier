@@ -369,22 +369,6 @@ function init() {
  // ========== HEXの外側（少し余裕あり）にドロップしたら解除 ==========
 document.addEventListener('drop', (e) => {
     const hex = e.target.closest('.hex');
-    
-    if (hex) {
-        const rect = hex.getBoundingClientRect();
-        const margin = 20;  // ← これを調整（0〜30くらい）
-
-        const isNearHex = 
-            e.clientX >= rect.left - margin && 
-            e.clientX <= rect.right + margin && 
-            e.clientY >= rect.top - margin && 
-            e.clientY <= rect.bottom + margin;
-
-        if (isNearHex) {
-            console.log("HEX付近 → 解除スキップ");
-            return;
-        }
-    }
 
     console.log("🗑️ HEX外 → 解除実行");
 
