@@ -138,6 +138,16 @@ function handleDrop(e, hex) {
         if (!rawData) return;
         const data = JSON.parse(rawData);
 
+  // ==================== ドロップ処理（アイテムの他チャンプ移動対応） ====================
+function handleDrop(e, hex) {
+    e.preventDefault();
+    hex.classList.remove('dragover');
+
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) return;
+        const data = JSON.parse(rawData);
+
         // ====================== チャンピオン移動 ======================
         if (data.type === 'champ') {
             const source = window.currentDragSource || window.currentDragSourceBench;
@@ -157,41 +167,60 @@ function handleDrop(e, hex) {
             return;
         }
 
-  // ====================== アイテム移動 ======================
-if (data.type === 'item' && data.icon) {
-    const itemsContainer = hex.querySelector('.items-container');
-    if (!itemsContainer) return;
+        // ====================== アイテム移動（大幅強化） ======================
+        if (data.type === 'item' && data.icon) {
+            const newItemName = data.icon;
 
-    const currentItems = itemsContainer.querySelectorAll('.item-slot');
-    const newItemName = data.icon;
+            // 移動元スロット
+            const sourceSlot = data.sourceSlot;
+            if (sourceSlot) sourceSlot.remove();   // 必ず元のアイテムを削除
 
-    // 同じアイテムを同じチャンピオンにドロップした場合は何もしない
-    if (data.sourceSlot && data.sourceSlot.parentElement === itemsContainer) {
-        return;
-    }
+            // ドロップ先のitems-containerを探す
+            let targetItemsContainer = hex.querySelector('.items-container');
 
-    // 元のスロットを削除（移動元から消す）
-    if (data.sourceSlot) {
-        data.sourceSlot.remove();
-    }
+            // もしitems-containerが無ければ（チャンプ未配置の場合）作成
+            if (!targetItemsContainer) {
+                const champDiv = hex.querySelector('.champ');
+                if (!champDiv) {
+                    // チャンプもいない場所ならアイテムは捨てる
+                    return;
+                }
+                // items-containerが存在しない場合は新規作成
+                targetItemsContainer = document.createElement('div');
+                targetItemsContainer.className = 'items-container';
+                hex.appendChild(targetItemsContainer);
+            }
 
-    if (currentItems.length < 3) {
-        // 枠に空きがある場合は普通に追加
-        addItemSlot(itemsContainer, newItemName);
-} else {
-    // ドロップ位置に最も近いアイテムスロットを上書き
-    const rect = itemsContainer.getBoundingClientRect();
-    const dropX = e.clientX - rect.left;
-    
-    let targetIndex = Math.floor((dropX / rect.width) * currentItems.length);
-    targetIndex = Math.max(0, Math.min(currentItems.length - 1, targetIndex));
-    
-    currentItems[targetIndex].remove();
-    addItemSlot(itemsContainer, newItemName);
-}
+            const currentItems = Array.from(targetItemsContainer.querySelectorAll('.item-slot'));
 
-    return;
-}
+            if (currentItems.length < 3) {
+                // 空きあり → 追加
+                addItemSlot(targetItemsContainer, newItemName);
+            } else {
+                // 3つ満杯 → ドロップ位置で上書き（前回の改善版をそのまま使用）
+                const rect = targetItemsContainer.getBoundingClientRect();
+                const dropX = e.clientX - rect.left;
+
+                let targetIndex = 0;
+                let minDistance = Infinity;
+
+                currentItems.forEach((item, index) => {
+                    const itemRect = item.getBoundingClientRect();
+                    const itemCenter = itemRect.left + itemRect.width / 2 - rect.left;
+                    const distance = Math.abs(dropX - itemCenter);
+
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        targetIndex = index;
+                    }
+                });
+
+                currentItems[targetIndex].remove();
+                addItemSlot(targetItemsContainer, newItemName);
+            }
+
+            return;
+        }
 
     } catch (err) {
         // フォールバック（ベンチから直接チャンプ追加）
@@ -201,6 +230,7 @@ if (data.type === 'item' && data.icon) {
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
+
 }
 
 // ==================== アイテムスロット作成 ====================
