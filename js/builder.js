@@ -184,29 +184,29 @@ function handleDrop(e, hex) {
             return;
         }
 
-            // ====================== アイテム ======================
+        // ====================== アイテム ======================
         else if (data.type === 'item' && data.icon) {
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
-            // 枠チェック
+            // 枠がいっぱいなら何もしない
             if (itemsContainer.children.length >= 3) {
                 console.log("アイテム枠がいっぱいです");
                 return;
             }
 
-            // 元の位置から削除（移動 or 装備）
+            // 元の位置から削除（移動の場合）
             if (data.sourceSlot) {
                 data.sourceSlot.remove();
             }
 
+            // 装備
             addItemSlot(itemsContainer, data.icon);
             console.log(`✅ アイテム ${data.icon} を装備/移動`);
         }
 
-
     } catch (err) {
-        // text/plain フォールバック（ベンチから直接ドラッグなど）
+        // text/plain フォールバック（主にBenchからのチャンピオン）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
@@ -366,37 +366,42 @@ function init() {
 
 
 
- // ========== HEXの外側（少し余裕あり）にドロップしたら解除 ==========
-document.addEventListener('drop', (e) => {
-    const hex = e.target.closest('.hex');
+    // ========== HEXの外側にドロップしたら解除 ==========
+    document.addEventListener('drop', (e) => {
+        const isInsideHex = e.target.closest('.hex');
 
-    console.log("🗑️ HEX外 → 解除実行");
-
-    // 解除処理（そのまま）
-    try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        
-        const data = JSON.parse(rawData);
-
-        if (data.type === 'item' && data.sourceSlot) {
-            data.sourceSlot.remove();
-            console.log("✅ アイテム解除完了");
+        // HEXの中にドロップした場合は解除しない（配置・スワップ優先）
+        if (isInsideHex) {
+            console.log("HEX内ドロップ → 解除スキップ");
+            return;
         }
 
-        if (data.type === 'champ' && window.currentDragSource) {
-            window.currentDragSource.innerHTML = '';
-            console.log("✅ チャンピオン解除完了");
-            window.currentDragSource = null;
+        // HEXの外側にドロップした場合 → 解除実行
+        console.log("🗑️ HEX外ドロップ → 解除実行");
+
+        try {
+            const rawData = e.dataTransfer.getData('application/json');
+            if (!rawData) return;
+            
+            const data = JSON.parse(rawData);
+
+            if (data.type === 'item' && data.sourceSlot) {
+                data.sourceSlot.remove();
+                console.log("✅ アイテム解除完了");
+            }
+
+            if (data.type === 'champ' && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                console.log("✅ チャンピオン解除完了");
+                window.currentDragSource = null;
+            }
+        } catch (err) {
+            console.log("解除処理エラー:", err);
         }
-    } catch (err) {
-        console.log("解除処理エラー:", err);
-    }
-});
+    });
 
 }
 
-// ==================== アイテム並び替え（ベンチ + チャンピオン内） ====================
 function setupSortable(container) {
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -416,7 +421,7 @@ function setupSortable(container) {
         const target = e.target.closest('.item-slot');
         if (!target || target === dragged) return;
 
-        // 位置入れ替え
+        // 位置スワップ
         const tempHTML = dragged.innerHTML;
         const tempName = dragged.dataset.name;
 
@@ -426,7 +431,7 @@ function setupSortable(container) {
         target.innerHTML = tempHTML;
         target.dataset.name = tempName;
 
-        console.log(`✅ アイテム位置入れ替え: ${tempName} ↔ ${dragged.dataset.name}`);
+        console.log("✅ アイテム位置入れ替え完了");
     });
 }
 
