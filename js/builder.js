@@ -315,7 +315,8 @@ function init() {
             const item = document.createElement('div');
             item.className = 'item';
             item.draggable = true;
-            item.style.width = '30px';
+            item.style.width = '40px';
+            item.style.height = '40px';
             item.innerHTML = `
                 <img src="./img/item/${filename}" 
                      alt="${itemName}" 
