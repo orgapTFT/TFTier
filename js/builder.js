@@ -128,15 +128,6 @@ function placeChampion(container, data) {
     addDragToChampion(champ);
 }
 
-// ==================== ドロップ処理（大幅強化） ====================
-function handleDrop(e, hex) {
-    e.preventDefault();
-    hex.classList.remove('dragover');
-
-    try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
 
   // ==================== ドロップ処理（アイテムの他チャンプ移動対応） ====================
 function handleDrop(e, hex) {
