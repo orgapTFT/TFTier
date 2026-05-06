@@ -366,18 +366,27 @@ document.body.addEventListener('dragover', e => {
     e.preventDefault();
 });
 
- // ========== 盤面外ドロップで解除（より強力版） ==========
+     // ========== 盤面外・アイテムベンチ外ドロップで解除 ==========
     document.addEventListener('drop', (e) => {
-        // #board の外側にドロップしたかを優先的に判定
-        const isOnBoard = e.target.closest('#board');
-        
-        // ベンチやアイテムの上に重なっていても、#board外なら解除する
-        if (isOnBoard) {
-            console.log("📍 #board内ドロップ → 解除スキップ");
+        // 解除対象エリアの判定
+        const isBoard = e.target.closest('#board');
+        const isBench = e.target.closest('#bench');
+        const isItems = e.target.closest('#items');
+
+        // ① 完全に内部エリア内 → 解除しない（スワップなどは許可）
+        if (isBoard || isBench) {
+            console.log("内部エリア（board/bench）ドロップ → 解除スキップ");
             return;
         }
 
-        console.log("🗑️ 盤面外ドロップ検知 → 解除処理実行");
+        // ② アイテムベンチ内でドロップした場合 → スワップ処理はsetupSortableに任せる
+        if (isItems) {
+            console.log("アイテムベンチ内ドロップ → 解除スキップ（スワップ処理）");
+            return;
+        }
+
+        // ③ 本当に外にドロップした場合 → 解除実行
+        console.log("🗑️ 盤面外/アイテムベンチ外ドロップ → 解除処理");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
