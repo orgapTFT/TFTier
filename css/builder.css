@@ -85,8 +85,8 @@ html, body {
     position: relative;
     overflow: hidden;
     cursor: grab;
-    width: 50px !important;
-    height: 50px !important;
+    width: 40px !important;
+    height: 40px !important;
 }
 
 /* その他重要なスタイル（そのまま残す） */
