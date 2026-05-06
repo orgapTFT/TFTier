@@ -305,7 +305,7 @@ function init() {
     if (itemsArea) {
         itemsArea.innerHTML = '';
         itemsArea.style.display = 'grid';
-        itemsArea.style.gridTemplateColumns = 'repeat(20, 45px)';
+        itemsArea.style.gridTemplateColumns = 'repeat(25, 45px)';
         itemsArea.style.gap = '2px';
         itemsArea.style.justifyContent = 'center';
         itemsArea.style.padding = '15px';
@@ -315,7 +315,7 @@ function init() {
             const item = document.createElement('div');
             item.className = 'item';
             item.draggable = true;
-            item.style.width = '40px';
+            item.style.width = '35px';
             item.innerHTML = `
                 <img src="./img/item/${filename}" 
                      alt="${itemName}" 
@@ -341,54 +341,57 @@ function init() {
         setupSortable(itemsArea);
     }
 
-    // ==================== ベンチ ====================
-    const bench = document.getElementById('bench');
-    if (bench) {
-        bench.innerHTML = '';
-        bench.style.display = 'grid';
-        bench.style.gridTemplateColumns = 'repeat(10, 50px)';
-        bench.style.gap = '2px';
-        bench.style.justifyContent = 'center';
-        bench.style.padding = '20px 30px';
+   // ==================== ベンチ ====================
+const bench = document.getElementById('bench');
+if (bench) {
+    bench.innerHTML = '';
+    bench.style.display = 'grid';
+    bench.style.gridTemplateColumns = 'repeat(10, 50px)';
+    bench.style.gap = '2px';
+    bench.style.justifyContent = 'center';
+    bench.style.padding = '20px 30px';
 
-        championFiles.forEach(filename => {
-            const name = filename.replace('.avif', '');
-            p.className = 'piece';
-            p.draggable = true;
-            p.style.width = '45px';
-            p.style.height = '45px';
+    championFiles.forEach(filename => {
+        const name = filename.replace('.avif', '');
+        
+        // 【修正】createElement で要素を作成し、定数 p に代入する
+        const p = document.createElement('div'); 
+        
+        p.className = 'piece';
+        p.draggable = true;
+        p.style.width = '45px';
+        p.style.height = '45px';
 
-            p.innerHTML = `
-                <div style="position:relative; width:100%; height:100%;">
-                    <img src="./img/champ/17/${filename}" 
-                         alt="${name}" 
-                         style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
-                    <div style="position:absolute; bottom:3px; left:0; right:0; 
-                        text-align:center; color:white; font-size:10.5px; 
-                        text-shadow: 0 0 4px black; pointer-events:none;">
-                      ${name}
-                    </div>
+        p.innerHTML = `
+            <div style="position:relative; width:100%; height:100%;">
+                <img src="./img/champ/17/${filename}" 
+                     alt="${name}" 
+                     style="width:100%; height:100%; object-fit:contain; border-radius:8px;">
+                <div style="position:absolute; bottom:3px; left:0; right:0; 
+                    text-align:center; color:white; font-size:10.5px; 
+                    text-shadow: 0 0 4px black; pointer-events:none;">
+                  ${name}
                 </div>
-            `;
+            </div>
+        `;
 
-            p.addEventListener('dragstart', e => {
-                e.dataTransfer.setData('text/plain', name);
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'champ',
-                    icon: name,
-                    stars: "1",
-                    items: []
-                }));
-                p.classList.add('dragging-hidden');
-                window.currentDragSourceBench = p;
-            });
-
-            p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
-
-            bench.appendChild(p);
+        p.addEventListener('dragstart', e => {
+            e.dataTransfer.setData('text/plain', name);
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'champ',
+                icon: name,
+                stars: "1",
+                items: []
+            }));
+            p.classList.add('dragging-hidden');
+            window.currentDragSourceBench = p;
         });
 
-    }
+        p.addEventListener('dragend', () => p.classList.remove('dragging-hidden'));
+
+        bench.appendChild(p);
+    });
+}
 
     window.currentDragSource = null;
     window.currentDragSourceBench = null;

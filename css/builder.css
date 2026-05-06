@@ -35,7 +35,7 @@ html, body {
 
 #items {
     display: grid;
-    grid-template-columns: repeat(12, 50px);
+    grid-template-columns: repeat(25, 45px);
     gap: 2px;
     justify-content: center;
     background: #1f1f2e;
