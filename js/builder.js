@@ -366,53 +366,49 @@ function init() {
 
 
 
-    // ========== HEXから半マス分離れたら解除 ==========
-    document.addEventListener('drop', (e) => {
-        const hex = e.target.closest('.hex');
+ // ========== HEXの外側（少し余裕あり）にドロップしたら解除 ==========
+document.addEventListener('drop', (e) => {
+    const hex = e.target.closest('.hex');
+    
+    if (hex) {
+        const rect = hex.getBoundingClientRect();
+        const margin = 20;  // ← これを調整（0〜30くらい）
+
+        const isNearHex = 
+            e.clientX >= rect.left - margin && 
+            e.clientX <= rect.right + margin && 
+            e.clientY >= rect.top - margin && 
+            e.clientY <= rect.bottom + margin;
+
+        if (isNearHex) {
+            console.log("HEX付近 → 解除スキップ");
+            return;
+        }
+    }
+
+    console.log("🗑️ HEX外 → 解除実行");
+
+    // 解除処理（そのまま）
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) return;
         
-        if (hex) {
-            const rect = hex.getBoundingClientRect();
-            const mouseX = e.clientX;
-            const mouseY = e.clientY;
+        const data = JSON.parse(rawData);
 
-            // HEXの境界からさらに外側に20〜30px（半マス分くらい）の余裕を持たせる
-            const margin = 28;   // ← ここを調整（20〜35くらいがおすすめ）
-
-            const isNearHex = 
-                mouseX >= rect.left - margin &&
-                mouseX <= rect.right + margin &&
-                mouseY >= rect.top - margin &&
-                mouseY <= rect.bottom + margin;
-
-            if (isNearHex) {
-                console.log("HEX付近ドロップ → 解除スキップ");
-                return;
-            }
+        if (data.type === 'item' && data.sourceSlot) {
+            data.sourceSlot.remove();
+            console.log("✅ アイテム解除完了");
         }
 
-        // HEXから十分離れたら解除実行
-        console.log("🗑️ HEXから離れた場所 → 解除実行");
-
-        try {
-            const rawData = e.dataTransfer.getData('application/json');
-            if (!rawData) return;
-            
-            const data = JSON.parse(rawData);
-
-            if (data.type === 'item' && data.sourceSlot) {
-                data.sourceSlot.remove();
-                console.log("✅ アイテム解除完了");
-            }
-
-            if (data.type === 'champ' && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                console.log("✅ チャンピオン解除完了");
-                window.currentDragSource = null;
-            }
-        } catch (err) {
-            console.log("解除処理エラー:", err);
+        if (data.type === 'champ' && window.currentDragSource) {
+            window.currentDragSource.innerHTML = '';
+            console.log("✅ チャンピオン解除完了");
+            window.currentDragSource = null;
         }
-    });
+    } catch (err) {
+        console.log("解除処理エラー:", err);
+    }
+});
 
 }
 
