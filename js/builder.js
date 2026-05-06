@@ -132,11 +132,6 @@ function placeChampion(container, data) {
     container.appendChild(starLabel);
 
     addDragToChampion(champ);
-
-        // アイテムコンテナにもスワップ機能を適用
-    if (itemsDiv) {
-        setupSortable(itemsDiv);
-    }
 }
 
 function handleDrop(e, hex) {
@@ -189,24 +184,24 @@ function handleDrop(e, hex) {
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
-            // 枠がいっぱいなら何もしない
+            // アイテム枠チェック
             if (itemsContainer.children.length >= 3) {
                 console.log("アイテム枠がいっぱいです");
                 return;
             }
 
-            // 元の位置から削除（移動の場合）
+            // 元の位置から削除（移動）
             if (data.sourceSlot) {
                 data.sourceSlot.remove();
             }
 
             // 装備
             addItemSlot(itemsContainer, data.icon);
-            console.log(`✅ アイテム ${data.icon} を装備/移動`);
+            console.log(`アイテム装備: ${data.icon}`);
         }
 
     } catch (err) {
-        // text/plain フォールバック（主にBenchからのチャンピオン）
+        // text/plain フォールバック（ベンチから直接ドラッグなど）
         const icon = e.dataTransfer.getData('text/plain');
         if (icon && icon.length < 30) {
             hex.innerHTML = '';
@@ -366,7 +361,12 @@ function init() {
 
 
 
-    // ========== HEXの外側にドロップしたら解除 ==========
+ // 全体でドロップを許可
+document.body.addEventListener('dragover', e => {
+    e.preventDefault();
+});
+
+     // ========== HEXの外側にドロップしたら解除 ==========
     document.addEventListener('drop', (e) => {
         const isInsideHex = e.target.closest('.hex');
 
@@ -402,6 +402,7 @@ function init() {
 
 }
 
+// 共通並び替え関数（アイテム用）
 function setupSortable(container) {
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -410,7 +411,7 @@ function setupSortable(container) {
 
     container.addEventListener('drop', e => {
         e.preventDefault();
-        e.stopImmediatePropagation();
+        e.stopImmediatePropagation();   // ← これを追加
 
         const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
@@ -418,20 +419,17 @@ function setupSortable(container) {
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        const target = e.target.closest('.item-slot');
-        if (!target || target === dragged) return;
+        const target = e.target.closest('.item, .item-slot');
+        if (target && target !== dragged) {
+            const tempHTML = dragged.innerHTML;
+            const tempName = dragged.dataset.name;
 
-        // 位置スワップ
-        const tempHTML = dragged.innerHTML;
-        const tempName = dragged.dataset.name;
+            dragged.innerHTML = target.innerHTML;
+            dragged.dataset.name = target.dataset.name;
 
-        dragged.innerHTML = target.innerHTML;
-        dragged.dataset.name = target.dataset.name;
-
-        target.innerHTML = tempHTML;
-        target.dataset.name = tempName;
-
-        console.log("✅ アイテム位置入れ替え完了");
+            target.innerHTML = tempHTML;
+            target.dataset.name = tempName;
+        }
     });
 }
 
