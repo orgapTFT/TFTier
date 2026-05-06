@@ -305,7 +305,7 @@ function init() {
     if (itemsArea) {
         itemsArea.innerHTML = '';
         itemsArea.style.display = 'grid';
-        itemsArea.style.gridTemplateColumns = 'repeat(25, 45px)';
+        itemsArea.style.gridTemplateColumns = 'repeat(30, 35px)';
         itemsArea.style.gap = '2px';
         itemsArea.style.justifyContent = 'center';
         itemsArea.style.padding = '15px';
@@ -315,7 +315,7 @@ function init() {
             const item = document.createElement('div');
             item.className = 'item';
             item.draggable = true;
-            item.style.width = '35px';
+            item.style.width = '30px';
             item.innerHTML = `
                 <img src="./img/item/${filename}" 
                      alt="${itemName}" 
