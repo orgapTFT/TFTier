@@ -158,60 +158,78 @@ function handleDrop(e, hex) {
             return;
         }
 
-        // ====================== アイテム移動（大幅強化） ======================
-        if (data.type === 'item' && data.icon) {
-            const newItemName = data.icon;
+   // ドロップ位置に一番近いアイテムスロットを返す
+function getClosestItemSlot(itemsContainer, e) {
+    const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
+    if (currentItems.length === 0) return null;
 
-            // 移動元スロット
-            const sourceSlot = data.sourceSlot;
-            if (sourceSlot) sourceSlot.remove();   // 必ず元のアイテムを削除
+    const rect = itemsContainer.getBoundingClientRect();
+    const dropX = e.clientX - rect.left;
 
-            // ドロップ先のitems-containerを探す
-            let targetItemsContainer = hex.querySelector('.items-container');
+    let closest = currentItems[0];
+    let minDistance = Infinity;
 
-            // もしitems-containerが無ければ（チャンプ未配置の場合）作成
-            if (!targetItemsContainer) {
-                const champDiv = hex.querySelector('.champ');
-                if (!champDiv) {
-                    // チャンプもいない場所ならアイテムは捨てる
-                    return;
-                }
-                // items-containerが存在しない場合は新規作成
-                targetItemsContainer = document.createElement('div');
-                targetItemsContainer.className = 'items-container';
-                hex.appendChild(targetItemsContainer);
-            }
+    currentItems.forEach(item => {
+        const itemRect = item.getBoundingClientRect();
+        const centerX = itemRect.left + itemRect.width / 2 - rect.left;
+        const distance = Math.abs(dropX - centerX);
 
-            const currentItems = Array.from(targetItemsContainer.querySelectorAll('.item-slot'));
-
-            if (currentItems.length < 3) {
-                // 空きあり → 追加
-                addItemSlot(targetItemsContainer, newItemName);
-            } else {
-                // 3つ満杯 → ドロップ位置で上書き（前回の改善版をそのまま使用）
-                const rect = targetItemsContainer.getBoundingClientRect();
-                const dropX = e.clientX - rect.left;
-
-                let targetIndex = 0;
-                let minDistance = Infinity;
-
-                currentItems.forEach((item, index) => {
-                    const itemRect = item.getBoundingClientRect();
-                    const itemCenter = itemRect.left + itemRect.width / 2 - rect.left;
-                    const distance = Math.abs(dropX - itemCenter);
-
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        targetIndex = index;
-                    }
-                });
-
-                currentItems[targetIndex].remove();
-                addItemSlot(targetItemsContainer, newItemName);
-            }
-
-            return;
+        if (distance < minDistance) {
+            minDistance = distance;
+            closest = item;
         }
+    });
+
+    return closest;
+}
+
+// 2つのアイテムスロットをスワップ
+function swapItems(slotA, slotB) {
+    if (!slotA || !slotB || slotA === slotB) return;
+
+    // データ交換
+    const tempHTML = slotA.innerHTML;
+    const tempName = slotA.dataset.name;
+
+    slotA.innerHTML = slotB.innerHTML;
+    slotA.dataset.name = slotB.dataset.name;
+
+    slotB.innerHTML = tempHTML;
+    slotB.dataset.name = tempName;
+
+    // イベントリスナーは再設定が必要（dragstartなど）
+    reattachItemEvents(slotA);
+    reattachItemEvents(slotB);
+}
+
+// アイテムのイベントを再付与
+function reattachItemEvents(slot) {
+    // 古いイベントを一旦クリア（簡易版）
+    const newSlot = slot.cloneNode(true);
+    slot.parentNode.replaceChild(newSlot, slot);
+    
+    // addItemSlotと同じイベントを再登録
+    newSlot.draggable = true;
+    newSlot.addEventListener('dragstart', e => {
+        e.stopImmediatePropagation();
+        const data = {
+            type: 'item',
+            icon: newSlot.dataset.name,
+            sourceSlot: newSlot
+        };
+        e.dataTransfer.setData('application/json', JSON.stringify(data));
+        newSlot.classList.add('dragging-hidden');
+    });
+
+    newSlot.addEventListener('dragend', () => {
+        newSlot.classList.remove('dragging-hidden');
+    });
+
+    newSlot.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        newSlot.remove();
+    });
+}
 
     } catch (err) {
         // フォールバック（ベンチから直接チャンプ追加）
