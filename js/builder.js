@@ -305,7 +305,7 @@ function init() {
     if (itemsArea) {
         itemsArea.innerHTML = '';
         itemsArea.style.display = 'grid';
-        itemsArea.style.gridTemplateColumns = 'repeat(12, 50px)';
+        itemsArea.style.gridTemplateColumns = 'repeat(20, 50px)';
         itemsArea.style.gap = '2px';
         itemsArea.style.justifyContent = 'center';
         itemsArea.style.padding = '15px';
@@ -338,31 +338,43 @@ function init() {
             itemsArea.appendChild(item);
         });
 
-        for (let i = 0; i < 10; i++) {
-            const empty = document.createElement('div');
-            empty.className = 'item empty-slot';
-            empty.draggable = true;
-            empty.style.width = '50px';
-            empty.style.height = '50px';
-            itemsArea.appendChild(empty);
-        }
-
         setupSortable(itemsArea);
     }
+
+
+// アイテムエリア（itemsArea）の設定箇所に追加
+itemsArea.addEventListener('dragover', e => e.preventDefault());
+
+itemsArea.addEventListener('drop', e => {
+    e.preventDefault();
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) return;
+        const data = JSON.parse(rawData);
+
+        // もしドラッグされたのがチャンピオンなら、元の場所を空にする
+        if (data.type === 'champ' && window.currentDragSource) {
+            window.currentDragSource.innerHTML = '';
+            window.currentDragSource = null;
+        }
+    } catch (err) {
+        console.error("Drop error:", err);
+    }
+});
+
 
     // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
         bench.style.display = 'grid';
-        bench.style.gridTemplateColumns = 'repeat(7, 54px)';
+        bench.style.gridTemplateColumns = 'repeat(8, 54px)';
         bench.style.gap = '2px';
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
 
         championFiles.forEach(filename => {
             const name = filename.replace('.avif', '');
-            const p = document.createElement('div');
             p.className = 'piece';
             p.draggable = true;
             p.style.width = '50px';
@@ -398,8 +410,6 @@ function init() {
             bench.appendChild(p);
         });
 
-        // ★★★ benchの並び替え機能を完全にOFF ★★★
-        // setupBenchSortable(bench);  // コメントアウト・削除済み
     }
 
     window.currentDragSource = null;
