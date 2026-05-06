@@ -135,166 +135,155 @@ function handleDrop(e, hex) {
 
     try {
         const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
+        if (!rawData) throw new Error("Go to catch");
+        
         const data = JSON.parse(rawData);
 
         // ====================== チャンピオン移動 ======================
         if (data.type === 'champ') {
-            const source = window.currentDragSource || window.currentDragSourceBench;
+            const source = window.currentDragSource;
             if (!source || source === hex) return;
 
-            const sourceData = getChampionData(source);
             const targetData = hex.querySelector('.champ') ? getChampionData(hex) : null;
 
-            hex.innerHTML = '';
-            if (source !== window.currentDragSourceBench) source.innerHTML = '';
-
-            if (targetData) placeChampion(source, targetData);
-            placeChampion(hex, sourceData);
+            // 入れ替え
+            if (targetData) {
+                placeChampion(source, targetData);
+            }
+            placeChampion(hex, data);
 
             window.currentDragSource = null;
-            window.currentDragSourceBench = null;
             return;
         }
 
-        // ====================== アイテム移動（スワップ＋上書き対応） ======================
+        // ====================== アイテム移動（これを強化） ======================
         if (data.type === 'item' && data.icon) {
-            const newItemName = data.icon;
-            const sourceSlot = data.sourceSlot;
+            const sourceSlot = data.sourceSlot;           // 重要：移動元スロット
             const sourceHex = sourceSlot ? sourceSlot.closest('.hex') : null;
 
-            // ドロップ先の items-container を取得（なければ作成）
-            let targetItemsContainer = hex.querySelector('.items-container');
-            if (!targetItemsContainer) {
-                const champ = hex.querySelector('.champ');
-                if (!champ) return; // チャンピオンがいない場所には置けない
-                targetItemsContainer = document.createElement('div');
-                targetItemsContainer.className = 'items-container';
-                hex.appendChild(targetItemsContainer);
+            const targetChamp = hex.querySelector('.champ');
+            if (!targetChamp) return;                     // チャンプがいないHexには置けない
+
+            let itemsDiv = hex.querySelector('.items');
+            if (!itemsDiv) {
+                itemsDiv = document.createElement('div');
+                itemsDiv.className = 'items';
+                hex.appendChild(itemsDiv);
             }
 
-            // ドロップ位置に一番近いアイテムスロットを探す
-            const dropTargetSlot = getClosestItemSlot(targetItemsContainer, e);
+            const dropTargetSlot = getClosestItemSlot(itemsDiv, e); // 最も近いスロット
 
-            // ==================== 別チャンピオン間 → スワップ ====================
-            if (sourceSlot && sourceHex !== hex && dropTargetSlot) {
+            // --- 別チャンピオン間 → スワップ ---
+            if (sourceSlot && sourceHex && sourceHex !== hex && dropTargetSlot) {
                 swapItems(sourceSlot, dropTargetSlot);
                 return;
             }
 
-            // ==================== 同じチャンピオン内 or 新規追加 ====================
+            // --- 同じチャンピオン内 or 新規 ---
             if (sourceSlot) {
-                sourceSlot.remove();   // 移動元を削除
+                sourceSlot.remove();
             }
 
-            const currentItems = Array.from(targetItemsContainer.querySelectorAll('.item-slot'));
+            const currentCount = itemsDiv.children.length;
 
-            if (currentItems.length < 3) {
-                // 空きあり → 追加
-                addItemSlot(targetItemsContainer, newItemName);
-            } 
-            else if (dropTargetSlot) {
-                // 3つ満杯 → ドロップした位置のアイテムを上書き
+            if (currentCount < 3) {
+                addItemSlot(itemsDiv, data.icon);
+            } else if (dropTargetSlot) {
+                // 3つ満杯 → ドロップ位置を上書き
                 dropTargetSlot.remove();
-                addItemSlot(targetItemsContainer, newItemName);
-            } 
-            else {
-                // フォールバック：一番左を上書き
-                if (currentItems[0]) currentItems[0].remove();
-                addItemSlot(targetItemsContainer, newItemName);
+                addItemSlot(itemsDiv, data.icon);
+            } else {
+                // フォールバック
+                if (itemsDiv.children[0]) itemsDiv.children[0].remove();
+                addItemSlot(itemsDiv, data.icon);
             }
 
             return;
         }
 
     } catch (err) {
-        // フォールバック（ベンチから直接チャンプ追加）
+        // ベンチから新規チャンピオン配置
         const icon = e.dataTransfer.getData('text/plain');
-        if (icon && icon.length < 30) {
+        if (icon) {
             hex.innerHTML = '';
             placeChampion(hex, { icon: icon, stars: 1, items: [] });
         }
     }
 }
 
-   // ドロップ位置に一番近いアイテムスロットを返す
-function getClosestItemSlot(itemsContainer, e) {
-    const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
-    if (currentItems.length === 0) return null;
+// 最も近いアイテムスロットを探す
+function getClosestItemSlot(itemsDiv, e) {
+    const slots = Array.from(itemsDiv.querySelectorAll('.item-slot'));
+    if (slots.length === 0) return null;
 
-    const rect = itemsContainer.getBoundingClientRect();
+    const rect = itemsDiv.getBoundingClientRect();
     const dropX = e.clientX - rect.left;
 
-    let closest = currentItems[0];
-    let minDistance = Infinity;
+    let closest = slots[0];
+    let minDist = Infinity;
 
-    currentItems.forEach(item => {
-        const itemRect = item.getBoundingClientRect();
-        const centerX = itemRect.left + itemRect.width / 2 - rect.left;
-        const distance = Math.abs(dropX - centerX);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closest = item;
+    slots.forEach(slot => {
+        const sRect = slot.getBoundingClientRect();
+        const center = sRect.left + sRect.width / 2 - rect.left;
+        const dist = Math.abs(dropX - center);
+        if (dist < minDist) {
+            minDist = dist;
+            closest = slot;
         }
     });
-
     return closest;
 }
 
-// 2つのアイテムスロットをスワップ
+// スワップ
 function swapItems(slotA, slotB) {
     if (!slotA || !slotB || slotA === slotB) return;
 
-    // データ交換
     const tempHTML = slotA.innerHTML;
-    const tempName = slotA.dataset.name;
+    const tempName = slotA.dataset.name || slotA.textContent;
 
     slotA.innerHTML = slotB.innerHTML;
-    slotA.dataset.name = slotB.dataset.name;
+    slotA.dataset.name = slotB.dataset.name || slotB.textContent;
 
     slotB.innerHTML = tempHTML;
     slotB.dataset.name = tempName;
 
-    // イベントリスナーは再設定が必要（dragstartなど）
     reattachItemEvents(slotA);
     reattachItemEvents(slotB);
 }
 
-// アイテムのイベントを再付与（スワップ後に必要）
+// イベント再設定
 function reattachItemEvents(slot) {
-    if (!slot || !slot.parentNode) return;
-
-    // クローンして古いイベントリスナーをすべてクリア
+    if (!slot.parentNode) return;
     const newSlot = slot.cloneNode(true);
     slot.parentNode.replaceChild(newSlot, slot);
 
-    // 再設定
     newSlot.draggable = true;
-    newSlot.dataset.name = slot.dataset.name; // 念のため名前もコピー
-
-    // Dragstart
     newSlot.addEventListener('dragstart', e => {
         e.stopImmediatePropagation();
-        const data = {
+        e.dataTransfer.setData('application/json', JSON.stringify({
             type: 'item',
-            icon: newSlot.dataset.name,
+            icon: newSlot.dataset.name || newSlot.textContent,
             sourceSlot: newSlot
-        };
-        e.dataTransfer.setData('application/json', JSON.stringify(data));
+        }));
         newSlot.classList.add('dragging-hidden');
     });
 
-    // Dragend
-    newSlot.addEventListener('dragend', () => {
-        newSlot.classList.remove('dragging-hidden');
-    });
-
-    // 右クリック削除
     newSlot.addEventListener('contextmenu', e => {
         e.preventDefault();
         newSlot.remove();
     });
+}
+
+// チャンピオンデータ取得（簡易）
+function getChampionData(hex) {
+    const champ = hex.querySelector('.champ');
+    if (!champ) return null;
+    return {
+        type: 'champ',
+        icon: champ.querySelector('div:last-child')?.innerHTML || '',
+        stars: champ.dataset.stars || 1,
+        items: [] // 必要なら実装
+    };
 }
 
 // ==================== アイテムスロット作成 ====================
@@ -336,79 +325,6 @@ function addItemSlot(container, iconName) {
     });
 
     container.appendChild(slot);
-}
-
-// ドロップ位置に一番近いアイテムスロットを返す
-function getClosestItemSlot(itemsContainer, e) {
-    const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
-    if (currentItems.length === 0) return null;
-
-    const rect = itemsContainer.getBoundingClientRect();
-    const dropX = e.clientX - rect.left;
-
-    let closest = currentItems[0];
-    let minDistance = Infinity;
-
-    currentItems.forEach(item => {
-        const itemRect = item.getBoundingClientRect();
-        const centerX = itemRect.left + itemRect.width / 2 - rect.left;
-        const distance = Math.abs(dropX - centerX);
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            closest = item;
-        }
-    });
-
-    return closest;
-}
-
-// 2つのアイテムスロットをスワップ
-function swapItems(slotA, slotB) {
-    if (!slotA || !slotB || slotA === slotB) return;
-
-    // データ交換
-    const tempHTML = slotA.innerHTML;
-    const tempName = slotA.dataset.name;
-
-    slotA.innerHTML = slotB.innerHTML;
-    slotA.dataset.name = slotB.dataset.name;
-
-    slotB.innerHTML = tempHTML;
-    slotB.dataset.name = tempName;
-
-    // イベントリスナーは再設定が必要（dragstartなど）
-    reattachItemEvents(slotA);
-    reattachItemEvents(slotB);
-}
-
-// アイテムのイベントを再付与
-function reattachItemEvents(slot) {
-    // 古いイベントを一旦クリア（簡易版）
-    const newSlot = slot.cloneNode(true);
-    slot.parentNode.replaceChild(newSlot, slot);
-    
-    // addItemSlotと同じイベントを再登録
-    newSlot.draggable = true;
-    newSlot.addEventListener('dragstart', e => {
-        e.stopImmediatePropagation();
-        const data = {
-            type: 'item',
-            icon: newSlot.dataset.name,
-            sourceSlot: newSlot
-        };
-        e.dataTransfer.setData('application/json', JSON.stringify(data));
-        newSlot.classList.add('dragging-hidden');
-    });
-
-    newSlot.addEventListener('dragend', () => {
-        newSlot.classList.remove('dragging-hidden');
-    });
-
-    newSlot.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        newSlot.remove();
-    });
 }
 
 // チャンピオンデータ取得用ヘルパー
