@@ -181,17 +181,20 @@ function handleDrop(e, hex) {
             const sourceSlot = data.sourceSlot;
             if (sourceSlot) sourceSlot.remove();   // 必ず元のアイテムを削除
 
+            // 元のアイテムを必ず削除
+            if (sourceSlot) {
+                sourceSlot.remove();
+            }
+
             // ドロップ先のitems-containerを探す
             let targetItemsContainer = hex.querySelector('.items-container');
 
-            // もしitems-containerが無ければ（チャンプ未配置の場合）作成
+            // チャンピオンが置かれていない場合は何もしない
             if (!targetItemsContainer) {
                 const champDiv = hex.querySelector('.champ');
-                if (!champDiv) {
-                    // チャンプもいない場所ならアイテムは捨てる
-                    return;
-                }
-                // items-containerが存在しない場合は新規作成
+                if (!champDiv) return; // 空のhexならアイテム捨てる
+
+                // items-container が存在しない場合は作成
                 targetItemsContainer = document.createElement('div');
                 targetItemsContainer.className = 'items-container';
                 hex.appendChild(targetItemsContainer);
