@@ -366,43 +366,47 @@ document.body.addEventListener('dragover', e => {
     e.preventDefault();
 });
 
-     // ========== 盤面外ドロップで解除（main-container対応版） ==========
+      // ========== 盤面外ドロップで解除（強化版） ==========
     document.addEventListener('drop', (e) => {
-        // 解除をスキップするエリア
-        const insideBoard = e.target.closest('#board');
-        const insideBench = e.target.closest('#bench');
-        const insideItems = e.target.closest('#items');
-        const insideMain   = e.target.closest('.main-container');   // ← 追加
+        const boardElement = document.getElementById('board');
 
-        // ① 明確に内部エリアなら解除しない
-        if (insideBoard || insideBench || insideItems) {
+        // #board の内部かどうかをより確実に判定
+        const isInsideBoard = boardElement && boardElement.contains(e.target);
+
+        // ベンチとアイテムエリアもチェック
+        const isInsideBench = e.target.closest('#bench');
+        const isInsideItems = e.target.closest('#items');
+
+        // 内部エリアなら解除しない
+        if (isInsideBoard || isInsideBench || isInsideItems) {
             console.log("内部エリアドロップ → 解除スキップ");
             return;
         }
 
-        // ② main-container内だけど #board外 → 解除を実行
-        if (insideMain) {
-            console.log("main-container内だが #board外 → 解除実行");
-        } else {
-            console.log("完全に画面外 → 解除実行");
-        }
+        console.log("🗑️ 本当の盤面外ドロップ → 解除実行");
 
-        // 解除処理
         try {
             const rawData = e.dataTransfer.getData('application/json');
             if (!rawData) return;
             
             const data = JSON.parse(rawData);
 
+            // アイテム解除（特に重要）
             if (data.type === 'item' && data.sourceSlot) {
                 data.sourceSlot.remove();
                 console.log("✅ アイテム解除完了");
+                return;
             }
 
-            if (data.type === 'champ' && window.currentDragSource) {
-                window.currentDragSource.innerHTML = '';
-                console.log("✅ チャンピオン解除完了");
+            // チャンピオン解除
+            if (data.type === 'champ') {
+                const source = window.currentDragSource || window.currentDragSourceBench;
+                if (source) {
+                    source.innerHTML = '';
+                    console.log("✅ チャンピオン解除完了");
+                }
                 window.currentDragSource = null;
+                window.currentDragSourceBench = null;
             }
         } catch (err) {
             console.log("解除処理エラー:", err);
