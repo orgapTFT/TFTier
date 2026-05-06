@@ -366,43 +366,39 @@ document.body.addEventListener('dragover', e => {
     e.preventDefault();
 });
 
-// ドロップイベント
-document.body.addEventListener('drop', e => {   // ← dを削除
-    e.preventDefault();
+ // ========== 盤面外ドロップで解除（より強力版） ==========
+    document.addEventListener('drop', (e) => {
+        // #board の外側にドロップしたかを優先的に判定
+        const isOnBoard = e.target.closest('#board');
+        
+        // ベンチやアイテムの上に重なっていても、#board外なら解除する
+        if (isOnBoard) {
+            console.log("📍 #board内ドロップ → 解除スキップ");
+            return;
+        }
 
-    const droppedOnHex = e.target.closest('.hex');
-
-    if (!droppedOnHex) {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
+        console.log("🗑️ 盤面外ドロップ検知 → 解除処理実行");
 
         try {
+            const rawData = e.dataTransfer.getData('application/json');
+            if (!rawData) return;
+            
             const data = JSON.parse(rawData);
 
-            if (data.type === 'item') {
-                document.querySelectorAll('.dragging-hidden').forEach(el => {
-                    el.remove();
-                });
-                console.log("🗑️ .hex外ドロップ → アイテム解除");
+            if (data.type === 'item' && data.sourceSlot) {
+                data.sourceSlot.remove();
+                console.log("✅ アイテム解除完了");
             }
 
-            if (data.type === 'champ') {
-                if (window.currentDragSource) {
-                    window.currentDragSource.innerHTML = '';
-                    window.currentDragSource.classList.remove('occupied', 'has-champ');
-                    console.log("✅ チャンピオン解除完了");
-                    window.currentDragSource = null;
-                }
-                if (window.currentDragSourceBench) {
-                    window.currentDragSourceBench = null;
-                }
+            if (data.type === 'champ' && window.currentDragSource) {
+                window.currentDragSource.innerHTML = '';
+                console.log("✅ チャンピオン解除完了");
+                window.currentDragSource = null;
             }
-
         } catch (err) {
-            console.error("解除処理でエラー:", err);
+            console.log("解除処理でエラー:", err);
         }
-    }
-});
+    });
 
 }
 
