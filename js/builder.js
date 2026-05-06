@@ -305,7 +305,7 @@ function init() {
     if (itemsArea) {
         itemsArea.innerHTML = '';
         itemsArea.style.display = 'grid';
-        itemsArea.style.gridTemplateColumns = 'repeat(20, 50px)';
+        itemsArea.style.gridTemplateColumns = 'repeat(20, 45px)';
         itemsArea.style.gap = '2px';
         itemsArea.style.justifyContent = 'center';
         itemsArea.style.padding = '15px';
@@ -315,7 +315,7 @@ function init() {
             const item = document.createElement('div');
             item.className = 'item';
             item.draggable = true;
-            
+            item.style.width = '40px';
             item.innerHTML = `
                 <img src="./img/item/${filename}" 
                      alt="${itemName}" 
@@ -341,34 +341,12 @@ function init() {
         setupSortable(itemsArea);
     }
 
-
-// アイテムエリア（itemsArea）の設定箇所に追加
-itemsArea.addEventListener('dragover', e => e.preventDefault());
-
-itemsArea.addEventListener('drop', e => {
-    e.preventDefault();
-    try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
-
-        // もしドラッグされたのがチャンピオンなら、元の場所を空にする
-        if (data.type === 'champ' && window.currentDragSource) {
-            window.currentDragSource.innerHTML = '';
-            window.currentDragSource = null;
-        }
-    } catch (err) {
-        console.error("Drop error:", err);
-    }
-});
-
-
     // ==================== ベンチ ====================
     const bench = document.getElementById('bench');
     if (bench) {
         bench.innerHTML = '';
         bench.style.display = 'grid';
-        bench.style.gridTemplateColumns = 'repeat(8, 54px)';
+        bench.style.gridTemplateColumns = 'repeat(10, 50px)';
         bench.style.gap = '2px';
         bench.style.justifyContent = 'center';
         bench.style.padding = '20px 30px';
@@ -377,8 +355,8 @@ itemsArea.addEventListener('drop', e => {
             const name = filename.replace('.avif', '');
             p.className = 'piece';
             p.draggable = true;
-            p.style.width = '50px';
-            p.style.height = '50px';
+            p.style.width = '45px';
+            p.style.height = '45px';
 
             p.innerHTML = `
                 <div style="position:relative; width:100%; height:100%;">
@@ -435,6 +413,26 @@ itemsArea.addEventListener('drop', e => {
             }
         } catch (err) {}
     });
+
+// アイテムエリア（itemsArea）の設定箇所に追加
+itemsArea.addEventListener('dragover', e => e.preventDefault());
+itemsArea.addEventListener('drop', e => {
+    e.preventDefault();
+    try {
+        const rawData = e.dataTransfer.getData('application/json');
+        if (!rawData) return;
+        const data = JSON.parse(rawData);
+
+        // もしドラッグされたのがチャンピオンなら、元の場所を空にする
+        if (data.type === 'champ' && window.currentDragSource) {
+            window.currentDragSource.innerHTML = '';
+            window.currentDragSource = null;
+        }
+    } catch (err) {
+        console.error("Drop error:", err);
+    }
+});
+
 }
 
 // ==================== アイテム並び替え ====================
