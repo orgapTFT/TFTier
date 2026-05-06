@@ -94,23 +94,26 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-    // Lv切り替え（左ダブルクリック）
-    const lvDisplay = champ.querySelector('.lv-display');
-    let currentLvNum = currentLv || 3;
+  // Lv切り替え（左ダブルクリック）
+const lvDisplay = champ.querySelector('.lv-display');
+let currentLvNum = currentLv || 3;
 
-    champ.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        currentLvNum = (currentLvNum % 10) + 3;
-        if (currentLvNum > 10) {
-            currentLvNum = 3;
-            lvDisplay.style.display = 'none';
-        } else {
-            lvDisplay.textContent = `Lv${currentLvNum}`;
-            lvDisplay.style.display = 'block';
-        }
-        container.dataset.lv = currentLvNum;
-    });
+champ.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+
+    // 3 → 4 → 5 → ... → 10 → 3（非表示）の順番で回す
+    if (currentLvNum >= 10) {
+        currentLvNum = 3;
+        lvDisplay.style.display = 'none';
+    } else {
+        currentLvNum++;
+        lvDisplay.textContent = `Lv${currentLvNum}`;
+        lvDisplay.style.display = 'block';
+    }
+
+    container.dataset.lv = currentLvNum;
+});
 
     // アイテム
     const itemsDiv = document.createElement('div');
