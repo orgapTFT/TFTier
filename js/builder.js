@@ -94,13 +94,25 @@ function placeChampion(container, data) {
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
     });
 
-  // Lv切り替え（左ダブルクリック）
+// Lv切り替え（左クリック）
 const lvDisplay = champ.querySelector('.lv-display');
 let currentLvNum = currentLv || 3;
+let lvStartX, lvStartY;
 
-champ.addEventListener('dblclick', (e) => {
+// 押し始めの座標を記録
+champ.addEventListener('mousedown', (e) => {
+    lvStartX = e.screenX;
+    lvStartY = e.screenY;
+});
+
+// 指を離したときに、動いていなければレベルアップ
+champ.addEventListener('mouseup', (e) => {
+    // ドラッグ操作（移動）と区別するため、5px以上動いていたら無視
+    if (Math.abs(e.screenX - lvStartX) > 5 || Math.abs(e.screenY - lvStartY) > 5) return;
+
     e.preventDefault();
-    e.stopImmediatePropagation();
+    // 他のイベント（星クリックなど）に干渉させない場合は stopPropagation を使用
+    // e.stopPropagation(); 
 
     // 3 → 4 → 5 → ... → 10 → 3（非表示）の順番で回す
     if (currentLvNum >= 10) {
