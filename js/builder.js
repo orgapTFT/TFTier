@@ -132,6 +132,11 @@ function placeChampion(container, data) {
     container.appendChild(starLabel);
 
     addDragToChampion(champ);
+
+        // アイテムコンテナにもスワップ機能を適用
+    if (itemsDiv) {
+        setupSortable(itemsDiv);
+    }
 }
 
 function handleDrop(e, hex) {
@@ -179,26 +184,26 @@ function handleDrop(e, hex) {
             return;
         }
 
-        // ====================== アイテム ======================
+            // ====================== アイテム ======================
         else if (data.type === 'item' && data.icon) {
             const itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) return;
 
-            // アイテム枠チェック
+            // 枠チェック
             if (itemsContainer.children.length >= 3) {
                 console.log("アイテム枠がいっぱいです");
                 return;
             }
 
-            // 元の位置から削除（移動）
+            // 元の位置から削除（移動 or 装備）
             if (data.sourceSlot) {
                 data.sourceSlot.remove();
             }
 
-            // 装備
             addItemSlot(itemsContainer, data.icon);
-            console.log(`アイテム装備: ${data.icon}`);
+            console.log(`✅ アイテム ${data.icon} を装備/移動`);
         }
+
 
     } catch (err) {
         // text/plain フォールバック（ベンチから直接ドラッグなど）
@@ -361,23 +366,32 @@ function init() {
 
 
 
- // 全体でドロップを許可
-document.body.addEventListener('dragover', e => {
-    e.preventDefault();
-});
-
-     // ========== HEXの外側にドロップしたら解除 ==========
+    // ========== HEXから半マス分離れたら解除 ==========
     document.addEventListener('drop', (e) => {
-        const isInsideHex = e.target.closest('.hex');
+        const hex = e.target.closest('.hex');
+        
+        if (hex) {
+            const rect = hex.getBoundingClientRect();
+            const mouseX = e.clientX;
+            const mouseY = e.clientY;
 
-        // HEXの中にドロップした場合は解除しない（配置・スワップ優先）
-        if (isInsideHex) {
-            console.log("HEX内ドロップ → 解除スキップ");
-            return;
+            // HEXの境界からさらに外側に20〜30px（半マス分くらい）の余裕を持たせる
+            const margin = 28;   // ← ここを調整（20〜35くらいがおすすめ）
+
+            const isNearHex = 
+                mouseX >= rect.left - margin &&
+                mouseX <= rect.right + margin &&
+                mouseY >= rect.top - margin &&
+                mouseY <= rect.bottom + margin;
+
+            if (isNearHex) {
+                console.log("HEX付近ドロップ → 解除スキップ");
+                return;
+            }
         }
 
-        // HEXの外側にドロップした場合 → 解除実行
-        console.log("🗑️ HEX外ドロップ → 解除実行");
+        // HEXから十分離れたら解除実行
+        console.log("🗑️ HEXから離れた場所 → 解除実行");
 
         try {
             const rawData = e.dataTransfer.getData('application/json');
@@ -402,7 +416,7 @@ document.body.addEventListener('dragover', e => {
 
 }
 
-// 共通並び替え関数（アイテム用）
+// ==================== アイテム並び替え（ベンチ + チャンピオン内） ====================
 function setupSortable(container) {
     container.addEventListener('dragover', e => {
         e.preventDefault();
@@ -411,7 +425,7 @@ function setupSortable(container) {
 
     container.addEventListener('drop', e => {
         e.preventDefault();
-        e.stopImmediatePropagation();   // ← これを追加
+        e.stopImmediatePropagation();
 
         const dragged = Array.from(container.children).find(el => 
             el.classList.contains('dragging-hidden')
@@ -419,17 +433,20 @@ function setupSortable(container) {
         if (!dragged) return;
         dragged.classList.remove('dragging-hidden');
 
-        const target = e.target.closest('.item, .item-slot');
-        if (target && target !== dragged) {
-            const tempHTML = dragged.innerHTML;
-            const tempName = dragged.dataset.name;
+        const target = e.target.closest('.item-slot');
+        if (!target || target === dragged) return;
 
-            dragged.innerHTML = target.innerHTML;
-            dragged.dataset.name = target.dataset.name;
+        // 位置入れ替え
+        const tempHTML = dragged.innerHTML;
+        const tempName = dragged.dataset.name;
 
-            target.innerHTML = tempHTML;
-            target.dataset.name = tempName;
-        }
+        dragged.innerHTML = target.innerHTML;
+        dragged.dataset.name = target.dataset.name;
+
+        target.innerHTML = tempHTML;
+        target.dataset.name = tempName;
+
+        console.log(`✅ アイテム位置入れ替え: ${tempName} ↔ ${dragged.dataset.name}`);
     });
 }
 
