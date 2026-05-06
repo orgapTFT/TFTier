@@ -345,7 +345,7 @@ const bench = document.getElementById('bench');
 if (bench) {
     bench.innerHTML = '';
     bench.style.display = 'grid';
-    bench.style.gridTemplateColumns = 'repeat(10, 50px)';
+    bench.style.gridTemplateColumns = 'repeat(10, 42px)';
     bench.style.gap = '2px';
     bench.style.justifyContent = 'center';
     bench.style.padding = '20px 30px';
@@ -358,8 +358,8 @@ if (bench) {
         
         p.className = 'piece';
         p.draggable = true;
-        p.style.width = '45px';
-        p.style.height = '45px';
+        p.style.width = '40px';
+        p.style.height = '40px';
 
         p.innerHTML = `
             <div style="position:relative; width:100%; height:100%;">

@@ -45,8 +45,11 @@ html, body {
     padding: 15px;
     border-radius: 12px;
     border: 2px solid #444;
-    max-width: fit-content;
-    margin: 20px auto;
+    gap: 3px;
+    justify-content: center;
+    padding: 14px;
+    width: fit-content;
+    max-width: 98%;
 }
 
 /* ベンチ通常チャンピオン */
