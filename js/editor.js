@@ -44,10 +44,10 @@ function ensureProjectAssets(data) {
 
 function loadChampionsIntoPalette() {
     championFiles.forEach(file => {
-        const name = file.replace('.avif', '');      
-        const src = `./img/champ/17/${file}`;
+        const name = file.replace('.avif', '');
+        
         project.assets.c.push({
-            src: src,
+            src: `./img/champ/17/${file}`,   // 成功してる書き方に合わせる
             name: name,
             hidden: false
         });
