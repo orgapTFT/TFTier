@@ -209,15 +209,12 @@ function addSlot(parent, cls) {
     const d = document.createElement('div');
     d.className = `slot ${cls}`;
     
-    // クリック選択
     d.onclick = (e) => { e.stopPropagation(); sel(d); };
-    
-    // 右クリックでクリア
     d.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(d); };
-    
+
     // ================ ドラッグ＆ドロップ対応 ================
     d.ondragover = (e) => {
-        e.preventDefault();
+        e.preventDefault();           // ← これが超重要！
         d.classList.add('dragover');
     };
     
@@ -230,36 +227,37 @@ function addSlot(parent, cls) {
         d.classList.remove('dragover');
         
         const src = e.dataTransfer.getData('text/plain');
-        const name = e.dataTransfer.getData('text/name') || "";
+        const name = e.dataTransfer.getData('text/name') || '';
         
         if (src) {
             saveHistory();
-            fillWithDrag(d, src, name);   // 新規関数呼び出し
+            fillWithDrag(d, src, name);
         }
     };
     // ====================================================
-    
+
     parent.appendChild(d);
 }
 
 function fillWithDrag(slot, src, name = "") {
     if (!slot) return;
-    
-    // Godスロットの場合
-    if (slot.parentElement && slot.parentElement.classList.contains('god-wrap')) {
+
+    saveHistory();
+
+    // Godスロット特別処理
+    if (slot.parentElement?.classList.contains('god-wrap')) {
         const label = slot.parentElement.querySelector('.god-name-label');
-        if (label && name) label.innerText = name.split('.')[0] || name;
+        if (label) label.innerText = name ? name.replace('.avif', '') : '';
     }
-    
+
     slot.innerHTML = `
         <img src="${src}" draggable="false">
         <button class="rem-btn" onclick="event.stopPropagation(); clearSlotContent(this.parentElement);">×</button>
     `;
-    
-    // 自動で次のスロットを選択
+
     const next = findNextSlot(slot);
     if (next) sel(next);
-    
+
     markChanged();
 }
 
@@ -429,15 +427,15 @@ function renderPalette() {
         };
         
         // ================ ドラッグ開始 ================
-        d.ondragstart = (e) => {
-            e.dataTransfer.setData('text/plain', asset.src);
-            e.dataTransfer.setData('text/name', asset.name);
-            d.classList.add('dragging');
-        };
+d.ondragstart = (e) => {
+    e.dataTransfer.setData('text/plain', asset.src);
+    e.dataTransfer.setData('text/name', asset.name || '');
+    d.classList.add('dragging');
+};
+
+d.ondragend = () => d.classList.remove('dragging');
         
-        d.ondragend = () => {
-            d.classList.remove('dragging');
-        };
+
         // ===========================================
         
         g.appendChild(d);
@@ -476,36 +474,38 @@ function deleteGuide(e, index) {
 }
 
 function loadActiveGuide() {
-    const g = project.guides[project.activeIndex]; 
+    const g = project.guides[project.activeIndex];
     if (!g) return;
-    
+
     document.getElementById('canvas').innerHTML = g.html;
     
-    // ... 既存のコード ...
-    
-    // 既存の全スロットにもドラッグ＆ドロップを有効化
+    // ... 既存のコードはそのまま ...
+
+    // 動的に生成されたスロットすべてにドラッグイベントを再付与
     document.querySelectorAll('.slot').forEach(slot => {
         slot.onclick = (e) => { e.stopPropagation(); sel(slot); };
         slot.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(slot); };
-        
-        // ドラッグ対応（再読み込み時用）
+
+        // ドラッグ＆ドロップ再設定
         slot.ondragover = (e) => {
             e.preventDefault();
             slot.classList.add('dragover');
         };
         slot.ondragleave = () => slot.classList.remove('dragover');
+        
         slot.ondrop = (e) => {
             e.preventDefault();
             slot.classList.remove('dragover');
+            
             const src = e.dataTransfer.getData('text/plain');
-            const name = e.dataTransfer.getData('text/name') || "";
+            const name = e.dataTransfer.getData('text/name') || '';
             if (src) {
                 saveHistory();
                 fillWithDrag(slot, src, name);
             }
         };
     });
-    
+
     selSlot = null;
 }
 
