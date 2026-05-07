@@ -45,7 +45,7 @@ function ensureProjectAssets(data) {
 function loadChampionsIntoPalette() {
     championFiles.forEach(file => {
         const name = file.replace('.avif', '');
-        const src = `img/champ/17/${file}`;
+        const src = `../img/champ/17/${file}`;
         project.assets.c.push({ src: src, name: name, hidden: false });
     });
 }
@@ -53,7 +53,7 @@ function loadChampionsIntoPalette() {
 function loadItemsIntoPalette() {
     itemFiles.forEach(file => {
         const name = file.replace('.avif', '');
-        const src = `img/item/${file}`;
+        const src = `../img/item/${file}`;
         project.assets.i.push({ src: src, name: name, hidden: false });
     });
 }
@@ -70,7 +70,7 @@ function loadAugmentsIntoPalette() {
     ['s','g','p'].forEach(tier => {
         augFiles[tier].forEach(file => {
             const name = file.replace('.avif', '');
-            const src = `img/aug/${tier}/${file}`;
+            const src = `../img/aug/${tier}/${file}`;
             project.assets.a.push({ src: src, name: name, hidden: false });
         });
     });
