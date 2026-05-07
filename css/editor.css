@@ -138,3 +138,15 @@
 .url-tool-row { display: flex; flex-direction: column; gap: 4px; margin-top: 10px; }
 .url-input-group { display: flex; gap: 4px; align-items: center; }
 .url-btn { background: #334155; border: none; color: #fff; height: 28px; width: 32px; cursor: pointer; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+
+
+.slot.dragover {
+    outline: 3px dashed #22c55e;
+    outline-offset: -3px;
+    background: rgba(34, 197, 94, 0.15);
+}
+
+.asset.dragging {
+    opacity: 0.4;
+    transform: scale(0.95);
+}

@@ -206,10 +206,61 @@ function initCanvasStructure() {
 }
 
 function addSlot(parent, cls) {
-    const d = document.createElement('div'); d.className = `slot ${cls}`;
+    const d = document.createElement('div');
+    d.className = `slot ${cls}`;
+    
+    // クリック選択
     d.onclick = (e) => { e.stopPropagation(); sel(d); };
+    
+    // 右クリックでクリア
     d.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(d); };
+    
+    // ================ ドラッグ＆ドロップ対応 ================
+    d.ondragover = (e) => {
+        e.preventDefault();
+        d.classList.add('dragover');
+    };
+    
+    d.ondragleave = () => {
+        d.classList.remove('dragover');
+    };
+    
+    d.ondrop = (e) => {
+        e.preventDefault();
+        d.classList.remove('dragover');
+        
+        const src = e.dataTransfer.getData('text/plain');
+        const name = e.dataTransfer.getData('text/name') || "";
+        
+        if (src) {
+            saveHistory();
+            fillWithDrag(d, src, name);   // 新規関数呼び出し
+        }
+    };
+    // ====================================================
+    
     parent.appendChild(d);
+}
+
+function fillWithDrag(slot, src, name = "") {
+    if (!slot) return;
+    
+    // Godスロットの場合
+    if (slot.parentElement && slot.parentElement.classList.contains('god-wrap')) {
+        const label = slot.parentElement.querySelector('.god-name-label');
+        if (label && name) label.innerText = name.split('.')[0] || name;
+    }
+    
+    slot.innerHTML = `
+        <img src="${src}" draggable="false">
+        <button class="rem-btn" onclick="event.stopPropagation(); clearSlotContent(this.parentElement);">×</button>
+    `;
+    
+    // 自動で次のスロットを選択
+    const next = findNextSlot(slot);
+    if (next) sel(next);
+    
+    markChanged();
 }
 
 function clearSlotContent(slot) {
@@ -350,17 +401,45 @@ function setPalette(t) { curPalette = t; document.querySelectorAll('.p-tab').for
 function handleAssetUpload(e) { saveHistory(); Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => { project.assets[curPalette].push({ src: ev.target.result, name: f.name, hidden: false }); renderPalette(); markChanged(); }; r.readAsDataURL(f); }); }
 
 function renderPalette() {
-    const g = document.getElementById('palette-grid'); g.innerHTML = '';
+    const g = document.getElementById('palette-grid'); 
+    g.innerHTML = '';
+    
     const showHidden = document.getElementById('show-hidden-toggle').checked;
+
     project.assets[curPalette].forEach((asset, index) => {
         if (asset.hidden && !showHidden) return;
-        const d = document.createElement('div'); d.className = `asset ${asset.hidden ? 'hidden-asset' : ''}`; d.draggable = true;
-        d.innerHTML = `<img src="${asset.src}"><span>${asset.name}</span>`;
-        d.onclick = () => { if (!asset.hidden) fill(asset.src, asset.name); };
-        d.ondblclick = () => { saveHistory(); asset.hidden = !asset.hidden; renderPalette(); markChanged(); };
-        d.ondragstart = () => { draggedIndex = index; };
-        d.ondrop = () => { saveHistory(); const list = project.assets[curPalette]; const item = list.splice(draggedIndex, 1)[0]; list.splice(index, 0, item); renderPalette(); markChanged(); };
-        d.ondragover = (e) => e.preventDefault();
+        
+        const d = document.createElement('div');
+        d.className = `asset ${asset.hidden ? 'hidden-asset' : ''}`;
+        d.draggable = true;
+        
+        d.innerHTML = `<img src="${asset.src}" draggable="false"><span>${asset.name}</span>`;
+        
+        // クリックで従来通り配置
+        d.onclick = () => { 
+            if (!asset.hidden) fill(asset.src, asset.name); 
+        };
+        
+        // ダブルクリックで非表示切り替え
+        d.ondblclick = () => { 
+            saveHistory(); 
+            asset.hidden = !asset.hidden; 
+            renderPalette(); 
+            markChanged(); 
+        };
+        
+        // ================ ドラッグ開始 ================
+        d.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', asset.src);
+            e.dataTransfer.setData('text/name', asset.name);
+            d.classList.add('dragging');
+        };
+        
+        d.ondragend = () => {
+            d.classList.remove('dragging');
+        };
+        // ===========================================
+        
         g.appendChild(d);
     });
 }
@@ -397,16 +476,36 @@ function deleteGuide(e, index) {
 }
 
 function loadActiveGuide() {
-    const g = project.guides[project.activeIndex]; if (!g) return;
+    const g = project.guides[project.activeIndex]; 
+    if (!g) return;
+    
     document.getElementById('canvas').innerHTML = g.html;
-    document.getElementById('in-title').innerText = g.title;
-    document.getElementById('tt-url').value = g.url || "";
-    document.getElementById('tt-url-prog').value = g.urlProg || "";
+    
+    // ... 既存のコード ...
+    
+    // 既存の全スロットにもドラッグ＆ドロップを有効化
     document.querySelectorAll('.slot').forEach(slot => {
         slot.onclick = (e) => { e.stopPropagation(); sel(slot); };
         slot.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(slot); };
+        
+        // ドラッグ対応（再読み込み時用）
+        slot.ondragover = (e) => {
+            e.preventDefault();
+            slot.classList.add('dragover');
+        };
+        slot.ondragleave = () => slot.classList.remove('dragover');
+        slot.ondrop = (e) => {
+            e.preventDefault();
+            slot.classList.remove('dragover');
+            const src = e.dataTransfer.getData('text/plain');
+            const name = e.dataTransfer.getData('text/name') || "";
+            if (src) {
+                saveHistory();
+                fillWithDrag(slot, src, name);
+            }
+        };
     });
-    const img = document.getElementById('board-img'); if (img && img.src) document.getElementById('board-msg').style.display = 'none';
+    
     selSlot = null;
 }
 
