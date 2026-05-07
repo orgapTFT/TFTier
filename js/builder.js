@@ -48,98 +48,57 @@ function addDragToChampion(champ) {
         const parent = champ.parentElement;
         if (parent) parent.innerHTML = '';
     });
-}
+} 
 
+// builder.js 内の placeChampion を修正
 function placeChampion(container, data) {
     if (!container) return;
     container.innerHTML = '';
 
     const currentStars = parseInt(data.stars) || 1;
-    const champName = data.icon || data.name || '';
-    const currentLv = parseInt(data.lv) || 0;
-
-    container.dataset.type = 'champ';
-    container.dataset.name = champName;
-    container.dataset.lv = currentLv;
+    const champName = data.name || data.icon || '';
 
     const champ = document.createElement('div');
     champ.className = 'champ';
     champ.draggable = true;
-    champ.dataset.stars = currentStars;
     champ.dataset.name = champName;
+    champ.dataset.stars = currentStars;
+
+    // 画像パスの解決（エディタ側のパスに合わせる）
+    const imgSrc = data.icon.includes('/') ? data.icon : `./img/champ/17/${champName}.avif`;
 
     champ.innerHTML = `
-        <img src="./img/champ/17/${champName}.avif" 
-             alt="${champName}" 
-             class="champ-icon"
-             style="width:88%; height:88%; object-fit:contain;"
-             onerror="this.style.display='none';">
+        <img src="${imgSrc}" class="champ-icon">
         <div class="champ-name-onboard">${champName}</div>
-        <div class="lv-display" style="display:${currentLv >= 3 ? 'block' : 'none'}">Lv${currentLv}</div>
+        <div class="lv-display" style="display:none">Lv3</div>
     `;
 
-    // 星
+    // アイテムコンテナ（3つまで）
+    const itemsDiv = document.createElement('div');
+    itemsDiv.className = 'items-container';
+    if (data.items) {
+        data.items.forEach(itemName => addItemSlot(itemsDiv, itemName));
+    }
+
+    // 星表示
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
-
-    // 星クリック
-    let startX, startY;
-    starLabel.addEventListener('mousedown', e => { startX = e.screenX; startY = e.screenY; });
-    starLabel.addEventListener('mouseup', e => {
+    
+    // クリックイベント
+    starLabel.onclick = (e) => {
         e.stopPropagation();
-        if (Math.abs(e.screenX - startX) > 5 || Math.abs(e.screenY - startY) > 5) return;
         let s = (parseInt(champ.dataset.stars) % 5) + 1;
         champ.dataset.stars = s;
         starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
-    });
-
-// Lv切り替え（左クリック）
-const lvDisplay = champ.querySelector('.lv-display');
-let currentLvNum = currentLv || 3;
-let lvStartX, lvStartY;
-
-// 押し始めの座標を記録
-champ.addEventListener('mousedown', (e) => {
-    lvStartX = e.screenX;
-    lvStartY = e.screenY;
-});
-
-// 指を離したときに、動いていなければレベルアップ
-champ.addEventListener('mouseup', (e) => {
-    // ドラッグ操作（移動）と区別するため、5px以上動いていたら無視
-    if (Math.abs(e.screenX - lvStartX) > 5 || Math.abs(e.screenY - lvStartY) > 5) return;
-
-    e.preventDefault();
-    // 他のイベント（星クリックなど）に干渉させない場合は stopPropagation を使用
-    // e.stopPropagation(); 
-
-    // 3 → 4 → 5 → ... → 10 → 3（非表示）の順番で回す
-    if (currentLvNum >= 10) {
-        currentLvNum = 3;
-        lvDisplay.style.display = 'none';
-    } else {
-        currentLvNum++;
-        lvDisplay.textContent = `Lv${currentLvNum}`;
-        lvDisplay.style.display = 'block';
-    }
-
-    container.dataset.lv = currentLvNum;
-});
-
-    // アイテム
-    const itemsDiv = document.createElement('div');
-    itemsDiv.className = 'items-container';
-    if (data.items && Array.isArray(data.items)) {
-        data.items.forEach(itemName => {
-            if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
-        });
-    }
+        if(typeof markChanged === 'function') markChanged();
+    };
 
     container.appendChild(champ);
     container.appendChild(itemsDiv);
     container.appendChild(starLabel);
 
+    // ドラッグ移動機能の付与
     addDragToChampion(champ);
 }
 

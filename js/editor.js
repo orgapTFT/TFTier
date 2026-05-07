@@ -49,6 +49,50 @@ function setupInitialGuide() {
     renderPalette();
 }
 
+// 盤面（Hex）の初期化とドロップイベント
+function createBoard() {
+    const board = document.getElementById('board');
+    if (!board) return;
+    board.innerHTML = '';
+    // 28マスのHexを生成
+    for (let i = 0; i < 28; i++) {
+        const hex = document.createElement('div');
+        hex.classList.add('hex');
+        
+        hex.ondragover = (e) => {
+            e.preventDefault();
+            hex.classList.add('dragover');
+        };
+        hex.ondragleave = () => hex.classList.remove('dragover');
+        
+        hex.ondrop = (e) => {
+            e.preventDefault();
+            hex.classList.remove('dragover');
+            
+            const src = e.dataTransfer.getData('text/plain');
+            const name = e.dataTransfer.getData('text/name');
+            const type = e.dataTransfer.getData('application/type');
+
+            // Builder.jsのhandleDrop（または同等の機能）を呼び出し
+            // チャンピオンアセット、または他のHexからの移動を処理
+            if (type === 'c' || !type) { 
+                saveHistory();
+                placeChampion(hex, { icon: name, name: name, stars: 1, items: [] });
+                markChanged();
+            } else if (type === 'i') {
+                // アイテムの場合、Hex内のチャンピオンに持たせる
+                const itemsContainer = hex.querySelector('.items-container');
+                if (itemsContainer) {
+                    saveHistory();
+                    addItemSlot(itemsContainer, name);
+                    markChanged();
+                }
+            }
+        };
+        board.appendChild(hex);
+    }
+}
+
 function ensureProjectAssets(data) {
     if (!data.assets) data.assets = { c: [], i: [], a: [], g: [] };
     data.assets.c = data.assets.c || [];
@@ -398,10 +442,10 @@ async function exportProject() {
 function setPalette(t) { curPalette = t; document.querySelectorAll('.p-tab').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); renderPalette(); }
 function handleAssetUpload(e) { saveHistory(); Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => { project.assets[curPalette].push({ src: ev.target.result, name: f.name, hidden: false }); renderPalette(); markChanged(); }; r.readAsDataURL(f); }); }
 
+// パレットの描画（右クリック連続挿入機能を追加）
 function renderPalette() {
     const g = document.getElementById('palette-grid'); 
     g.innerHTML = '';
-    
     const showHidden = document.getElementById('show-hidden-toggle').checked;
 
     project.assets[curPalette].forEach((asset, index) => {
@@ -413,31 +457,28 @@ function renderPalette() {
         
         d.innerHTML = `<img src="${asset.src}" draggable="false"><span>${asset.name}</span>`;
         
-        // クリックで従来通り配置
+        // 左クリック：通常配置
         d.onclick = () => { 
             if (!asset.hidden) fill(asset.src, asset.name); 
         };
         
-        // ダブルクリックで非表示切り替え
-        d.ondblclick = () => { 
-            saveHistory(); 
-            asset.hidden = !asset.hidden; 
-            renderPalette(); 
-            markChanged(); 
+        // 右クリック：連続挿入モード
+        d.oncontextmenu = (e) => {
+            e.preventDefault();
+            if (!asset.hidden && selSlot) {
+                fill(asset.src, asset.name); // 現在のスロットを埋めて次へ移動
+            }
         };
         
-        // ================ ドラッグ開始 ================
-d.ondragstart = (e) => {
-    e.dataTransfer.setData('text/plain', asset.src);
-    e.dataTransfer.setData('text/name', asset.name || '');
-    d.classList.add('dragging');
-};
+        // ドラッグ開始
+        d.ondragstart = (e) => {
+            e.dataTransfer.setData('text/plain', asset.src);
+            e.dataTransfer.setData('text/name', asset.name || '');
+            e.dataTransfer.setData('application/type', curPalette); // どのアセットか識別用
+            d.classList.add('dragging');
+        };
 
-d.ondragend = () => d.classList.remove('dragging');
-        
-
-        // ===========================================
-        
+        d.ondragend = () => d.classList.remove('dragging');
         g.appendChild(d);
     });
 }
