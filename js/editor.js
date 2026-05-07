@@ -44,9 +44,13 @@ function ensureProjectAssets(data) {
 
 function loadChampionsIntoPalette() {
     championFiles.forEach(file => {
-        const name = file.replace('.avif', '');
+        const name = file.replace('.avif', '');      
         const src = `../img/champ/17/${file}`;
-        project.assets.c.push({ src: src, name: name, hidden: false });
+        project.assets.c.push({
+            src: src,
+            name: name,
+            hidden: false
+        });
     });
 }
 
