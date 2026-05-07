@@ -1,4 +1,4 @@
-// ================ ファイルの先頭（window.onloadより上）に追加 ================
+// ================ ファイルの先頭に追加 ================
 let project = {};
 let selSlot = null;
 let curPalette = 'c';
@@ -8,89 +8,84 @@ let draggedIndex = 0;
 let undoStack = [];
 let redoStack = [];
 
-const VERSION = "1.0";   // ← 任意のバージョン番号
+const VERSION = "1.0";
 
-// queryの定義（getBuilderQueryの後でも可）
 let query = { guide: null, note: null };
+
+// ==================== 重要な関数 ====================
+function saveHistory() {
+    undoStack.push(JSON.stringify(project));
+    redoStack = [];
+}
+
+function markChanged() {
+    hasChanges = true;
+    nextAutoSave = 60;
+}
+
 // =====================================================================
 
 window.onload = () => {
-    const query = getBuilderQuery();
+    const urlParams = new URLSearchParams(window.location.search);
+    query = {
+        guide: urlParams.get('guide'),
+        note: urlParams.get('note')
+    };
+
     const saved = localStorage.getItem('tft_autosave');
-    
+
     if (saved) {
         try {
             project = patchProjectData(JSON.parse(saved));
             loadDefaultAssets();
-            
-            // 枠（スロットの土台）を生成する関数をここで呼ぶ！
+
             if (typeof initCanvasStructure === 'function') {
-                initCanvasStructure(); 
+                initCanvasStructure();
             }
-            
-            renderPalette(); 
-            renderGuideList(); 
+
+            renderPalette();
+            renderGuideList();
             loadActiveGuide();
-        } catch(e) {
+        } catch (e) {
             console.error("Load Error:", e);
             setupInitialGuide();
         }
     } else {
         setupInitialGuide();
-        if (query.guide) project.guides.pop();
+    }
+
+    // query パラメータ処理
+    if (query.guide) {
+        saveHistory();
+        const canvas = document.getElementById('canvas');
+        if (canvas) {
+            project.guides.push({
+                title: query.guide,
+                html: canvas.innerHTML,
+                url: '',
+                urlProg: ''
+            });
+            project.activeIndex = project.guides.length - 1;
+            renderGuideList();
+            loadActiveGuide();
+
+            const inTitle = document.getElementById('in-title');
+            if (inTitle) inTitle.innerText = query.guide;
+
+            if (query.note) {
+                const fDesc = document.getElementById('f-desc');
+                if (fDesc) fDesc.innerText = query.note;
+            }
+            updateTabData();
+        }
     }
 };
 
-// 共通の初期化用に関数化しておくとスッキリします
 function setupInitialGuide() {
     if (typeof initCanvasStructure === 'function') initCanvasStructure();
     addNewGuide();
     loadDefaultAssets();
     renderPalette();
-}
-
-// 盤面（Hex）の初期化とドロップイベント
-function createBoard() {
-    const board = document.getElementById('board');
-    if (!board) return;
-    board.innerHTML = '';
-    // 28マスのHexを生成
-    for (let i = 0; i < 28; i++) {
-        const hex = document.createElement('div');
-        hex.classList.add('hex');
-        
-        hex.ondragover = (e) => {
-            e.preventDefault();
-            hex.classList.add('dragover');
-        };
-        hex.ondragleave = () => hex.classList.remove('dragover');
-        
-        hex.ondrop = (e) => {
-            e.preventDefault();
-            hex.classList.remove('dragover');
-            
-            const src = e.dataTransfer.getData('text/plain');
-            const name = e.dataTransfer.getData('text/name');
-            const type = e.dataTransfer.getData('application/type');
-
-            // Builder.jsのhandleDrop（または同等の機能）を呼び出し
-            // チャンピオンアセット、または他のHexからの移動を処理
-            if (type === 'c' || !type) { 
-                saveHistory();
-                placeChampion(hex, { icon: name, name: name, stars: 1, items: [] });
-                markChanged();
-            } else if (type === 'i') {
-                // アイテムの場合、Hex内のチャンピオンに持たせる
-                const itemsContainer = hex.querySelector('.items-container');
-                if (itemsContainer) {
-                    saveHistory();
-                    addItemSlot(itemsContainer, name);
-                    markChanged();
-                }
-            }
-        };
-        board.appendChild(hex);
-    }
 }
 
 function ensureProjectAssets(data) {
@@ -102,12 +97,18 @@ function ensureProjectAssets(data) {
     return data;
 }
 
+function ensureProjectGuides(data) {
+    if (!data.guides) data.guides = [];
+    if (!('activeIndex' in data)) data.activeIndex = 0;
+    return data;
+}
+
 function loadChampionsIntoPalette() {
+    if (typeof championFiles === 'undefined') return;
     championFiles.forEach(file => {
         const name = file.replace('.avif', '');
-        
         project.assets.c.push({
-            src: `./img/champ/17/${file}`,   // 成功してる書き方に合わせる
+            src: `./img/champ/17/${file}`,
             name: name,
             hidden: false
         });
@@ -115,6 +116,7 @@ function loadChampionsIntoPalette() {
 }
 
 function loadItemsIntoPalette() {
+    if (typeof itemFiles === 'undefined') return;
     itemFiles.forEach(file => {
         const name = file.replace('.avif', '');
         const src = `./img/item/${file}`;
@@ -123,6 +125,7 @@ function loadItemsIntoPalette() {
 }
 
 function loadGodsIntoPalette() {
+    if (typeof godFiles === 'undefined') return;
     godFiles.forEach(file => {
         const name = file.replace('.avif', '');
         const src = `img/god/${file}`;
@@ -131,7 +134,8 @@ function loadGodsIntoPalette() {
 }
 
 function loadAugmentsIntoPalette() {
-    ['s','g','p'].forEach(tier => {
+    if (typeof augFiles === 'undefined') return;
+    ['s', 'g', 'p'].forEach(tier => {
         augFiles[tier].forEach(file => {
             const name = file.replace('.avif', '');
             const src = `./img/aug/${tier}/${file}`;
@@ -151,26 +155,33 @@ function loadDefaultAssets() {
 setInterval(() => {
     if (nextAutoSave > 0) {
         nextAutoSave--;
-        document.getElementById('save-timer-display').innerText = `保存まで: ${nextAutoSave}s`;
+        const timerDisplay = document.getElementById('save-timer-display');
+        if (timerDisplay) {
+            timerDisplay.innerText = `保存まで: ${nextAutoSave}s`;
+        }
     } else {
         if (hasChanges) executeAutoSave();
         nextAutoSave = 60;
     }
-}, 1000
-);
+}, 1000);
 
 function executeAutoSave() {
     localStorage.setItem('tft_autosave', JSON.stringify(project));
     const status = document.getElementById('autosave-status');
-    status.classList.add('show');
-    setTimeout(() => status.classList.remove('show'), 2000);
+    if (status) {
+        status.classList.add('show');
+        setTimeout(() => status.classList.remove('show'), 2000);
+    }
     hasChanges = false;
 }
 
 function patchProjectData(data) {
     data = ensureProjectAssets(data);
+    data = ensureProjectGuides(data);
     if (data.guides) {
-        data.guides.forEach(g => { if (g.urlProg === undefined) g.urlProg = ""; });
+        data.guides.forEach(g => {
+            if (g.urlProg === undefined) g.urlProg = "";
+        });
     }
     data.version = VERSION;
     return data;
@@ -184,32 +195,19 @@ function getBuilderQuery() {
     };
 }
 
-
-
-    const boardArea = document.getElementById('board-area');
-    if (boardArea) {
-        boardArea.addEventListener('contextmenu', showBoardContextMenu);
-    }
-    document.addEventListener('click', hideBoardContextMenu);
-
-    if (query.guide) {
-        saveHistory();
-        project.guides.push({ title: query.guide, html: document.getElementById('canvas').innerHTML, url: '', urlProg: '' });
-        project.activeIndex = project.guides.length - 1;
-        renderGuideList();
-        loadActiveGuide();
-        document.getElementById('in-title').innerText = query.guide;
-        if (query.note) document.getElementById('f-desc').innerText = query.note;
-        updateTabData();
-    };
-
-
+const boardArea = document.getElementById('board-area');
+if (boardArea) {
+    boardArea.addEventListener('contextmenu', showBoardContextMenu);
+}
+document.addEventListener('click', hideBoardContextMenu);
 
 function undo() {
     if (undoStack.length === 0) return;
     redoStack.push(JSON.stringify(project));
     project = JSON.parse(undoStack.pop());
-    renderPalette(); renderGuideList(); loadActiveGuide();
+    renderPalette();
+    renderGuideList();
+    loadActiveGuide();
     markChanged();
 }
 
@@ -217,68 +215,96 @@ function redo() {
     if (redoStack.length === 0) return;
     undoStack.push(JSON.stringify(project));
     project = JSON.parse(redoStack.pop());
-    renderPalette(); renderGuideList(); loadActiveGuide();
+    renderPalette();
+    renderGuideList();
+    loadActiveGuide();
     markChanged();
 }
 
 function initCanvasStructure() {
-    const alt = document.getElementById('row-alt'); alt.innerHTML = '';
-    for (let n = 0; n < 10; n++) addSlot(alt, 'size-M');
-    const prog = document.getElementById('row-prog'); prog.innerHTML = '';
-    for (let i = 0; i < 14; i++) addSlot(prog, 'size-M');
-    const eqArea = document.getElementById('equip-area'); eqArea.innerHTML = '';
-    for (let j = 0; j < 3; j++) {
-        const row = document.createElement('div'); row.className = 'row-wrap';
-        const lv = document.createElement('div'); lv.className = 'lv-label';
-        lv.innerHTML = `<div class="lv-val" contenteditable="true" oninput="markChanged()">Lv8</div>`;
-        const grp = document.createElement('div'); grp.className = 'slot-group';
-        addSlot(grp, 'size-L');
-        for (let k = 0; k < 15; k++) addSlot(grp, 'item-slot size-M');
-        row.append(lv, grp); eqArea.appendChild(row);
+    const alt = document.getElementById('row-alt');
+    if (alt) {
+        alt.innerHTML = '';
+        for (let n = 0; n < 10; n++) addSlot(alt, 'size-M');
     }
-    const aug = document.getElementById('row-aug'); aug.innerHTML = '';
-    for (let l = 0; l < 5; l++) addSlot(aug, 'aug-slot size-M');
-    const god = document.getElementById('row-god'); god.innerHTML = '';
-    for (let m = 0; m < 5; m++) {
-        const wrap = document.createElement('div'); wrap.className = 'god-wrap size-L';
-        const s = document.createElement('div'); s.className = `slot god-slot`;
-        s.onclick = (e) => { e.stopPropagation(); sel(s); };
-        s.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(s); };
-        const lbl = document.createElement('div'); lbl.className = 'god-name-label';
-        wrap.append(s, lbl); god.appendChild(wrap);
+
+    const prog = document.getElementById('row-prog');
+    if (prog) {
+        prog.innerHTML = '';
+        for (let i = 0; i < 14; i++) addSlot(prog, 'size-M');
+    }
+
+    const eqArea = document.getElementById('equip-area');
+    if (eqArea) {
+        eqArea.innerHTML = '';
+        for (let j = 0; j < 3; j++) {
+            const row = document.createElement('div');
+            row.className = 'row-wrap';
+            const lv = document.createElement('div');
+            lv.className = 'lv-label';
+            lv.innerHTML = `<div class="lv-val" contenteditable="true" oninput="markChanged()">Lv8</div>`;
+            const grp = document.createElement('div');
+            grp.className = 'slot-group';
+            addSlot(grp, 'size-L');
+            for (let k = 0; k < 15; k++) addSlot(grp, 'item-slot size-M');
+            row.append(lv, grp);
+            eqArea.appendChild(row);
+        }
+    }
+
+    const aug = document.getElementById('row-aug');
+    if (aug) {
+        aug.innerHTML = '';
+        for (let l = 0; l < 5; l++) addSlot(aug, 'aug-slot size-M');
+    }
+
+    const god = document.getElementById('row-god');
+    if (god) {
+        god.innerHTML = '';
+        for (let m = 0; m < 5; m++) {
+            const wrap = document.createElement('div');
+            wrap.className = 'god-wrap size-L';
+            const s = document.createElement('div');
+            s.className = `slot god-slot`;
+            s.onclick = (e) => { e.stopPropagation(); sel(s); };
+            s.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(s); };
+            const lbl = document.createElement('div');
+            lbl.className = 'god-name-label';
+            wrap.append(s, lbl);
+            god.appendChild(wrap);
+        }
     }
 }
 
 function addSlot(parent, cls) {
     const d = document.createElement('div');
     d.className = `slot ${cls}`;
-    
+
     d.onclick = (e) => { e.stopPropagation(); sel(d); };
     d.oncontextmenu = (e) => { e.preventDefault(); clearSlotContent(d); };
 
-    // ================ ドラッグ＆ドロップ対応 ================
+    // ドラッグ＆ドロップ対応
     d.ondragover = (e) => {
-        e.preventDefault();           // ← これが超重要！
+        e.preventDefault();
         d.classList.add('dragover');
     };
-    
+
     d.ondragleave = () => {
         d.classList.remove('dragover');
     };
-    
+
     d.ondrop = (e) => {
         e.preventDefault();
         d.classList.remove('dragover');
-        
+
         const src = e.dataTransfer.getData('text/plain');
         const name = e.dataTransfer.getData('text/name') || '';
-        
+
         if (src) {
             saveHistory();
             fillWithDrag(d, src, name);
         }
     };
-    // ====================================================
 
     parent.appendChild(d);
 }
@@ -309,14 +335,16 @@ function clearSlotContent(slot) {
     saveHistory();
     slot.innerHTML = '';
     if (slot.parentElement && slot.parentElement.classList.contains('god-wrap')) {
-        slot.parentElement.querySelector('.god-name-label').innerText = '';
+        const label = slot.parentElement.querySelector('.god-name-label');
+        if (label) label.innerText = '';
     }
     markChanged();
 }
 
 function sel(el) {
     if (selSlot) selSlot.classList.remove('selected');
-    selSlot = el; if (el) el.classList.add('selected');
+    selSlot = el;
+    if (el) el.classList.add('selected');
 }
 
 function changeSelectedSlotSize(size) {
@@ -346,12 +374,12 @@ function fill(src, name = "") {
 
 function findNextSlot(current) {
     const parent = current.parentElement;
-    if (parent.classList.contains('god-wrap')) {
+    if (parent && parent.classList.contains('god-wrap')) {
         const wraps = Array.from(document.querySelectorAll('.god-wrap'));
         const idx = wraps.indexOf(parent);
         return wraps[idx + 1] ? wraps[idx + 1].querySelector('.slot') : null;
     }
-    const slots = Array.from(parent.querySelectorAll('.slot'));
+    const slots = Array.from(parent?.querySelectorAll('.slot') || []);
     const index = slots.indexOf(current);
     return (index >= 0 && index < slots.length - 1) ? slots[index + 1] : null;
 }
@@ -363,7 +391,11 @@ function setStars(n) {
     if (n === 0) {
         if (s) s.remove();
     } else {
-        if (!s) { s = document.createElement('div'); s.className = 'star-row'; selSlot.appendChild(s); }
+        if (!s) {
+            s = document.createElement('div');
+            s.className = 'star-row';
+            selSlot.appendChild(s);
+        }
         s.innerHTML = '<span>★</span>'.repeat(n);
     }
     markChanged();
@@ -382,9 +414,10 @@ function insertSymbol(symbol) {
 function setDifficulty(n) {
     saveHistory();
     const box = document.getElementById('difficulty-box');
+    if (!box) return;
     const colors = ["#22c55e", "#eab308", "#ef4444"];
     box.innerHTML = '';
-    for (let i = 0; i < n; i++) box.innerHTML += `<div class="diff-sq" style="background:${colors[n-1]}"></div>`;
+    for (let i = 0; i < n; i++) box.innerHTML += `<div class="diff-sq" style="background:${colors[n - 1]}"></div>`;
     markChanged();
 }
 
@@ -397,8 +430,12 @@ function handlePaste(e) {
             const reader = new FileReader();
             reader.onload = (ev) => {
                 const img = document.getElementById('board-img');
-                img.src = ev.target.result; img.style.display = 'block';
-                document.getElementById('board-msg').style.display = 'none';
+                if (img) {
+                    img.src = ev.target.result;
+                    img.style.display = 'block';
+                }
+                const msg = document.getElementById('board-msg');
+                if (msg) msg.style.display = 'none';
                 markChanged();
             };
             reader.readAsDataURL(blob);
@@ -408,18 +445,28 @@ function handlePaste(e) {
 
 async function savePNG() {
     document.querySelectorAll('.rem-btn').forEach(b => b.classList.add('no-export'));
-    document.querySelectorAll('.slot').forEach(s => { if(!s.innerHTML) s.classList.add('empty-slot-hide'); });
+    document.querySelectorAll('.slot').forEach(s => { if (!s.innerHTML) s.classList.add('empty-slot-hide'); });
     if (selSlot) selSlot.classList.remove('selected');
-    const resCanvas = await html2canvas(document.getElementById('canvas'), { backgroundColor: "#060e20", scale: 2, width: 1080, height: 1440, useCORS: true });
+
+    const canvas = document.getElementById('canvas');
+    if (!canvas) return;
+
+    const resCanvas = await html2canvas(canvas, { backgroundColor: "#060e20", scale: 2, width: 1080, height: 1440, useCORS: true });
     const blob = await new Promise(resolve => resCanvas.toBlob(resolve, 'image/png'));
-    const titleText = document.getElementById('in-title').innerText.trim() || 'tft_guide';
+    const titleEl = document.getElementById('in-title');
+    const titleText = (titleEl?.innerText?.trim() || 'tft_guide');
     if (window.showSaveFilePicker) {
         try {
             const handle = await window.showSaveFilePicker({ suggestedName: `${titleText}.png`, types: [{ description: 'PNG Image', accept: { 'image/png': ['.png'] } }] });
-            const writable = await handle.createWritable(); await writable.write(blob); await writable.close();
-        } catch (err) {}
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+        } catch (err) { }
     } else {
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${titleText}.png`; a.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${titleText}.png`;
+        a.click();
     }
     document.querySelectorAll('.no-export').forEach(b => b.classList.remove('no-export'));
     document.querySelectorAll('.empty-slot-hide').forEach(s => s.classList.remove('empty-slot-hide'));
@@ -427,80 +474,130 @@ async function savePNG() {
 
 async function exportProject() {
     updateTabData();
-    const titleText = document.getElementById('in-title').innerText.trim() || 'tft_project';
-    const blob = new Blob([JSON.stringify(project)], {type: "application/json"});
+    const titleEl = document.getElementById('in-title');
+    const titleText = (titleEl?.innerText?.trim() || 'tft_project');
+    const blob = new Blob([JSON.stringify(project)], { type: "application/json" });
     if (window.showSaveFilePicker) {
         try {
             const handle = await window.showSaveFilePicker({ suggestedName: `${titleText}.json`, types: [{ description: 'JSON Project File', accept: { 'application/json': ['.json'] } }] });
-            const writable = await handle.createWritable(); await writable.write(blob); await writable.close();
-        } catch (err) {}
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+        } catch (err) { }
     } else {
-        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${titleText}.json`; a.click();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `${titleText}.json`;
+        a.click();
     }
 }
 
-function setPalette(t) { curPalette = t; document.querySelectorAll('.p-tab').forEach(b => b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active'); renderPalette(); }
-function handleAssetUpload(e) { saveHistory(); Array.from(e.target.files).forEach(f => { const r = new FileReader(); r.onload = (ev) => { project.assets[curPalette].push({ src: ev.target.result, name: f.name, hidden: false }); renderPalette(); markChanged(); }; r.readAsDataURL(f); }); }
+function setPalette(t) {
+    curPalette = t;
+    document.querySelectorAll('.p-tab').forEach(b => b.classList.remove('active'));
+    const tab = document.getElementById('tab-' + t);
+    if (tab) tab.classList.add('active');
+    renderPalette();
+}
 
-// パレットの描画（右クリック連続挿入機能を追加）
+function handleAssetUpload(e) {
+    saveHistory();
+    Array.from(e.target.files).forEach(f => {
+        const r = new FileReader();
+        r.onload = (ev) => {
+            project.assets[curPalette].push({ src: ev.target.result, name: f.name, hidden: false });
+            renderPalette();
+            markChanged();
+        };
+        r.readAsDataURL(f);
+    });
+}
+
 function renderPalette() {
-    const g = document.getElementById('palette-grid'); 
+    const g = document.getElementById('palette-grid');
+    if (!g) return;
     g.innerHTML = '';
-    const showHidden = document.getElementById('show-hidden-toggle').checked;
+
+    const showHidden = document.getElementById('show-hidden-toggle')?.checked || false;
+
+    if (!project.assets || !project.assets[curPalette]) return;
 
     project.assets[curPalette].forEach((asset, index) => {
         if (asset.hidden && !showHidden) return;
-        
+
         const d = document.createElement('div');
         d.className = `asset ${asset.hidden ? 'hidden-asset' : ''}`;
         d.draggable = true;
-        
+
         d.innerHTML = `<img src="${asset.src}" draggable="false"><span>${asset.name}</span>`;
-        
-        // 左クリック：通常配置
-        d.onclick = () => { 
-            if (!asset.hidden) fill(asset.src, asset.name); 
+
+        // クリックで従来通り配置
+        d.onclick = () => {
+            if (!asset.hidden) fill(asset.src, asset.name);
         };
-        
-        // 右クリック：連続挿入モード
-        d.oncontextmenu = (e) => {
-            e.preventDefault();
-            if (!asset.hidden && selSlot) {
-                fill(asset.src, asset.name); // 現在のスロットを埋めて次へ移動
-            }
+
+        // ダブルクリックで非表示切り替え
+        d.ondblclick = () => {
+            saveHistory();
+            asset.hidden = !asset.hidden;
+            renderPalette();
+            markChanged();
         };
-        
-        // ドラッグ開始
+
+        // ドラッグ開���
         d.ondragstart = (e) => {
             e.dataTransfer.setData('text/plain', asset.src);
             e.dataTransfer.setData('text/name', asset.name || '');
-            e.dataTransfer.setData('application/type', curPalette); // どのアセットか識別用
             d.classList.add('dragging');
         };
 
         d.ondragend = () => d.classList.remove('dragging');
+
         g.appendChild(d);
     });
 }
 
 function addNewGuide() {
-    saveHistory(); initCanvasStructure();
-    document.getElementById('in-title').innerText = "";
-    document.getElementById('f-bold').innerText = "";
-    document.getElementById('f-desc').innerText = "";
-    document.getElementById('tt-url').value = "";
-    document.getElementById('tt-url-prog').value = "";
-    project.guides.push({ title: "", html: document.getElementById('canvas').innerHTML, url: "", urlProg: "" });
+    saveHistory();
+    initCanvasStructure();
+    const inTitle = document.getElementById('in-title');
+    if (inTitle) inTitle.innerText = "";
+    const fBold = document.getElementById('f-bold');
+    if (fBold) fBold.innerText = "";
+    const fDesc = document.getElementById('f-desc');
+    if (fDesc) fDesc.innerText = "";
+    const ttUrl = document.getElementById('tt-url');
+    if (ttUrl) ttUrl.value = "";
+
+    project = ensureProjectGuides(project);
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        project.guides.push({ title: "", html: canvas.innerHTML, url: "", urlProg: "" });
+    }
     project.activeIndex = project.guides.length - 1;
-    renderGuideList(); loadActiveGuide(); setDifficulty(2);
+    renderGuideList();
+    loadActiveGuide();
+    setDifficulty(2);
 }
 
 function renderGuideList() {
-    const l = document.getElementById('guide-list'); l.innerHTML = '';
+    const l = document.getElementById('guide-list');
+    if (!l) return;
+    l.innerHTML = '';
+
+    project = ensureProjectGuides(project);
+
     project.guides.forEach((g, i) => {
-        const d = document.createElement('div'); d.className = `guide-tab ${i === project.activeIndex ? 'active' : ''}`;
+        const d = document.createElement('div');
+        d.className = `guide-tab ${i === project.activeIndex ? 'active' : ''}`;
         d.innerHTML = `<span>${g.title || 'Untitled'}</span><b onclick="deleteGuide(event, ${i})">×</b>`;
-        d.onclick = () => { if (project.activeIndex === i) return; updateTabData(); project.activeIndex = i; loadActiveGuide(); renderGuideList(); };
+        d.onclick = () => {
+            if (project.activeIndex === i) return;
+            updateTabData();
+            project.activeIndex = i;
+            loadActiveGuide();
+            renderGuideList();
+        };
         l.appendChild(d);
     });
 }
@@ -508,19 +605,30 @@ function renderGuideList() {
 function deleteGuide(e, index) {
     e.stopPropagation();
     if (confirm("このガイドを削除しますか？")) {
-        saveHistory(); project.guides.splice(index, 1);
-        if (project.activeIndex >= project.guides.length) project.activeIndex = Math.max(0, project.guides.length - 1);
-        if (project.guides.length === 0) addNewGuide(); else { renderGuideList(); loadActiveGuide(); markChanged(); }
+        saveHistory();
+        project.guides.splice(index, 1);
+        if (project.activeIndex >= project.guides.length) {
+            project.activeIndex = Math.max(0, project.guides.length - 1);
+        }
+        if (project.guides.length === 0) {
+            addNewGuide();
+        } else {
+            renderGuideList();
+            loadActiveGuide();
+            markChanged();
+        }
     }
 }
 
 function loadActiveGuide() {
+    project = ensureProjectGuides(project);
     const g = project.guides[project.activeIndex];
     if (!g) return;
 
-    document.getElementById('canvas').innerHTML = g.html;
-    
-    // ... 既存のコードはそのまま ...
+    const canvas = document.getElementById('canvas');
+    if (canvas) {
+        canvas.innerHTML = g.html;
+    }
 
     // 動的に生成されたスロットすべてにドラッグイベントを再付与
     document.querySelectorAll('.slot').forEach(slot => {
@@ -533,11 +641,11 @@ function loadActiveGuide() {
             slot.classList.add('dragover');
         };
         slot.ondragleave = () => slot.classList.remove('dragover');
-        
+
         slot.ondrop = (e) => {
             e.preventDefault();
             slot.classList.remove('dragover');
-            
+
             const src = e.dataTransfer.getData('text/plain');
             const name = e.dataTransfer.getData('text/name') || '';
             if (src) {
@@ -551,23 +659,43 @@ function loadActiveGuide() {
 }
 
 function updateTabData() {
-    if (!project.guides.length) return;
+    if (!project.guides || !project.guides.length) return;
     const g = project.guides[project.activeIndex];
-    g.title = document.getElementById('in-title').innerText;
-    g.url = document.getElementById('tt-url').value;
-    g.urlProg = document.getElementById('tt-url-prog').value;
-    g.html = document.getElementById('canvas').innerHTML;
+    if (!g) return;
+
+    const inTitle = document.getElementById('in-title');
+    if (inTitle) g.title = inTitle.innerText;
+
+    const ttUrl = document.getElementById('tt-url');
+    if (ttUrl) g.url = ttUrl.value;
+
+    const canvas = document.getElementById('canvas');
+    if (canvas) g.html = canvas.innerHTML;
+
     renderGuideList();
 }
 
 function importProject(e) {
     const r = new FileReader();
-    r.onload = (ev) => { project = patchProjectData(JSON.parse(ev.target.result)); renderPalette(); renderGuideList(); loadActiveGuide(); markChanged(); };
+    r.onload = (ev) => {
+        project = patchProjectData(JSON.parse(ev.target.result));
+        renderPalette();
+        renderGuideList();
+        loadActiveGuide();
+        markChanged();
+    };
     r.readAsText(e.target.files[0]);
 }
 
 async function pasteFromClipboard(targetId) {
-    try { const text = await navigator.clipboard.readText(); document.getElementById(targetId).value = text; markChanged(); } catch (err) {}
+    try {
+        const text = await navigator.clipboard.readText();
+        const el = document.getElementById(targetId);
+        if (el) {
+            el.value = text;
+            markChanged();
+        }
+    } catch (err) { }
 }
 
 function insertBuilderLink(targetId) {
@@ -584,9 +712,12 @@ async function pasteImageFromClipboard() {
                     const reader = new FileReader();
                     reader.onload = (ev) => {
                         const img = document.getElementById('board-img');
-                        img.src = ev.target.result;
-                        img.style.display = 'block';
-                        document.getElementById('board-msg').style.display = 'none';
+                        if (img) {
+                            img.src = ev.target.result;
+                            img.style.display = 'block';
+                        }
+                        const msg = document.getElementById('board-msg');
+                        if (msg) msg.style.display = 'none';
                         markChanged();
                     };
                     reader.readAsDataURL(blob);
@@ -617,6 +748,6 @@ function hideBoardContextMenu() {
 }
 
 function openLink(targetId) {
-    const url = document.getElementById(targetId).value;
+    const url = document.getElementById(targetId)?.value;
     if (url && url.startsWith('http')) window.open(url, '_blank');
 }
