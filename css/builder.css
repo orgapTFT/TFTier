@@ -1,178 +1,36 @@
-/* ===================== 全体 ===================== */
+/* ===================== 全体レイアウト ===================== */
 html, body {
     height: 100%;
     min-height: 100vh;
-    overflow-y: auto;
     margin: 0;
-    padding: 20px 0;
+    padding: 0;
     background-color: #0a0a1a;
 }
 
-/* ===================== メイン横並び ===================== */
-/*.main-container {
-    display: flex;
-    flex-direction: column; 
-    align-items: flex-start;
-    justify-content: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    max-width: 1680px;
-    margin: 0 auto;
-    padding: 10px 0;
-}
-*/
-
-/* ===================== ベンチ & アイテム ===================== */
-/*#bench {
-    display: grid;
-    grid-template-columns: repeat(7, 42px);
-    gap: 2px;
-    justify-content: center;
-    padding: 10px 30px;
-    background: #1f1f2e;
-    border-radius: 12px;
-    border: 0.5px solid #444;
-    max-width: fit-content;
-    margin-left: auto;
-    margin-right: auto;
-}*/
-
-/*#items {
-    display: grid;
-    grid-template-columns: repeat(30, 42px);
-    gap: 2px;
-    justify-content: center;
-    background: #1f1f2e;
-    padding: 15px;
-    border-radius: 12px;
-    border: 2px solid #444;
-    gap: 3px;
-    justify-content: center;
-    padding: 14px;
-    width: fit-content;
-    max-width: 98%;
-}*/
-
-/* ベンチ通常チャンピオン */
-/*#bench .piece {
-    background: #222;
-    border: 3px solid #666;
-}*/
-
-/* ベンチ内のチャンピオン名 */
-/*#bench .piece div {
-    position: absolute;
-    bottom: 3px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: white;
-    font-size: 10.5px;
-    text-shadow: 0 0 4px black;
-    pointer-events: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 0 2px;
-}*/
-
-/* 一般スタイル */
-.piece, .item {
-    background: #222;
-    border: 3px solid #666;
-    position: relative;
-    overflow: hidden;
-    cursor: grab;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 12px;
-    box-sizing: border-box;
-}
-
-/* その他重要なスタイル（そのまま残す） */
-.item-slot {
-    width: 25px;
-    height: 25px;
-    background: #000;
-    border: 1px solid #fff;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    cursor: grab;           /* help → grab に変更 */
-    overflow: hidden;
-}
-
-/* ベンチのチャンピオン名 */
-.piece .champ-name {
-    position: absolute;
-    bottom: 3px;
-    left: 0;
-    right: 0;
-    text-align: center;
-    color: white;
-    font-size: 10.5px;
-    text-shadow: 0 0 4px black;
-    pointer-events: none;
-    line-height: 1;
-    z-index: 2;
-    /* 長い名前を…で省略 */
-    white-space: nowrap;           /* 折り返し禁止 */
-    overflow: hidden;              /* はみ出し隠す */
-    text-overflow: ellipsis;       /* …を表示 */
-    padding: 0 4px;                /* 少し余白を取って見やすく */
-    max-width: 100%;               /* 親要素内に収める */
-}
-
-
+/* ===================== 盤面エリア ===================== */
 #board {
-  display: grid;
-  /* 1マス92px × 7枚 ＋ ズレる分の余白（約47px）考慮 */
-  grid-template-columns: repeat(7, 92px);
-  width: fit-content; 
-  gap: 2px 2px;
-  padding: 5px 70px 5px 15px; 
-  box-sizing: border-box;
-  background:  var(--bg);
-    margin-left: auto;
-    margin-right: auto;
+    display: grid;
+    grid-template-columns: repeat(7, 92px);
+    width: fit-content;
+    gap: 2px;
+    padding: 15px 70px 15px 15px;
+    box-sizing: border-box;
+    background: var(--bg);
+    border: 4px solid #444;
+    border-radius: 15px;
+    margin: 20px auto;
 }
 
-.row {
-    display: flex;
-    justify-content: center;
-    /* 2行目以降を上に25pxずらして噛み合わせる */
-    margin-top: -25px; 
-}
-
-/* 最初の行だけは上にずらさない */
-.row:first-child {
-    margin-top: 0;
-}
-
-/* 2段目と4段目をすべて半分ずらす */
-.hex:nth-child(n+8):nth-child(-n+14),
-.hex:nth-child(n+22):nth-child(-n+28) {
-  margin-left: 47px;
-}
-
-
-
-
-/* 六角形（マス）の設定 */
+/* 六角形マス */
 .hex {
     position: relative;
     width: 88px;
     height: 100px;
     margin: 4px;
     display: inline-block;
-    vertical-align: top;
-    /* overflow: visible にして、はみ出しを許可する */
-    overflow: visible; 
+    overflow: visible;
 }
 
-/* 六角形の「土台」を疑似要素で作る */
 .hex::before {
     content: "";
     position: absolute;
@@ -181,30 +39,29 @@ html, body {
     width: 100%;
     height: 100%;
     background-color: #333c48;
-    
-    /* 角を丸く描く特別なSVGパス */
     -webkit-mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 3 Q55 3 58 5 L92 25 Q96 28 96 33 L96 67 Q96 72 92 75 L58 95 Q55 97 50 97 Q45 97 42 95 L8 75 Q4 72 4 67 L4 33 Q4 28 8 25 L42 5 Q45 3 50 3 Z" fill="black"/></svg>');
     mask-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50 3 Q55 3 58 5 L92 25 Q96 28 96 33 L96 67 Q96 72 92 75 L58 95 Q55 97 50 97 Q45 97 42 95 L8 75 Q4 72 4 67 L4 33 Q4 28 8 25 L42 5 Q45 3 50 3 Z" fill="black"/></svg>');
     -webkit-mask-size: 100% 100%;
     mask-size: 100% 100%;
-    
     filter: drop-shadow(0px 0px 1px #ffffff);
     z-index: 0;
 }
 
-/* 六角形ホバー効果 */
 .hex:hover {
     background-color: #252545;
 }
-.hex.dragover { background: rgb(170, 225, 200) !important; }
 
-/* チャンピオンの箱 */
+.hex.dragover {
+    background: rgb(170, 225, 200) !important;
+}
+
+/* チャンピオン要素 */
 .champ {
     position: absolute;
-    top: 0;                    /* 上部隙間を減らす */
+    top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 100%; 
+    width: 100%;
     height: 100%;
     z-index: 2;
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
@@ -212,32 +69,25 @@ html, body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    cursor: grab;
 }
 
-.champ-icon {
-    font-size: 55px; /* サイズ調整 */
-    line-height: 1;
-    margin-top: 5px;
-}
-
-/* チャンピオン画像がある場合（imgタグなど） */
-.champ img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;        /* 小さい画像も比率を保ったまま拡大 */
-    transform: scale(1.3);     /* ← これで少し強制拡大 */
+.champ-img {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    transform: scale(1.3);
     border-radius: 8px;
     z-index: 3;
 }
 
-/* 盤面に配置したチャンピオンの名前 */
 .champ-name-onboard {
     position: absolute;
-    bottom: 20px;           /* 位置調整 */
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     color: #ffffff;
-    font-size: 13px;       /* 大きめ */
+    font-size: 13px;
     font-weight: bold;
     text-shadow: 0 0 6px black, 0 0 3px black;
     pointer-events: none;
@@ -245,15 +95,15 @@ html, body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 85%;        /* 長い名前は…で省略 */
+    max-width: 85%;
     text-align: center;
     padding: 0 4px;
 }
 
-/* アイテムコンテナ（土台の外側へ出す） */
+/* アイテムコンテナ */
 .items-container {
     position: absolute;
-    bottom: -6px;           /* 少し下に調整 */
+    bottom: -6px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -261,7 +111,7 @@ html, body {
     z-index: 15;
 }
 
-/* 装備済みアイテムスロット */
+/* アイテムスロット */
 .item-slot {
     width: 25px;
     height: 25px;
@@ -272,14 +122,15 @@ html, body {
     align-items: center;
     justify-content: center;
     position: relative;
-    cursor: help;
+    cursor: grab;
     overflow: hidden;
-    flex-shrink: 0;              /* 縮まないように */
+    flex-shrink: 0;
 }
 
-/* アイテム名は通常非表示 */
-.item-slot .item-name {
-    display: none;
+.item-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .item-slot.dragging-hidden {
@@ -287,54 +138,10 @@ html, body {
     transform: scale(0.8);
 }
 
-.hex .items-container {
-    display: flex;
-    gap: 3px;
-    margin-top: 4px;
-    justify-content: center;
-}
-
-/* ホバー時のツールチップ */
-/*.item-slot:hover::after {
-    content: attr(data-name);
-    position: absolute;
-    bottom: 28px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #1f1f2e;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 13px;
-    white-space: nowrap;
-    z-index: 100;
-    border: 1px solid #666;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.6);
-}
-*/
-
-/* 説明文も表示したい場合はこれも追加可能 */
-/*.item-slot:hover::before {
-    content: attr(data-desc);
-    position: absolute;
-    bottom: 55px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #111;
-    color: #ddd;
-    padding: 6px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    width: 180px;
-    text-align: center;
-    z-index: 100;
-    border: 1px solid #555;
-}
-*/
-
+/* 星表示 */
 .star {
     position: absolute;
-    top: -2px; /* 六角形上側 */
+    top: -2px;
     left: 0;
     width: 100%;
     display: flex;
@@ -345,13 +152,13 @@ html, body {
     font-weight: bold;
     text-shadow: 0 0 4px #000;
     cursor: pointer;
-    z-index: 20; /* アイコンやアイテムより手前 */
+    z-index: 20;
     white-space: nowrap;
-    pointer-events: auto; /* クリックを有効に */
-    min-height: 1em; /* 非表示時もクリック判定を維持 */
+    pointer-events: auto;
+    min-height: 1em;
 }
 
-/* Lv表示（六角形より手前・星より後ろ） */
+/* Lv表示 */
 .lv-display {
     position: absolute;
     top: 15px;
@@ -366,4 +173,100 @@ html, body {
     pointer-events: none;
     z-index: 19;
     white-space: nowrap;
+}
+
+/* ===================== ベンチ ===================== */
+#bench {
+    display: grid;
+    grid-template-columns: repeat(10, 42px);
+    gap: 2px;
+    justify-content: center;
+    padding: 20px 30px;
+    background: #1f1f2e;
+    border-radius: 12px;
+    border: 2px solid #444;
+    max-width: fit-content;
+    margin: 20px auto;
+}
+
+.piece {
+    background: #222;
+    border: 3px solid #666;
+    position: relative;
+    overflow: hidden;
+    cursor: grab;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 12px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.piece img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.piece .champ-name {
+    position: absolute;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: white;
+    font-size: 10.5px;
+    text-shadow: 0 0 4px black;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 2px;
+    line-height: 1;
+}
+
+.piece.dragging-hidden {
+    opacity: 0.3;
+}
+
+/* ===================== パレット ===================== */
+#palette-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    padding: 8px;
+}
+
+.asset {
+    cursor: pointer;
+    border: 1px solid #222;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: #111;
+    border-radius: 4px;
+}
+
+.asset img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+}
+
+.asset span {
+    font-size: 8px;
+    color: #aaa;
+    padding: 2px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.asset.dragging-hidden {
+    opacity: 0.4;
+    transform: scale(0.95);
 }
