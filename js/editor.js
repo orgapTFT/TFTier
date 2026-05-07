@@ -1,3 +1,19 @@
+// ================ ファイルの先頭（window.onloadより上）に追加 ================
+let project = {};
+let selSlot = null;
+let curPalette = 'c';
+let hasChanges = false;
+let nextAutoSave = 60;
+let draggedIndex = 0;
+let undoStack = [];
+let redoStack = [];
+
+const VERSION = "1.0";   // ← 任意のバージョン番号
+
+// queryの定義（getBuilderQueryの後でも可）
+let query = { guide: null, note: null };
+// =====================================================================
+
 window.onload = () => {
     const query = getBuilderQuery();
     const saved = localStorage.getItem('tft_autosave');
