@@ -37,9 +37,49 @@ function handleHexDrop(e, hex) {
     hex.classList.remove('dragover');
     
     try {
-        const rawData = e.dataTransfer.getData('application/json');
-        if (!rawData) return;
-        const data = JSON.parse(rawData);
+let data = null;
+
+// =====================
+// application/json 優先
+// =====================
+const rawData = e.dataTransfer.getData('application/json');
+
+if (rawData) {
+
+    try {
+        data = JSON.parse(rawData);
+    }
+    catch(err) {
+        console.error(err);
+    }
+}
+
+// =====================
+// fallback
+// editor.js の drag 用
+// =====================
+if (!data) {
+
+    const src = e.dataTransfer.getData('text/plain');
+    const name = e.dataTransfer.getData('text/name');
+
+    if (src || name) {
+
+        const isChamp =
+            src.includes('/champ/')
+            || hex.classList.contains('hex');
+
+        data = {
+            type: isChamp ? 'champ' : 'item',
+            icon: name || '',
+            stars: '1',
+            lv: '0',
+            items: []
+        };
+    }
+}
+
+if (!data) return;
         
         // ===================== チャンピオン配置 =====================
         if (data.type === 'champ') {
