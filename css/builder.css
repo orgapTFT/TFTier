@@ -27,8 +27,12 @@ html, body {
     width: 88px;
     height: 100px;
     margin: 4px;
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: visible;
+    /* ドラッグ&ドロップを受け付けるため pointer-events を有効に */
+    pointer-events: auto;
 }
 
 /* 2段目と4段目をすべて半分ずらす */
@@ -37,6 +41,7 @@ html, body {
   margin-left: 47px;
 }
 
+/* 六角形の背景 */
 .hex::before {
     content: "";
     position: absolute;
@@ -51,18 +56,19 @@ html, body {
     mask-size: 100% 100%;
     filter: drop-shadow(0px 0px 1px #ffffff);
     z-index: 0;
+    pointer-events: none;
 }
 
-.hex:hover {
+.hex:hover::before {
     background-color: #252545;
 }
 
-.hex.dragover {
-    background: rgb(170, 225, 200) !important;
+.hex.dragover::before {
+    background-color: rgb(170, 225, 200) !important;
 }
 
-/* チャンピオン要素 */
-.champ {
+/* チャンピオン要素コンテナ */
+.champ-container {
     position: absolute;
     top: 0;
     left: 50%;
@@ -70,12 +76,24 @@ html, body {
     width: 100%;
     height: 100%;
     z-index: 2;
-    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* チャンピオン要素 */
+.champ {
+    position: relative;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     cursor: grab;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    pointer-events: auto;
 }
 
 .champ-img {
@@ -85,6 +103,7 @@ html, body {
     transform: scale(1.3);
     border-radius: 8px;
     z-index: 3;
+    pointer-events: none;
 }
 
 .champ-name-onboard {
@@ -115,6 +134,7 @@ html, body {
     display: flex;
     gap: 1px;
     z-index: 15;
+    pointer-events: auto;
 }
 
 /* アイテムスロット */
@@ -131,12 +151,14 @@ html, body {
     cursor: grab;
     overflow: hidden;
     flex-shrink: 0;
+    pointer-events: auto;
 }
 
 .item-slot img {
     width: 100%;
     height: 100%;
     object-fit: contain;
+    pointer-events: none;
 }
 
 .item-slot.dragging-hidden {
@@ -181,6 +203,65 @@ html, body {
     white-space: nowrap;
 }
 
+/* ===================== 四角スロット（盤面外） ===================== */
+.slot-group {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.slot {
+    background: #151c2c;
+    border: 1px solid var(--border);
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    pointer-events: auto;
+}
+
+.slot.selected {
+    border-color: var(--active);
+    box-shadow: 0 0 15px var(--active);
+    z-index: 50;
+}
+
+.slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+.size-L { width: 90px; height: 90px; }
+.size-M { width: 65px; height: 65px; }
+.size-S { width: 45px; height: 45px; }
+
+/* AUG スロット（丸く切り抜き） */
+.slot.aug-slot {
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.slot.aug-slot img {
+    clip-path: circle(50%);
+    width: 120%;
+    height: 120%;
+}
+
+/* ドラッグ&ドロップ状態 */
+.slot.dragover {
+    outline: 3px dashed #22c55e;
+    outline-offset: -3px;
+    background: rgba(34, 197, 94, 0.15);
+}
+
 /* ===================== ベンチ ===================== */
 #bench {
     display: grid;
@@ -208,6 +289,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: auto;
 }
 
 .piece img {
@@ -215,6 +297,7 @@ html, body {
     height: 100%;
     object-fit: contain;
     border-radius: 8px;
+    pointer-events: none;
 }
 
 .piece .champ-name {
@@ -254,12 +337,14 @@ html, body {
     flex-direction: column;
     background: #111;
     border-radius: 4px;
+    pointer-events: auto;
 }
 
 .asset img {
     width: 100%;
     aspect-ratio: 1;
     object-fit: cover;
+    pointer-events: none;
 }
 
 .asset span {
