@@ -31,6 +31,12 @@ html, body {
     overflow: visible;
 }
 
+/* 2段目と4段目をすべて半分ずらす */
+.hex:nth-child(n+8):nth-child(-n+14),
+.hex:nth-child(n+22):nth-child(-n+28) {
+  margin-left: 47px;
+}
+
 .hex::before {
     content: "";
     position: absolute;
