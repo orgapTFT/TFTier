@@ -429,31 +429,12 @@ function fillSlot(slot, src, name = '') {
     }
 }
 
-function setupPaletteDragDrop() {
-    const palette = document.getElementById('palette-grid');
-    if (!palette) return;
-    
-    palette.addEventListener('dragstart', e => {
-        if (e.target.classList.contains('asset') || e.target.closest('.asset')) {
-            const asset = e.target.classList.contains('asset') ? e.target : e.target.closest('.asset');
-            const img = asset.querySelector('img');
-            const name = asset.querySelector('span')?.textContent || '';
-            const src = img?.src || '';
-            
-            e.dataTransfer.effectAllowed = 'copy';
-            e.dataTransfer.setData('text/plain', src);
-            e.dataTransfer.setData('text/name', name);
-            e.dataTransfer.setData('application/json', JSON.stringify({ src: src, name: name }));
-            asset.classList.add('dragging-hidden');
-        }
-    }, true);
-}
+
 
 function init() {
     createBoard();
     setupBenchDragDrop();
     setupSlotDragDrop();
-    setupPaletteDragDrop();
     
     // グローバルドラッグ終了
     document.addEventListener('dragend', e => {
