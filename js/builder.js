@@ -1,42 +1,33 @@
-/* builder.js - 完全修正版 */
-
-// ==================== グローバル変数 ====================
-window.currentDragSource = null;
-window.currentDragSourceBench = null;
+/* builder.js - 完全なドラッグ&ドロップ実装 */
 
 function createBoard() {
     const board = document.getElementById('board');
     if (!board) return;
-    
     board.innerHTML = '';
-    
     for (let i = 0; i < 28; i++) {
         const hex = document.createElement('div');
         hex.classList.add('hex');
         hex.dataset.index = i;
         
-        // ドラッグ&ドロップイベント
-        hex.addEventListener('dragover', handleHexDragOver);
-        hex.addEventListener('dragleave', handleHexDragLeave);
+        // dragover: 色を緑に変更
+        hex.addEventListener('dragover', e => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            hex.classList.add('dragover');
+        });
+        
+        // dragleave: 色を戻す
+        hex.addEventListener('dragleave', e => {
+            // ネストされた要素から出た場合の防止
+            if (e.target === hex) {
+                hex.classList.remove('dragover');
+            }
+        });
+        
+        // drop: ドロップ処理
         hex.addEventListener('drop', e => handleHexDrop(e, hex));
         
-        // 六角形内をクリック可能にする
-        hex.addEventListener('click', e => e.stopPropagation());
-        
         board.appendChild(hex);
-    }
-}
-
-// ==================== HEX ドラッグ&ドロップ処理 ====================
-function handleHexDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    this.classList.add('dragover');
-}
-
-function handleHexDragLeave(e) {
-    if (e.target === this) {
-        this.classList.remove('dragover');
     }
 }
 
@@ -48,58 +39,52 @@ function handleHexDrop(e, hex) {
     try {
         const rawData = e.dataTransfer.getData('application/json');
         if (!rawData) return;
-        
         const data = JSON.parse(rawData);
         
-        // ====================== チャンピオン移動 ======================
+        // ===================== チャンピオン配置 =====================
         if (data.type === 'champ') {
-            const sourceContainer = window.currentDragSource || window.currentDragSourceBench;
+            const source = window.currentDragSource;
             
-            if (!sourceContainer || sourceContainer === hex) {
-                window.currentDragSource = null;
-                window.currentDragSourceBench = null;
-                return;
-            }
-            
-            // 現在のデータを取得
-            const sourceData = getChampionData(sourceContainer);
-            const targetData = getChampionData(hex);
+            // ソースがあれば、ソースのデータを取得
+            const sourceData = source ? getHexChampionData(source) : data;
+            const targetData = hex.querySelector('.champ') ? getHexChampionData(hex) : null;
             
             // スワップ処理
-            if (targetData) {
-                placeChampion(sourceContainer, targetData);
-            } else {
-                sourceContainer.innerHTML = '';
+            hex.innerHTML = '';
+            if (source && source !== hex) {
+                source.innerHTML = '';
+                if (targetData) {
+                    placeChampionOnHex(source, targetData);
+                }
             }
             
             if (sourceData) {
-                placeChampion(hex, sourceData);
+                placeChampionOnHex(hex, sourceData);
             }
             
             window.currentDragSource = null;
-            window.currentDragSourceBench = null;
             return;
         }
         
-        // ====================== アイテム移動 ======================
+        // ===================== アイテム移動 =====================
         if (data.type === 'item' && data.icon) {
-            const champContainer = hex.querySelector('.champ-container');
-            if (!champContainer) return; // チャンピオンがいない
+            const champDiv = hex.querySelector('.champ');
+            if (!champDiv) return; // チャンピオンがいなければ何もしない
             
             let itemsContainer = hex.querySelector('.items-container');
             if (!itemsContainer) {
                 itemsContainer = document.createElement('div');
                 itemsContainer.className = 'items-container';
-                champContainer.appendChild(itemsContainer);
+                hex.appendChild(itemsContainer);
             }
             
             const currentItems = Array.from(itemsContainer.querySelectorAll('.item-slot'));
             
             if (currentItems.length < 3) {
-                // 空きあり：追加
-                addItemSlot(itemsContainer, data.icon);
+                // 空きあり
+                addItemSlotToHex(itemsContainer, data.icon);
             } else {
-                // 満杯：マウス位置で判定して上書き
+                // 満杯時：マウス位置に最も近いアイテムと交換
                 const rect = itemsContainer.getBoundingClientRect();
                 const dropX = e.clientX - rect.left;
                 
@@ -110,7 +95,6 @@ function handleHexDrop(e, hex) {
                     const itemRect = item.getBoundingClientRect();
                     const itemCenter = itemRect.left + itemRect.width / 2 - rect.left;
                     const distance = Math.abs(dropX - itemCenter);
-                    
                     if (distance < minDistance) {
                         minDistance = distance;
                         targetIndex = index;
@@ -118,248 +102,136 @@ function handleHexDrop(e, hex) {
                 });
                 
                 currentItems[targetIndex].remove();
-                addItemSlot(itemsContainer, data.icon);
-            }
-            
-            // 移動元のアイテムを削除
-            if (data.sourceSlot && data.sourceSlot.parentElement) {
-                data.sourceSlot.remove();
+                addItemSlotToHex(itemsContainer, data.icon);
             }
             
             return;
         }
         
     } catch (err) {
-        console.error('Drop error:', err);
+        console.error('HEX Drop error:', err);
     }
 }
 
-// ==================== スロット（四角）のドラッグ&ドロップ ====================
-function setupSlotDragDrop(slot) {
-    slot.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        slot.classList.add('dragover');
-    });
+function placeChampionOnHex(hex, data) {
+    if (!hex || !data) return;
+    hex.innerHTML = '';
     
-    slot.addEventListener('dragleave', e => {
-        if (e.target === slot) {
-            slot.classList.remove('dragover');
-        }
-    });
-    
-    slot.addEventListener('drop', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        slot.classList.remove('dragover');
-        
-        try {
-            const rawData = e.dataTransfer.getData('application/json');
-            if (!rawData) {
-                const plainData = e.dataTransfer.getData('text/plain');
-                if (plainData && plainData.length < 50) {
-                    placeAssetInSlot(slot, plainData, '');
-                }
-                return;
-            }
-            
-            const data = JSON.parse(rawData);
-            
-            if (data.type === 'champ') {
-                placeAssetInSlot(slot, data.icon, data.icon);
-            } else if (data.type === 'item') {
-                placeAssetInSlot(slot, data.icon, data.icon);
-            } else if (data.type === 'aug') {
-                placeAssetInSlot(slot, data.src, data.name);
-            } else if (data.type === 'god') {
-                placeAssetInSlot(slot, data.src, data.name);
-            }
-            
-        } catch (err) {
-            console.error('Slot drop error:', err);
-        }
-    });
-}
-
-function placeAssetInSlot(slot, src, name) {
-    slot.innerHTML = `
-        <img src="${src}" alt="${name}" draggable="false">
-        <button class="rem-btn" onclick="event.stopPropagation(); clearSlotContent(this.parentElement);" style="display:none;">×</button>
-    `;
-    
-    // ホバー時に削除ボタンを表示
-    const remBtn = slot.querySelector('.rem-btn');
-    slot.addEventListener('mouseenter', () => {
-        if (remBtn) remBtn.style.display = 'flex';
-    });
-    slot.addEventListener('mouseleave', () => {
-        if (remBtn) remBtn.style.display = 'none';
-    });
-    
-    // AUG スロットなら画像を丸くクリップ
-    if (slot.classList.contains('aug-slot')) {
-        const img = slot.querySelector('img');
-        if (img) {
-            img.style.clipPath = 'circle(50%)';
-            img.style.width = '120%';
-            img.style.height = '120%';
-            img.style.objectFit = 'cover';
-        }
-    }
-}
-
-function clearSlotContent(slot) {
-    slot.innerHTML = '';
-}
-
-// ==================== チャンピオン配置 ====================
-function placeChampion(container, data) {
-    if (!container) return;
-    
-    container.innerHTML = '';
-    
-    const currentStars = parseInt(data.stars) || 1;
     const champName = data.icon || data.name || '';
+    const currentStars = parseInt(data.stars) || 1;
     const currentLv = parseInt(data.lv) || 0;
-    
-    container.dataset.type = 'champ';
-    container.dataset.name = champName;
-    container.dataset.lv = currentLv;
-    
-    // チャンピオンコンテナ
-    const champContainer = document.createElement('div');
-    champContainer.className = 'champ-container';
     
     // チャンピオン要素
     const champ = document.createElement('div');
     champ.className = 'champ';
-    champ.draggable = true;
     champ.dataset.stars = currentStars;
     champ.dataset.name = champName;
+    champ.dataset.lv = currentLv;
     
     champ.innerHTML = `
-        <img src="./img/champ/17/${champName}.avif" 
-             alt="${champName}" 
-             class="champ-img"
-             onerror="this.style.display='none';">
+        <img class="champ-img" src="./img/champ/17/${champName}.avif" alt="${champName}" onerror="this.style.display='none';">
         <div class="champ-name-onboard">${champName}</div>
         <div class="lv-display" style="display:${currentLv >= 3 ? 'block' : 'none'}">Lv${currentLv}</div>
     `;
     
-    // 星表示
+    // ドラッグイベント
+    champ.addEventListener('dragstart', e => {
+        e.stopImmediatePropagation();
+        window.currentDragSource = hex;
+        e.dataTransfer.effectAllowed = 'move';
+        const data = {
+            type: 'champ',
+            icon: champName,
+            stars: champ.dataset.stars,
+            lv: champ.dataset.lv,
+            items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
+        };
+        e.dataTransfer.setData('application/json', JSON.stringify(data));
+    });
+    
+    champ.addEventListener('dragend', () => {
+        champ.classList.remove('dragging-hidden');
+    });
+    
+    // クリックイベント：星・Lvの切り替え
+    champ.addEventListener('click', e => {
+        e.stopPropagation();
+        const rect = champ.getBoundingClientRect();
+        const clickY = e.clientY - rect.top;
+        const clickedHeight = rect.height;
+        
+        // 上半分：星
+        if (clickY < clickedHeight * 0.4) {
+            let s = (parseInt(champ.dataset.stars) % 4) + 1; // 1->2->3->4->1
+            champ.dataset.stars = s;
+            const starLabel = hex.querySelector('.star');
+            if (starLabel) {
+                starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+            }
+        }
+        // 下半分：Lv
+        else if (clickY > clickedHeight * 0.6) {
+            let currentLvNum = parseInt(champ.dataset.lv) || 3;
+            if (currentLvNum >= 10) {
+                currentLvNum = 3;
+            } else {
+                currentLvNum++;
+            }
+            champ.dataset.lv = currentLvNum;
+            const lvDisplay = hex.querySelector('.lv-display');
+            if (lvDisplay) {
+                if (currentLvNum >= 3) {
+                    lvDisplay.textContent = `Lv${currentLvNum}`;
+                    lvDisplay.style.display = 'block';
+                } else {
+                    lvDisplay.style.display = 'none';
+                }
+            }
+        }
+    });
+    
+    // 右クリック：削除
+    champ.addEventListener('contextmenu', e => {
+        e.preventDefault();
+        hex.innerHTML = '';
+    });
+    
+    hex.appendChild(champ);
+    
+    // 星
     const starLabel = document.createElement('div');
     starLabel.className = 'star';
     starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
+    hex.appendChild(starLabel);
     
     // アイテムコンテナ
     const itemsDiv = document.createElement('div');
     itemsDiv.className = 'items-container';
     if (data.items && Array.isArray(data.items)) {
         data.items.forEach(itemName => {
-            if (itemName?.trim()) addItemSlot(itemsDiv, itemName.trim());
+            if (itemName?.trim()) {
+                addItemSlotToHex(itemsDiv, itemName.trim());
+            }
         });
     }
-    
-    // DOM構造
-    champContainer.appendChild(champ);
-    champContainer.appendChild(itemsDiv);
-    champContainer.appendChild(starLabel);
-    container.appendChild(champContainer);
-    
-    // ドラッグイベント
-    addDragToChampion(champ, container);
-    
-    // クリックイベント
-    champ.addEventListener('mousedown', e => {
-        champ.dataset.clickX = e.screenX;
-        champ.dataset.clickY = e.screenY;
-    });
-    
-    champ.addEventListener('click', e => {
-        e.stopPropagation();
-        
-        const moveX = Math.abs(e.screenX - (champ.dataset.clickX || 0));
-        const moveY = Math.abs(e.screenY - (champ.dataset.clickY || 0));
-        
-        if (moveX > 5 || moveY > 5) return; // ドラッグと判定
-        
-        const rect = champ.getBoundingClientRect();
-        const clickY = e.clientY - rect.top;
-        
-        // 上部1/3をクリック：星の切り替え
-        if (clickY < rect.height / 3) {
-            let s = (parseInt(champ.dataset.stars) % 4) + 1;
-            champ.dataset.stars = s;
-            starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
-            container.dataset.stars = s;
-        } 
-        // 下部2/3をクリック：Lvの切り替え
-        else {
-            let lvNum = parseInt(container.dataset.lv) || 3;
-            if (lvNum >= 10) {
-                lvNum = 3;
-            } else {
-                lvNum++;
-            }
-            container.dataset.lv = lvNum;
-            const lvDisplay = champ.querySelector('.lv-display');
-            if (lvDisplay) {
-                lvDisplay.textContent = `Lv${lvNum}`;
-                lvDisplay.style.display = lvNum >= 3 ? 'block' : 'none';
-            }
-        }
-    });
+    hex.appendChild(itemsDiv);
 }
 
-// ==================== チャンピオンドラッグイベント ====================
-function addDragToChampion(champ, container) {
-    champ.addEventListener('dragstart', e => {
-        e.stopImmediatePropagation();
-        
-        window.currentDragSource = container;
-        
-        const data = {
-            type: 'champ',
-            icon: champ.dataset.name,
-            stars: champ.dataset.stars || '1',
-            items: Array.from(container.querySelectorAll('.item-slot'))
-                .map(slot => slot.dataset.name),
-            lv: container.dataset.lv || '0'
-        };
-        
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('application/json', JSON.stringify(data));
-        
-        setTimeout(() => champ.classList.add('dragging-hidden'), 0);
-    });
-    
-    champ.addEventListener('dragend', () => {
-        champ.classList.remove('dragging-hidden');
-        window.currentDragSource = null;
-    });
-}
-
-// ==================== アイテムスロット作成 ====================
-function addItemSlot(container, iconName) {
+function addItemSlotToHex(container, iconName) {
     const slot = document.createElement('div');
     slot.className = 'item-slot';
-    slot.draggable = true;
     slot.dataset.name = iconName;
+    slot.draggable = true;
     
-    slot.innerHTML = `<img src="./img/item/${iconName}.avif" alt="${iconName}">`;
+    slot.innerHTML = `<img src="./img/item/${iconName}.avif" alt="${iconName}" onerror="this.style.display='none';">`;
     
     slot.addEventListener('dragstart', e => {
         e.stopImmediatePropagation();
-        
-        const data = {
-            type: 'item',
-            icon: iconName,
-            sourceSlot: slot
-        };
-        
         e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('application/json', JSON.stringify(data));
-        
+        e.dataTransfer.setData('application/json', JSON.stringify({
+            type: 'item',
+            icon: iconName
+        }));
         slot.classList.add('dragging-hidden');
     });
     
@@ -375,81 +247,139 @@ function addItemSlot(container, iconName) {
     container.appendChild(slot);
 }
 
-// ==================== ヘルパー関数 ====================
-function getChampionData(container) {
-    const champ = container.querySelector('.champ');
+function getHexChampionData(hex) {
+    const champ = hex.querySelector('.champ');
     if (!champ) return null;
-    
     return {
         type: 'champ',
         icon: champ.dataset.name,
         stars: champ.dataset.stars || '1',
-        items: Array.from(container.querySelectorAll('.item-slot')).map(s => s.dataset.name),
-        lv: container.dataset.lv || '0'
+        lv: champ.dataset.lv || '0',
+        items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
     };
 }
 
-// ==================== 初期化 ====================
-function init() {
-    // ボード作成
-    createBoard();
-    
-    // ベンチ作成
+function setupBenchDragDrop() {
     const bench = document.getElementById('bench');
-    if (bench && championFiles) {
-        bench.innerHTML = '';
-        
-        championFiles.forEach(filename => {
-            const name = filename.replace('.avif', '');
-            
-            const piece = document.createElement('div');
-            piece.className = 'piece';
-            piece.draggable = true;
-            piece.dataset.name = name;
-            
-            piece.innerHTML = `
-                <img src="./img/champ/17/${filename}" alt="${name}">
-                <div class="champ-name">${name}</div>
-            `;
-            
-            piece.addEventListener('dragstart', e => {
-                e.dataTransfer.effectAllowed = 'copy';
-                e.dataTransfer.setData('application/json', JSON.stringify({
-                    type: 'champ',
-                    icon: name,
-                    stars: '1',
-                    items: [],
-                    lv: '0'
-                }));
-                e.dataTransfer.setData('text/plain', name);
-                
-                window.currentDragSourceBench = piece;
-                piece.classList.add('dragging-hidden');
-            });
-            
-            piece.addEventListener('dragend', () => {
-                piece.classList.remove('dragging-hidden');
-                window.currentDragSourceBench = null;
-            });
-            
-            bench.appendChild(piece);
-        });
-    }
+    if (!bench) return;
     
-    // スロット（四角）のドラッグ&ドロップ設定
-    document.querySelectorAll('.slot').forEach(slot => {
-        setupSlotDragDrop(slot);
+    bench.addEventListener('dragover', e => e.preventDefault());
+    
+    // ベンチからのドラッグ
+    bench.addEventListener('dragstart', e => {
+        if (e.target.classList.contains('piece')) {
+            const name = e.target.dataset.name || e.target.querySelector('.champ-name')?.textContent || '';
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('application/json', JSON.stringify({
+                type: 'champ',
+                icon: name,
+                stars: '1',
+                lv: '0',
+                items: []
+            }));
+            window.currentDragSource = null;
+            e.target.classList.add('dragging-hidden');
+        }
+    }, true);
+}
+
+function setupSlotDragDrop() {
+    document.addEventListener('dragover', e => {
+        const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+        if (slot) {
+            e.preventDefault();
+            const parent = slot.classList.contains('god-slot') ? slot.closest('.god-wrap') : slot;
+            parent.classList.add('dragover');
+        }
     });
     
-    // グローバルドラ��グオーバー
-    document.body.addEventListener('dragover', e => e.preventDefault());
-    document.body.addEventListener('drop', e => {
-        if (e.target.closest('.hex') || e.target.closest('.slot')) return;
+    document.addEventListener('dragleave', e => {
+        const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+        if (slot) {
+            const parent = slot.classList.contains('god-slot') ? slot.closest('.god-wrap') : slot;
+            if (e.target === slot || e.target === parent) {
+                parent.classList.remove('dragover');
+            }
+        }
+    });
+    
+    document.addEventListener('drop', e => {
+        const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+        const godWrap = e.target.closest('.god-wrap');
+        const targetSlot = godWrap || slot;
+        
+        if (!targetSlot) return;
+        
         e.preventDefault();
+        e.stopPropagation();
+        
+        targetSlot.classList.remove('dragover');
+        
+        try {
+            const rawData = e.dataTransfer.getData('application/json');
+            const src = e.dataTransfer.getData('text/plain');
+            const name = e.dataTransfer.getData('text/name') || '';
+            
+            if (rawData) {
+                const data = JSON.parse(rawData);
+                if (data.src) {
+                    fillSlot(targetSlot, data.src, name);
+                }
+            } else if (src) {
+                fillSlot(targetSlot, src, name);
+            }
+        } catch (err) {
+            console.error('Slot drop error:', err);
+        }
     });
 }
 
-// DOMContentLoaded 後に初期化
+function fillSlot(slot, src, name = '') {
+    slot.innerHTML = `<img src="${src}" alt="" onerror="this.style.display='none';">`;
+    if (slot.classList.contains('god-slot')) {
+        const label = slot.closest('.god-wrap')?.querySelector('.god-name-label');
+        if (label) label.textContent = name.split('.')[0] || '';
+    }
+}
+
+function setupPaletteDragDrop() {
+    const palette = document.getElementById('palette-grid');
+    if (!palette) return;
+    
+    palette.addEventListener('dragstart', e => {
+        if (e.target.classList.contains('asset') || e.target.closest('.asset')) {
+            const asset = e.target.classList.contains('asset') ? e.target : e.target.closest('.asset');
+            const img = asset.querySelector('img');
+            const name = asset.querySelector('span')?.textContent || '';
+            const src = img?.src || '';
+            
+            e.dataTransfer.effectAllowed = 'copy';
+            e.dataTransfer.setData('text/plain', src);
+            e.dataTransfer.setData('text/name', name);
+            e.dataTransfer.setData('application/json', JSON.stringify({ src: src, name: name }));
+            asset.classList.add('dragging-hidden');
+        }
+    }, true);
+}
+
+function init() {
+    createBoard();
+    setupBenchDragDrop();
+    setupSlotDragDrop();
+    setupPaletteDragDrop();
+    
+    // グローバルドラッグ終了
+    document.addEventListener('dragend', e => {
+        document.querySelectorAll('.dragging-hidden').forEach(el => {
+            el.classList.remove('dragging-hidden');
+        });
+        document.querySelectorAll('.dragover').forEach(el => {
+            el.classList.remove('dragover');
+        });
+    });
+}
+
+// DOMContentLoaded で実行
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
