@@ -1,3 +1,4 @@
+// editor.js
 // ================ ファイルの先頭に追加 ================
 let project = {};
 let selSlot = null;
@@ -513,6 +514,43 @@ function handleAssetUpload(e) {
     });
 }
 
+function createChampionHTML(data) {
+
+    const champName = data.icon || data.name || '';
+    const currentStars = parseInt(data.stars) || 1;
+    const currentLv = parseInt(data.lv) || 0;
+
+    return `
+        <div class="champ"
+             draggable="true"
+             data-stars="${currentStars}"
+             data-name="${champName}"
+             data-lv="${currentLv}">
+
+            <img class="champ-img"
+                 src="./img/champ/17/${champName}.avif"
+                 alt="${champName}"
+                 draggable="false"
+                 onerror="this.style.display='none';">
+
+            <div class="champ-name-onboard">
+                ${champName}
+            </div>
+
+            <div class="lv-display"
+                 style="display:${currentLv >= 3 ? 'block' : 'none'}">
+                 Lv${currentLv}
+            </div>
+        </div>
+
+        <div class="star">
+            ${currentStars > 1 ? '★'.repeat(currentStars - 1) : ''}
+        </div>
+
+        <div class="items-container"></div>
+    `;
+}
+
 function renderPalette() {
     const g = document.getElementById('palette-grid');
     if (!g) return;
@@ -544,12 +582,36 @@ function renderPalette() {
             markChanged();
         };
 
-        // ドラッグ開���
-        d.ondragstart = (e) => {
-            e.dataTransfer.setData('text/plain', asset.src);
-            e.dataTransfer.setData('text/name', asset.name || '');
-            d.classList.add('dragging');
-        };
+d.ondragstart = (e) => {
+
+    // builder.js 用
+const champData = {
+    type: curPalette === 'c' ? 'champ' : 'item',
+    icon: asset.name || '',
+    stars: '1',
+    lv: '0',
+    items: []
+};
+
+e.dataTransfer.setData(
+    'application/json',
+    JSON.stringify(champData)
+);
+
+// HTMLも渡す
+e.dataTransfer.setData(
+    'application/champ-html',
+    createChampionHTML(champData)
+);
+
+    // editor.js 用（既存互換）
+    e.dataTransfer.setData('text/plain', asset.src);
+    e.dataTransfer.setData('text/name', asset.name || '');
+
+    e.dataTransfer.effectAllowed = 'copy';
+
+    d.classList.add('dragging');
+};
 
         d.ondragend = () => d.classList.remove('dragging');
 

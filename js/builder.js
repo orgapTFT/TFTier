@@ -115,73 +115,102 @@ function handleHexDrop(e, hex) {
 
 function placeChampionOnHex(hex, data) {
     if (!hex || !data) return;
+
     hex.innerHTML = '';
-    
+
     const champName = data.icon || data.name || '';
     const currentStars = parseInt(data.stars) || 1;
     const currentLv = parseInt(data.lv) || 0;
-    
-    // チャンピオン要素
+
+    // =============================
+    // CHAMP生成
+    // =============================
     const champ = document.createElement('div');
+
     champ.className = 'champ';
+    champ.draggable = true;
+
     champ.dataset.stars = currentStars;
     champ.dataset.name = champName;
     champ.dataset.lv = currentLv;
-    
+
     champ.innerHTML = `
-        <img class="champ-img" src="./img/champ/17/${champName}.avif" alt="${champName}" onerror="this.style.display='none';">
+        <img class="champ-img"
+             src="./img/champ/17/${champName}.avif"
+             alt="${champName}"
+             draggable="false"
+             onerror="this.style.display='none';">
+
         <div class="champ-name-onboard">${champName}</div>
-        <div class="lv-display" style="display:${currentLv >= 3 ? 'block' : 'none'}">Lv${currentLv}</div>
+
+        <div class="lv-display"
+             style="display:${currentLv >= 3 ? 'block' : 'none'}">
+             Lv${currentLv}
+        </div>
     `;
-    
-    // ドラッグイベント
+
+    // =============================
+    // DRAG START
+    // =============================
     champ.addEventListener('dragstart', e => {
-        e.stopImmediatePropagation();
+
+        e.stopPropagation();
+
         window.currentDragSource = hex;
+
         e.dataTransfer.effectAllowed = 'move';
-        const data = {
+
+        e.dataTransfer.setData('application/json', JSON.stringify({
             type: 'champ',
             icon: champName,
             stars: champ.dataset.stars,
             lv: champ.dataset.lv,
-            items: Array.from(hex.querySelectorAll('.item-slot')).map(s => s.dataset.name)
-        };
-        e.dataTransfer.setData('application/json', JSON.stringify(data));
+            items: Array.from(
+                hex.querySelectorAll('.item-slot')
+            ).map(s => s.dataset.name)
+        }));
     });
-    
-    champ.addEventListener('dragend', () => {
-        champ.classList.remove('dragging-hidden');
-    });
-    
-    // クリックイベント：星・Lvの切り替え
+
+    // =============================
+    // CLICK
+    // =============================
     champ.addEventListener('click', e => {
+
         e.stopPropagation();
+
         const rect = champ.getBoundingClientRect();
         const clickY = e.clientY - rect.top;
-        const clickedHeight = rect.height;
-        
-        // 上半分：星
-        if (clickY < clickedHeight * 0.4) {
-            let s = (parseInt(champ.dataset.stars) % 4) + 1; // 1->2->3->4->1
+
+        // 上半分 = 星
+        if (clickY < rect.height * 0.4) {
+
+            let s = (parseInt(champ.dataset.stars) % 4) + 1;
+
             champ.dataset.stars = s;
+
             const starLabel = hex.querySelector('.star');
+
             if (starLabel) {
-                starLabel.textContent = s > 1 ? '★'.repeat(s - 1) : '';
+                starLabel.textContent =
+                    s > 1 ? '★'.repeat(s - 1) : '';
             }
         }
-        // 下半分：Lv
-        else if (clickY > clickedHeight * 0.6) {
-            let currentLvNum = parseInt(champ.dataset.lv) || 3;
-            if (currentLvNum >= 10) {
-                currentLvNum = 3;
-            } else {
-                currentLvNum++;
-            }
-            champ.dataset.lv = currentLvNum;
-            const lvDisplay = hex.querySelector('.lv-display');
+
+        // 下半分 = Lv
+        else if (clickY > rect.height * 0.6) {
+
+            let lv = parseInt(champ.dataset.lv) || 3;
+
+            lv = lv >= 10 ? 3 : lv + 1;
+
+            champ.dataset.lv = lv;
+
+            const lvDisplay = champ.querySelector('.lv-display');
+
             if (lvDisplay) {
-                if (currentLvNum >= 3) {
-                    lvDisplay.textContent = `Lv${currentLvNum}`;
+
+                if (lv >= 3) {
+                    lvDisplay.textContent = `Lv${lv}`;
                     lvDisplay.style.display = 'block';
                 } else {
                     lvDisplay.style.display = 'none';
@@ -189,31 +218,49 @@ function placeChampionOnHex(hex, data) {
             }
         }
     });
-    
-    // 右クリック：削除
+
+    // =============================
+    // RIGHT CLICK DELETE
+    // =============================
     champ.addEventListener('contextmenu', e => {
+
         e.preventDefault();
+
         hex.innerHTML = '';
     });
-    
+
+    // =============================
+    // APPEND
+    // =============================
     hex.appendChild(champ);
-    
-    // 星
+
+    // STAR
     const starLabel = document.createElement('div');
+
     starLabel.className = 'star';
-    starLabel.textContent = currentStars > 1 ? '★'.repeat(currentStars - 1) : '';
+
+    starLabel.textContent =
+        currentStars > 1
+            ? '★'.repeat(currentStars - 1)
+            : '';
+
     hex.appendChild(starLabel);
-    
-    // アイテムコンテナ
+
+    // ITEMS
     const itemsDiv = document.createElement('div');
+
     itemsDiv.className = 'items-container';
+
     if (data.items && Array.isArray(data.items)) {
+
         data.items.forEach(itemName => {
+
             if (itemName?.trim()) {
                 addItemSlotToHex(itemsDiv, itemName.trim());
             }
         });
     }
+
     hex.appendChild(itemsDiv);
 }
 
