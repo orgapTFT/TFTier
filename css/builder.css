@@ -1,3 +1,5 @@
+/* builder.css */
+
 /* ===================== 全体レイアウト ===================== */
 html, body {
     height: 100%;
@@ -257,7 +259,7 @@ html, body {
     gap: 6px;
     align-items: flex-start;
     flex-wrap: nowrap;
-    overflow-x: auto;
+    overflow-x: hidden;
     padding: 0 10px;
 }
 
