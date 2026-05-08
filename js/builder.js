@@ -371,51 +371,93 @@ function setupBenchDragDrop() {
 }
 
 function setupSlotDragDrop() {
+
     document.addEventListener('dragover', e => {
+
+        // Hexはbuilder側に任せる
+        if (e.target.closest('.hex')) return;
+
         const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+
         if (slot) {
+
             e.preventDefault();
-            const parent = slot.classList.contains('god-slot') ? slot.closest('.god-wrap') : slot;
+
+            const parent =
+                slot.classList.contains('god-slot')
+                    ? slot.closest('.god-wrap')
+                    : slot;
+
             parent.classList.add('dragover');
         }
     });
-    
+
     document.addEventListener('dragleave', e => {
+
+        // Hexはbuilder側に任せる
+        if (e.target.closest('.hex')) return;
+
         const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+
         if (slot) {
-            const parent = slot.classList.contains('god-slot') ? slot.closest('.god-wrap') : slot;
+
+            const parent =
+                slot.classList.contains('god-slot')
+                    ? slot.closest('.god-wrap')
+                    : slot;
+
             if (e.target === slot || e.target === parent) {
                 parent.classList.remove('dragover');
             }
         }
     });
-    
+
     document.addEventListener('drop', e => {
+
+        // =========================
+        // HEX は builder.js に任せる
+        // =========================
+        if (e.target.closest('.hex')) return;
+
         const slot = e.target.closest('.slot, .god-slot, .aug-slot');
+
         const godWrap = e.target.closest('.god-wrap');
+
         const targetSlot = godWrap || slot;
-        
+
         if (!targetSlot) return;
-        
+
         e.preventDefault();
         e.stopPropagation();
-        
+
         targetSlot.classList.remove('dragover');
-        
+
         try {
-            const rawData = e.dataTransfer.getData('application/json');
-            const src = e.dataTransfer.getData('text/plain');
-            const name = e.dataTransfer.getData('text/name') || '';
-            
+
+            const rawData =
+                e.dataTransfer.getData('application/json');
+
+            const src =
+                e.dataTransfer.getData('text/plain');
+
+            const name =
+                e.dataTransfer.getData('text/name') || '';
+
             if (rawData) {
+
                 const data = JSON.parse(rawData);
+
                 if (data.src) {
                     fillSlot(targetSlot, data.src, name);
                 }
+
             } else if (src) {
+
                 fillSlot(targetSlot, src, name);
             }
+
         } catch (err) {
+
             console.error('Slot drop error:', err);
         }
     });
